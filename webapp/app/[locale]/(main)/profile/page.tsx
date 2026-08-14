@@ -478,26 +478,36 @@ export default function ProfilePage() {
               )}
             </div>
             {isLoading ? (
-              <Skeleton className="h-10 w-full" />
+              <div className="flex justify-center pt-2">
+                <Skeleton className="h-10 w-full sm:w-1/2 max-w-xs" />
+              </div>
             ) : (
-              <Button
-                type="submit"
-                className={`w-full transition-all duration-200 ${
+              <div
+                className={
                   hasUnsavedChanges
-                    ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-                    : "bg-muted hover:bg-muted/80 text-muted-foreground"
-                }`}
-                aria-label={
-                  !hasUnsavedChanges
-                    ? t("profilePage.noSaveChangesButton")
-                    : t("profilePage.saveChangesButton")
+                    ? "sticky bottom-0 z-30 -mx-2 px-2 md:-mx-6 md:px-6 md:-mb-6 py-3.5 bg-card/95 backdrop-blur-md border-t border-border shadow-2xl flex justify-center transition-all duration-300 md:rounded-b-lg"
+                    : "relative pt-2 flex justify-center transition-all duration-300"
                 }
-                isLoading={isUpdating}
-                disabled={isUpdating || !hasUnsavedChanges}
               >
-                <Save className="mr-2 h-4 w-4" />
-                {t("profilePage.saveChangesButton")}
-              </Button>
+                <Button
+                  type="submit"
+                  className={`w-full sm:w-1/2 max-w-xs transition-all duration-200 ${
+                    hasUnsavedChanges
+                      ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg"
+                      : "bg-muted hover:bg-muted/80 text-muted-foreground shadow-none"
+                  }`}
+                  aria-label={
+                    !hasUnsavedChanges
+                      ? t("profilePage.noSaveChangesButton")
+                      : t("profilePage.saveChangesButton")
+                  }
+                  isLoading={isUpdating}
+                  disabled={isUpdating || !hasUnsavedChanges}
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  {t("profilePage.saveChangesButton")}
+                </Button>
+              </div>
             )}
           </form>
         </CardContent>
