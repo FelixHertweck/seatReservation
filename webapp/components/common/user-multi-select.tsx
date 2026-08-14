@@ -154,7 +154,7 @@ export function UserMultiSelect({
   };
 
   return (
-    <div className="space-y-3" ref={containerRef}>
+    <div className="space-y-2" ref={containerRef}>
       {label && <Label className="text-sm font-medium">{label}</Label>}
 
       {/* Name / email search + floating results popup */}
@@ -260,7 +260,7 @@ export function UserMultiSelect({
 
       {/* Tag filter */}
       {availableTags.length > 0 && (
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-xs font-medium text-muted-foreground">
               {t("userMultiSelect.tagsFilterLabel")}

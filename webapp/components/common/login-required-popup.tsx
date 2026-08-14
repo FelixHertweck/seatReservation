@@ -8,7 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/custom-ui/dialog";
+} from "@/components/ui/dialog";
 import { Button } from "@/components/custom-ui/button";
 import { useT } from "@/lib/i18n/hooks";
 import { useLoginRequiredPopup } from "@/hooks/use-login-popup";
@@ -38,18 +38,19 @@ export function LoginRequiredPopup() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent
-        className="sm:max-w-md"
-        noX={true}
+        className="w-[calc(100%-2rem)] max-w-md rounded-lg [&>button]:hidden"
         onInteractOutside={(e) => e.preventDefault()}
       >
-        <DialogHeader>
-          <DialogTitle>{t("loginRequiredPopup.title")}</DialogTitle>
-          <DialogDescription>
+        <DialogHeader className="text-center sm:text-center">
+          <DialogTitle className="text-center">
+            {t("loginRequiredPopup.title")}
+          </DialogTitle>
+          <DialogDescription className="text-center">
             {t("loginRequiredPopup.description")}
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
-          <Button onClick={handleLoginRedirect}>
+        <DialogFooter className="sm:justify-center">
+          <Button onClick={handleLoginRedirect} className="w-full">
             {t("loginRequiredPopup.loginButton")}
           </Button>
         </DialogFooter>

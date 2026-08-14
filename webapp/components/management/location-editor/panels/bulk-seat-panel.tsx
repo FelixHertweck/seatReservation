@@ -159,8 +159,8 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
   };
 
   return (
-    <div className="space-y-3">
-      <div className="space-y-1.5">
+    <div className="space-y-4">
+      <div className="space-y-2">
         <Label>{t("management.locationEditor.bulk.layoutLabel")}</Label>
         <Select value={layout} onValueChange={(v) => setLayout(v as Layout)}>
           <SelectTrigger>
@@ -180,8 +180,8 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
         </Select>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-1.5">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
           <Label>{t("management.locationEditor.bulk.startX")}</Label>
           <Input
             type="number"
@@ -190,7 +190,7 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
             onChange={(e) => setStartX(e.target.value)}
           />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>{t("management.locationEditor.bulk.startY")}</Label>
           <Input
             type="number"
@@ -202,7 +202,7 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
       </div>
 
       {layout !== "block" ? (
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>{t("management.locationEditor.bulk.countLabel")}</Label>
           <Input
             type="number"
@@ -212,8 +212,8 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
           />
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1.5">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
             <Label>{t("management.locationEditor.bulk.rowsLabel")}</Label>
             <Input
               type="number"
@@ -222,7 +222,7 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
               onChange={(e) => setRows(e.target.value)}
             />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>{t("management.locationEditor.bulk.colsLabel")}</Label>
             <Input
               type="number"
@@ -234,8 +234,8 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-1.5">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
           <Label>{t("management.locationEditor.bulk.spacingLabel")}</Label>
           <Input
             type="number"
@@ -244,7 +244,7 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
             onChange={(e) => setSpacing(e.target.value)}
           />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>{t("management.locationEditor.bulk.numberStartLabel")}</Label>
           <Input
             type="number"
@@ -254,12 +254,12 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-1.5">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
           <Label>{t("management.locationEditor.bulk.prefixLabel")}</Label>
           <Input value={prefix} onChange={(e) => setPrefix(e.target.value)} />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>{t("management.locationEditor.bulk.seatRowLabel")}</Label>
           <Input
             value={seatRowLabel}
@@ -268,7 +268,7 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
         </div>
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <Label>{t("management.locationEditor.bulk.entranceLabel")}</Label>
         <Select value={entranceRef} onValueChange={setEntranceRef}>
           <SelectTrigger>
@@ -289,7 +289,7 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
         </Select>
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <Label>{t("management.locationEditor.bulk.areaLabel")}</Label>
         <Select value={areaRef} onValueChange={setAreaRef}>
           <SelectTrigger>

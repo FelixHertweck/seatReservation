@@ -97,8 +97,8 @@ export function AreaAddDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3">
-          <div className="space-y-1.5">
+        <div className="space-y-4">
+          <div className="space-y-2">
             <Label>{t("management.locationEditor.areas.nameLabel")}</Label>
             <Input
               value={name}
@@ -107,7 +107,7 @@ export function AreaAddDialog({
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>
                 {t("management.locationEditor.areas.selectSeatsLabel")}

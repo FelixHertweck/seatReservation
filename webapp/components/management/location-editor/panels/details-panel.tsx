@@ -106,8 +106,8 @@ export function DetailsPanel({
   };
 
   return (
-    <div className="space-y-3">
-      <div className="space-y-1.5">
+    <div className="space-y-4">
+      <div className="space-y-2">
         <Label htmlFor="editor-name">
           {t("management.locationEditor.details.nameLabel")}
         </Label>
@@ -117,7 +117,7 @@ export function DetailsPanel({
           onChange={(e) => setName(e.target.value)}
         />
       </div>
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <Label htmlFor="editor-address">
           {t("management.locationEditor.details.addressLabel")}
         </Label>

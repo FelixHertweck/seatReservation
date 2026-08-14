@@ -150,7 +150,7 @@ export function AllowanceFormModal({
               : t("allowanceFormModal.editAllowanceTitle")}
           </DialogTitle>
         </DialogHeader>
-        <div className="grid gap-6 py-4">
+        <div className="space-y-4 py-2">
           {!hideEventSelector && (
             <div className="space-y-2">
               <Label htmlFor="event">

@@ -128,6 +128,7 @@ export function EventFormModal({
 
         <form
           onSubmit={handleSubmit}
+          className="space-y-5 py-2"
           onKeyDown={(e) => {
             if (
               e.key === "Enter" &&
@@ -139,225 +140,219 @@ export function EventFormModal({
             }
           }}
         >
-          <div className="grid gap-6 py-2">
-            {/* Basic information */}
-            <div className="space-y-4">
-              <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                {t("eventFormModal.basicInfoSectionTitle")}
-              </h3>
+          {/* Basic information */}
+          <div className="space-y-4">
+            <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              {t("eventFormModal.basicInfoSectionTitle")}
+            </h3>
+            <div className="space-y-2">
+              <Label htmlFor="name">{t("eventFormModal.eventNameLabel")}</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">
+                {t("eventFormModal.descriptionLabel")}
+              </Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                required
+              />
+            </div>
+          </div>
+
+          {/* Location */}
+          <div className="space-y-4 border-t pt-4">
+            <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <MapPin className="h-4 w-4" />
+              {t("eventFormModal.locationSectionTitle")}
+            </h3>
+            <div className="space-y-2">
+              <Label htmlFor="location">
+                {t("eventFormModal.locationLabel")}
+              </Label>
+              <Select
+                value={formData.eventLocationId}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    eventLocationId: value,
+                  }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={t("eventFormModal.selectLocationPlaceholder")}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {allLocations.map((location) => (
+                    <SelectItem
+                      key={location.id?.toString()}
+                      value={location.id?.toString() ?? ""}
+                    >
+                      {location.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Schedule */}
+          <div className="space-y-4 border-t pt-4">
+            <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              {t("eventFormModal.scheduleSectionTitle")}
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">
-                  {t("eventFormModal.eventNameLabel")}
+                <Label htmlFor="startTime">
+                  {t("eventFormModal.startTimeLabel")}
                 </Label>
                 <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, name: e.target.value }))
-                  }
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description">
-                  {t("eventFormModal.descriptionLabel")}
-                </Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Location */}
-            <div className="space-y-4 border-t pt-6">
-              <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                {t("eventFormModal.locationSectionTitle")}
-              </h3>
-              <div className="space-y-2">
-                <Label htmlFor="location">
-                  {t("eventFormModal.locationLabel")}
-                </Label>
-                <Select
-                  value={formData.eventLocationId}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      eventLocationId: value,
-                    }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={t(
-                        "eventFormModal.selectLocationPlaceholder",
-                      )}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allLocations.map((location) => (
-                      <SelectItem
-                        key={location.id?.toString()}
-                        value={location.id?.toString() ?? ""}
-                      >
-                        {location.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Schedule */}
-            <div className="space-y-4 border-t pt-6">
-              <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                {t("eventFormModal.scheduleSectionTitle")}
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="startTime">
-                    {t("eventFormModal.startTimeLabel")}
-                  </Label>
-                  <Input
-                    id="startTime"
-                    type="datetime-local"
-                    min="1900-01-01T00:00"
-                    max="2100-12-31T23:59"
-                    value={formData.startTime}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        startTime: e.target.value,
-                      }))
-                    }
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="endTime">
-                    {t("eventFormModal.endTimeLabel")}
-                  </Label>
-                  <Input
-                    id="endTime"
-                    type="datetime-local"
-                    max="2100-12-31T23:59"
-                    value={formData.endTime}
-                    min={formData.startTime}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        endTime: e.target.value,
-                      }))
-                    }
-                    required
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="bookingStartTime">
-                    {t("eventFormModal.bookingStartTimeLabel")}
-                  </Label>
-                  <Input
-                    id="bookingStartTime"
-                    type="datetime-local"
-                    value={formData.bookingStartTime}
-                    min="1900-01-01T00:00"
-                    max={formData.bookingDeadline || formData.startTime}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        bookingStartTime: e.target.value,
-                      }))
-                    }
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="bookingDeadline">
-                    {t("eventFormModal.bookingDeadlineLabel")}
-                  </Label>
-                  <Input
-                    id="bookingDeadline"
-                    type="datetime-local"
-                    value={formData.bookingDeadline}
-                    min={formData.bookingStartTime}
-                    max={formData.startTime}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        bookingDeadline: e.target.value,
-                      }))
-                    }
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="reminderSendDate">
-                  {t("eventFormModal.reminderSendDateLabel")}
-                </Label>
-                <Input
-                  id="reminderSendDate"
+                  id="startTime"
                   type="datetime-local"
-                  value={formData.reminderSendDate}
+                  min="1900-01-01T00:00"
+                  max="2100-12-31T23:59"
+                  value={formData.startTime}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      startTime: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="endTime">
+                  {t("eventFormModal.endTimeLabel")}
+                </Label>
+                <Input
+                  id="endTime"
+                  type="datetime-local"
+                  max="2100-12-31T23:59"
+                  value={formData.endTime}
+                  min={formData.startTime}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      endTime: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="bookingStartTime">
+                  {t("eventFormModal.bookingStartTimeLabel")}
+                </Label>
+                <Input
+                  id="bookingStartTime"
+                  type="datetime-local"
+                  value={formData.bookingStartTime}
+                  min="1900-01-01T00:00"
+                  max={formData.bookingDeadline || formData.startTime}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      bookingStartTime: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bookingDeadline">
+                  {t("eventFormModal.bookingDeadlineLabel")}
+                </Label>
+                <Input
+                  id="bookingDeadline"
+                  type="datetime-local"
+                  value={formData.bookingDeadline}
                   min={formData.bookingStartTime}
                   max={formData.startTime}
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
-                      reminderSendDate: e.target.value,
+                      bookingDeadline: e.target.value,
                     }))
                   }
+                  required
                 />
               </div>
             </div>
 
-            {/* Supervisors */}
-            <div className="space-y-4 border-t pt-6">
-              <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <Users className="h-4 w-4" />
-                {t("eventFormModal.supervisorsSectionTitle")}
-              </h3>
-              <UserMultiSelect
-                users={users}
-                selectedUserIds={formData.supervisorIds}
-                onSelectionChange={(sel) =>
-                  setFormData((prev) => ({ ...prev, supervisorIds: sel }))
+            <div className="space-y-2">
+              <Label htmlFor="reminderSendDate">
+                {t("eventFormModal.reminderSendDateLabel")}
+              </Label>
+              <Input
+                id="reminderSendDate"
+                type="datetime-local"
+                value={formData.reminderSendDate}
+                min={formData.bookingStartTime}
+                max={formData.startTime}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    reminderSendDate: e.target.value,
+                  }))
                 }
-                label={t("eventFormModal.supervisorsLabel")}
-                placeholder={t("eventFormModal.supervisorsPlaceholder")}
               />
             </div>
+          </div>
 
-            {/* Managers */}
-            <div className="space-y-4 border-t pt-6">
-              <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <Users className="h-4 w-4" />
-                {t("eventFormModal.managersSectionTitle")}
-              </h3>
-              <UserMultiSelect
-                users={users}
-                selectedUserIds={formData.managerIds}
-                onSelectionChange={(sel) =>
-                  setFormData((prev) => ({ ...prev, managerIds: sel }))
-                }
-                label={t("eventFormModal.managersLabel")}
-                placeholder={t("eventFormModal.managersPlaceholder")}
-              />
-            </div>
+          {/* Supervisors */}
+          <div className="space-y-4 border-t pt-4">
+            <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Users className="h-4 w-4" />
+              {t("eventFormModal.supervisorsSectionTitle")}
+            </h3>
+            <UserMultiSelect
+              users={users}
+              selectedUserIds={formData.supervisorIds}
+              onSelectionChange={(sel) =>
+                setFormData((prev) => ({ ...prev, supervisorIds: sel }))
+              }
+              label={t("eventFormModal.supervisorsLabel")}
+              placeholder={t("eventFormModal.supervisorsPlaceholder")}
+            />
+          </div>
+
+          {/* Managers */}
+          <div className="space-y-4 border-t pt-4">
+            <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Users className="h-4 w-4" />
+              {t("eventFormModal.managersSectionTitle")}
+            </h3>
+            <UserMultiSelect
+              users={users}
+              selectedUserIds={formData.managerIds}
+              onSelectionChange={(sel) =>
+                setFormData((prev) => ({ ...prev, managerIds: sel }))
+              }
+              label={t("eventFormModal.managersLabel")}
+              placeholder={t("eventFormModal.managersPlaceholder")}
+            />
           </div>
 
           <DialogFooter className="mt-6">

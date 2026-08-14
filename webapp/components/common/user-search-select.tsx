@@ -156,7 +156,7 @@ export function UserSearchSelect({
 
       {/* Tag filter */}
       {availableTags.length > 0 && (
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-xs font-medium text-muted-foreground">
               {t("userSearchSelect.tagsFilterLabel")}
