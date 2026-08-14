@@ -14,6 +14,7 @@ import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { ReservationCardSkeleton } from "@/components/reservations/reservation-card-skeleton";
 import { SeatMapModal } from "@/components/reservations/reservation-modal";
 import { ReservationCard } from "@/components/reservations/reservation-card";
+import { QRCodeModal } from "@/components/reservations/qr-code-modal";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -39,11 +40,43 @@ export default function MyReservationsPage() {
   } = useReservations();
   const { isLoading: eventsLoading, events, locations } = useEvents();
   const searchParams = useSearchParams();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const [selectedReservation, setSelectedReservation] =
     useState<SelectedReservation | null>(null);
 
   const eventIdFromUrl = searchParams.get("eventId");
+  const showQrParam = searchParams.get("showQr") === "true";
+  const [qrModalEventId, setQrModalEventId] = useState<string | null>(() =>
+    showQrParam && eventIdFromUrl ? eventIdFromUrl : null,
+  );
+
+  useEffect(() => {
+    if (showQrParam && eventIdFromUrl) {
+      setQrModalEventId(eventIdFromUrl);
+    }
+  }, [showQrParam, eventIdFromUrl]);
+
+  const qrEventReservations = useMemo(() => {
+    if (!qrModalEventId) return [];
+    return reservations.filter((r) => r.eventId === qrModalEventId);
+  }, [qrModalEventId, reservations]);
+
+  const qrEvent = useMemo(() => {
+    if (!qrModalEventId) return null;
+    return events.find((e) => e.id === qrModalEventId);
+  }, [qrModalEventId, events]);
+
+  const qrLocation = useMemo(() => {
+    if (!qrEvent?.locationId) return null;
+    return locations.find((l) => l.id === qrEvent.locationId);
+  }, [qrEvent, locations]);
+
+  const handleCloseQrModal = () => {
+    setQrModalEventId(null);
+    if (showQrParam && eventIdFromUrl) {
+      router.replace(`/events/reservations?eventId=${eventIdFromUrl}`);
+    }
+  };
 
   const [userSearchQuery, setUserSearchQuery] = useState<string>("");
   // "onlyUpcoming" defaults to on (present + true) so past events are hidden
@@ -221,6 +254,8 @@ export default function MyReservationsPage() {
               <ReservationCard
                 key={firstReservation.eventId?.toString()}
                 reservations={eventReservations}
+                event={event}
+                location={location}
                 eventName={event?.name}
                 locationName={location?.name}
                 bookingDeadline={event?.bookingDeadline}
@@ -247,6 +282,19 @@ export default function MyReservationsPage() {
           onClose={() => setSelectedReservation(null)}
           onDelete={handleDeleteReservation}
           isLoading={false}
+        />
+      )}
+
+      {qrModalEventId && qrEventReservations.length > 0 && (
+        <QRCodeModal
+          isOpen={true}
+          onClose={handleCloseQrModal}
+          reservations={qrEventReservations}
+          eventName={qrEvent?.name}
+          locationName={qrLocation?.name}
+          event={qrEvent}
+          location={qrLocation}
+          userId={user?.id}
         />
       )}
     </div>

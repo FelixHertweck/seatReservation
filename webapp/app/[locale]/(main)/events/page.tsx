@@ -221,7 +221,7 @@ export default function EventsPage() {
           onClose={closeModal}
           onReserve={async (eventId, seatIds) => {
             const res = await createReservation(eventId, seatIds);
-            router.push(`/events/reservations?eventId=${eventId}`);
+            router.push(`/events/reservations?eventId=${eventId}&showQr=true`);
             return res;
           }}
         />
