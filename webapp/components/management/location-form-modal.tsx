@@ -15,11 +15,16 @@ import { Button } from "@/components/custom-ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/custom-ui/label";
 import { UserMultiSelect } from "@/components/common/user-multi-select";
-import type { EventLocationResponseDto, EventLocationRequestDto, UserDto } from "@/api";
+import type {
+  EventLocationResponseDto,
+  EventLocationRequestDto,
+  UserDto,
+} from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 interface LocationFormModalProps {
-  location: EventLocationResponseDto | null;
+  location?: EventLocationResponseDto | null;
+  isCreating?: boolean;
   users: UserDto[];
   onSubmit: (locationData: EventLocationRequestDto) => Promise<void>;
   onClose: () => void;
@@ -27,6 +32,7 @@ interface LocationFormModalProps {
 
 export function LocationFormModal({
   location,
+  isCreating = !location,
   users,
   onSubmit,
   onClose,
@@ -53,7 +59,6 @@ export function LocationFormModal({
         managerIds: formData.managerIds || [],
       };
       await onSubmit(payload);
-      onClose();
     } finally {
       setIsLoading(false);
     }
@@ -67,25 +72,27 @@ export function LocationFormModal({
       >
         <DialogHeader className="space-y-2 pb-2">
           <DialogTitle>
-            {t("management.locations.editLocation")}
+            {isCreating
+              ? t("management.locations.createLocation")
+              : t("management.locations.editLocation")}
           </DialogTitle>
           <DialogDescription>
-            {t("management.locations.editDescription")}
+            {isCreating
+              ? t("management.locations.createDescription")
+              : t("management.locations.editDescription")}
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6 py-2"
-        >
+        <form onSubmit={handleSubmit} className="space-y-5 py-2">
           {/* Basic information */}
-          <div className="space-y-5">
+          <div className="space-y-4">
             <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <MapPin className="h-4 w-4" />
-              {t("management.locations.form.nameLabel")} & {t("management.locations.form.addressLabel")}
+              {t("management.locations.form.nameLabel")} &{" "}
+              {t("management.locations.form.addressLabel")}
             </h3>
-            <div className="space-y-3">
-              <Label htmlFor="location-name" className="text-sm font-medium">
+            <div className="space-y-2">
+              <Label htmlFor="location-name">
                 {t("management.locations.form.nameLabel")}
               </Label>
               <Input
@@ -98,8 +105,8 @@ export function LocationFormModal({
                 required
               />
             </div>
-            <div className="space-y-3">
-              <Label htmlFor="location-address" className="text-sm font-medium">
+            <div className="space-y-2">
+              <Label htmlFor="location-address">
                 {t("management.locations.form.addressLabel")}
               </Label>
               <Input
@@ -115,7 +122,7 @@ export function LocationFormModal({
           </div>
 
           {/* Managers */}
-          <div className="space-y-5 border-t pt-6">
+          <div className="space-y-4 border-t pt-4">
             <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <Users className="h-4 w-4" />
               {t("management.locations.form.managersSectionTitle")}
@@ -131,12 +138,19 @@ export function LocationFormModal({
             />
           </div>
 
-          <DialogFooter className="mt-8 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+          <DialogFooter className="mt-6">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isLoading}
+            >
               {t("management.locations.form.cancelButton")}
             </Button>
             <Button type="submit" isLoading={isLoading} disabled={isLoading}>
-              {t("management.locations.saveButton")}
+              {isCreating
+                ? t("management.locations.form.submitButton")
+                : t("management.locations.saveButton")}
             </Button>
           </DialogFooter>
         </form>

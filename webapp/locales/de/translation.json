@@ -1306,6 +1306,8 @@
       "editDescription": "Bearbeiten Sie die Details der Location.",
       "editButton": "Bearbeiten",
       "saveButton": "Speichern",
+      "createLocation": "Location erstellen",
+      "createDescription": "Geben Sie die Basisdaten ein, um eine neue Location zu erstellen.",
       "form": {
         "nameLabel": "Name",
         "namePlaceholder": "z.B. Stadthalle",

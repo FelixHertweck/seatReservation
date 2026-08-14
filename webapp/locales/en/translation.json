@@ -1302,6 +1302,12 @@
       "deleteSuccess": "Location deleted.",
       "deleteError": "Failed to delete location.",
       "openEditor": "Open editor",
+      "editLocation": "Edit location",
+      "editDescription": "Edit the details of the location.",
+      "editButton": "Edit",
+      "saveButton": "Save",
+      "createLocation": "Create location",
+      "createDescription": "Enter the basic information to create a new location.",
       "form": {
         "nameLabel": "Name",
         "namePlaceholder": "e.g. Stadthalle",
