@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
@@ -47,7 +48,7 @@ public class SvgToPngConverter {
     public static byte[] convertSvgToPng(String svgContent)
             throws IOException, TranscoderException {
         if (svgContent == null || svgContent.isEmpty()) {
-            throw new IllegalArgumentException("SVG content cannot be null or empty");
+            throw new ValidationException("SVG content cannot be null or empty");
         }
 
         LOG.debug("Converting SVG to PNG...");

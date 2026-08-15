@@ -36,6 +36,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.dto.EntranceRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EntranceResponseDTO;
 import de.felixhertweck.seatreservation.management.exception.EntranceInUseException;
@@ -175,7 +177,8 @@ public class EntranceServiceTest {
         EntranceRequestDTO dto = new EntranceRequestDTO(eventLocation.id, "B");
 
         assertThrows(
-                SecurityException.class, () -> entranceService.createEntrance(dto, regularAuth));
+                AccessDeniedException.class,
+                () -> entranceService.createEntrance(dto, regularAuth));
         verify(entranceRepository, never()).persist(any(EventLocationEntrance.class));
     }
 
@@ -184,8 +187,7 @@ public class EntranceServiceTest {
         EntranceRequestDTO dto = new EntranceRequestDTO(eventLocation.id, "  ");
 
         assertThrows(
-                IllegalArgumentException.class,
-                () -> entranceService.createEntrance(dto, managerAuth));
+                ValidationException.class, () -> entranceService.createEntrance(dto, managerAuth));
         verify(entranceRepository, never()).persist(any(EventLocationEntrance.class));
     }
 
@@ -214,7 +216,7 @@ public class EntranceServiceTest {
     @Test
     void findEntrancesByLocation_Forbidden_NotOwner() {
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> entranceService.findEntrancesByLocation(otherLocation.id, managerAuth));
     }
 
@@ -258,7 +260,7 @@ public class EntranceServiceTest {
                 .thenReturn(Optional.of(entranceInOtherLocation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () ->
                         entranceService.findEntranceByIdForManager(
                                 entranceInOtherLocation.id, managerAuth));
@@ -295,7 +297,7 @@ public class EntranceServiceTest {
         EntranceRequestDTO dto = new EntranceRequestDTO(otherLocation.id, "C");
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> entranceService.updateEntrance(existingEntrance.id, dto, managerAuth));
     }
 
@@ -306,7 +308,7 @@ public class EntranceServiceTest {
         EntranceRequestDTO dto = new EntranceRequestDTO(eventLocation.id, "  ");
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> entranceService.updateEntrance(existingEntrance.id, dto, managerAuth));
         verify(entranceRepository, never()).persist(any(EventLocationEntrance.class));
     }
@@ -365,7 +367,7 @@ public class EntranceServiceTest {
     @Test
     void deleteEntrances_InvalidInput_EmptyIds() {
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> entranceService.deleteEntrances(List.of(), managerAuth));
         verify(entranceRepository, never()).delete(any(EventLocationEntrance.class));
     }

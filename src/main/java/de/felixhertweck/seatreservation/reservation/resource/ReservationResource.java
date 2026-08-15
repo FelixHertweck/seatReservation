@@ -37,6 +37,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -161,7 +162,7 @@ public class ReservationResource {
     public void deleteReservation(@QueryParam("ids") List<UUID> ids)
             throws PersistenceException,
                     ReservationNotFoundException,
-                    SecurityException,
+                    AccessDeniedException,
                     IOException {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(

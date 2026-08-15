@@ -33,6 +33,7 @@ import de.felixhertweck.seatreservation.common.dto.AreaDTO;
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.management.dto.AreaResponseDTO;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
@@ -95,11 +96,11 @@ public class EventLocationService {
      * @return the detail DTO of the event location
      * @throws UserNotFoundException if the user is not found
      * @throws EventLocationNotFoundException if the event location is not found
-     * @throws SecurityException if the user is not authorized to access the location
+     * @throws AccessDeniedException if the user is not authorized to access the location
      */
     public UserEventLocationResponseDTO getLocationByIdForCurrentUser(
             UUID locationId, String username)
-            throws UserNotFoundException, EventLocationNotFoundException, SecurityException {
+            throws UserNotFoundException, EventLocationNotFoundException, AccessDeniedException {
         List<UserEventLocationSummaryDTO> allowedLocations = getLocationsForCurrentUser(username);
         boolean hasAccess = allowedLocations.stream().anyMatch(loc -> loc.id().equals(locationId));
 
@@ -109,7 +110,7 @@ public class EventLocationService {
                 throw new EventLocationNotFoundException(
                         "EventLocation with id " + locationId + " not found");
             }
-            throw new SecurityException("User is not authorized to access this location");
+            throw new AccessDeniedException("User is not authorized to access this location");
         }
 
         EventLocation location =

@@ -23,6 +23,8 @@ import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
@@ -47,13 +49,13 @@ public class EventLocationAccessService {
      * @param eventLocationId the event location ID to find, must not be null
      * @param user the user attempting to access the event location
      * @return the event location entity
-     * @throws IllegalArgumentException if the ID is null
+     * @throws ValidationException if the ID is null
      * @throws EventLocationNotFoundException if no such event location exists
-     * @throws SecurityException if the user neither is an ADMIN nor manages the location
+     * @throws AccessDeniedException if the user neither is an ADMIN nor manages the location
      */
     public EventLocation findOwnedEventLocation(UUID eventLocationId, AuthenticatedUser user) {
         if (eventLocationId == null) {
-            throw new IllegalArgumentException("EventLocation ID must not be null");
+            throw new ValidationException("EventLocation ID must not be null");
         }
         EventLocation eventLocation =
                 eventLocationRepository
@@ -73,7 +75,7 @@ public class EventLocationAccessService {
      *
      * @param eventLocation the event location to check
      * @param user the user attempting to access the event location
-     * @throws SecurityException if the user neither is an ADMIN nor manages the location
+     * @throws AccessDeniedException if the user neither is an ADMIN nor manages the location
      */
     public void requireAccess(EventLocation eventLocation, AuthenticatedUser user) {
         if (eventLocation == null
@@ -85,7 +87,7 @@ public class EventLocationAccessService {
                     "User %s is not authorized to manage event location %s",
                     user == null ? null : user.id(),
                     eventLocation == null ? null : eventLocation.getId());
-            throw new SecurityException("Manager does not own this EventLocation");
+            throw new AccessDeniedException("Manager does not own this EventLocation");
         }
     }
 }

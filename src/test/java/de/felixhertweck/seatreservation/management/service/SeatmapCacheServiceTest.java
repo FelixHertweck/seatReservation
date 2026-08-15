@@ -36,6 +36,7 @@ import static org.mockito.Mockito.when;
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.management.dto.AreaRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.AreaResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EntranceRequestDTO;
@@ -189,7 +190,7 @@ public class SeatmapCacheServiceTest {
 
         // Unauthorized user attempts to read same locationId
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> seatService.findSeatsForManagerByLocation(locationId, unauthorizedUserAuth));
     }
 

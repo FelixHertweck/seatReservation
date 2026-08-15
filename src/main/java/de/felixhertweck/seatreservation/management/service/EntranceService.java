@@ -29,6 +29,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.dto.EntranceRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EntranceResponseDTO;
 import de.felixhertweck.seatreservation.management.exception.EntranceInUseException;
@@ -90,7 +91,7 @@ public class EntranceService {
                 eventLocationAccessService.findOwnedEventLocation(
                         dto.getEventLocationId(), manager);
         if (dto.getName() == null || dto.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Entrance name cannot be empty");
+            throw new ValidationException("Entrance name cannot be empty");
         }
 
         EventLocationEntrance entrance = new EventLocationEntrance(dto.getName().trim());
@@ -123,7 +124,7 @@ public class EntranceService {
                 eventLocationAccessService.findOwnedEventLocation(
                         dto.getEventLocationId(), manager);
         if (dto.getName() == null || dto.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Entrance name cannot be empty");
+            throw new ValidationException("Entrance name cannot be empty");
         }
 
         // Seats may only reference an entrance of their own event location (see
@@ -165,7 +166,7 @@ public class EntranceService {
     @Transactional
     public void deleteEntrances(List<UUID> ids, AuthenticatedUser manager) {
         if (ids == null || ids.isEmpty()) {
-            throw new IllegalArgumentException("No entrance IDs provided for deletion");
+            throw new ValidationException("No entrance IDs provided for deletion");
         }
 
         Map<UUID, EventLocationEntrance> entranceMap =

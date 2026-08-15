@@ -28,12 +28,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.dto.ErrorResponseDTO;
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
 import de.felixhertweck.seatreservation.common.exception.RegistrationDisabledException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.management.exception.SeatNotFoundException;
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
@@ -215,6 +217,62 @@ class GlobalExceptionHandlerTest {
         assertTrue(response.getEntity() instanceof ErrorResponseDTO);
         ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
         assertEquals("No seats available", errorResponse.getMessage());
+    }
+
+    @Test
+    void testValidationException() {
+        ValidationException exception = new ValidationException("Area name cannot be empty");
+        Response response = exceptionHandler.toResponse(exception);
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity() instanceof ErrorResponseDTO);
+        ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
+        assertEquals("Area name cannot be empty", errorResponse.getMessage());
+    }
+
+    @Test
+    void testAccessDeniedException() {
+        AccessDeniedException exception =
+                new AccessDeniedException("You are not allowed to access this reservation");
+        Response response = exceptionHandler.toResponse(exception);
+
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity() instanceof ErrorResponseDTO);
+        ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
+        assertEquals("You are not allowed to access this reservation", errorResponse.getMessage());
+    }
+
+    @Test
+    void testIllegalArgumentException() {
+        IllegalArgumentException exception = new IllegalArgumentException("Internal detail");
+        Response response = exceptionHandler.toResponse(exception);
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity() instanceof ErrorResponseDTO);
+        ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
+        assertEquals("Bad Request", errorResponse.getMessage());
+    }
+
+    @Test
+    void testSecurityException() {
+        SecurityException exception = new SecurityException("Internal path");
+        Response response = exceptionHandler.toResponse(exception);
+
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity() instanceof ErrorResponseDTO);
+        ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
+        assertEquals("Forbidden", errorResponse.getMessage());
+    }
+
+    @Test
+    void testIllegalStateException() {
+        IllegalStateException exception = new IllegalStateException("Internal state");
+        Response response = exceptionHandler.toResponse(exception);
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity() instanceof ErrorResponseDTO);
+        ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
+        assertEquals("Bad Request", errorResponse.getMessage());
     }
 
     @Test

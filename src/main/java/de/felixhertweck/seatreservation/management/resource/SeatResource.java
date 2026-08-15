@@ -37,6 +37,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.management.service.SeatService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -104,7 +105,7 @@ public class SeatResource {
         LOG.debugf(
                 "Received GET request to /api/manager/seats?eventLocationId=%s", eventLocationId);
         if (eventLocationId == null) {
-            throw new IllegalArgumentException("eventLocationId query parameter is required");
+            throw new ValidationException("eventLocationId query parameter is required");
         }
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         List<SeatDTO> result =

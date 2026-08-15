@@ -34,6 +34,7 @@ import jakarta.transaction.Transactional;
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.email.service.ReservationEmailContent.BoxOfficeConfirmationContent;
 import de.felixhertweck.seatreservation.model.entity.BoxOfficeGuestInfo;
@@ -214,7 +215,7 @@ public class BoxOfficeService {
             boolean deductAllowance,
             CheckInToken checkInToken) {
         if (seatIds == null || seatIds.isEmpty()) {
-            throw new IllegalArgumentException("No seat IDs provided.");
+            throw new ValidationException("No seat IDs provided.");
         }
 
         Map<UUID, Seat> seatMap =
@@ -229,7 +230,7 @@ public class BoxOfficeService {
                         event.getId(), new ArrayList<>(seatIds));
         if (!conflicting.isEmpty()) {
             UUID conflictingSeatId = conflicting.getFirst().getSeat().id;
-            throw new IllegalStateException(
+            throw new ValidationException(
                     "Seat with id " + conflictingSeatId + " is already reserved or blocked.");
         }
 
@@ -240,7 +241,7 @@ public class BoxOfficeService {
                             .findByUserAndEvent(reservationOwner, event)
                             .orElseThrow(
                                     () ->
-                                            new IllegalArgumentException(
+                                            new ValidationException(
                                                     "User has no reservation allowance for this"
                                                             + " event."));
         }
@@ -249,12 +250,12 @@ public class BoxOfficeService {
         for (UUID seatId : seatIds) {
             Seat seat = seatMap.get(seatId);
             if (seat == null) {
-                throw new IllegalArgumentException("Seat with id " + seatId + " not found");
+                throw new ValidationException("Seat with id " + seatId + " not found");
             }
 
             if (deductAllowance) {
                 if (allowance.getReservationsAllowedCount() <= 0) {
-                    throw new IllegalArgumentException(
+                    throw new ValidationException(
                             "No more reservations allowed for this user and event.");
                 }
                 allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() - 1);

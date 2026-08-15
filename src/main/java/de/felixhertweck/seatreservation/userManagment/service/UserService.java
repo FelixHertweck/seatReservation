@@ -37,9 +37,11 @@ import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.common.dto.UserDTO;
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -426,13 +428,13 @@ public class UserService {
      * @throws InvalidUserException If the provided data is invalid.
      * @throws DuplicateUserException If a user with the same username or email already exists.
      * @throws SendEmailException If an error occurs while sending email confirmation.
-     * @throws SecurityException If roles are being updated without a known authenticated user, if
-     *     an admin attempts to remove their own admin role, or if roles are being granted to the
+     * @throws AccessDeniedException If roles are being updated without a known authenticated user,
+     *     if an admin attempts to remove their own admin role, or if roles are being granted to the
      *     reserved "boxoffice" system account.
      */
     @Transactional
     public UserDTO updateUser(UUID id, AdminUserUpdateDTO user, AuthenticatedUser currentUser)
-            throws UserNotFoundException, SecurityException {
+            throws UserNotFoundException, AccessDeniedException {
         if (user == null) {
             LOG.warnf("AdminUserUpdateDTO is null for user ID: %s.", id);
             throw new InvalidUserException("User update data cannot be null.");
@@ -456,18 +458,18 @@ public class UserService {
                         "Refusing role update for user ID %s: no authenticated user available to"
                                 + " check self-lockout.",
                         id);
-                throw new SecurityException("Authenticated user is required to update roles.");
+                throw new AccessDeniedException("Authenticated user is required to update roles.");
             }
             if (id.equals(currentUser.id()) && !user.getRoles().contains(Roles.ADMIN)) {
                 LOG.warnf("User %s attempted to remove their own admin role.", currentUser.id());
-                throw new SecurityException("Admins cannot remove their own admin role.");
+                throw new AccessDeniedException("Admins cannot remove their own admin role.");
             }
             if ("boxoffice".equalsIgnoreCase(existingUser.getUsername())
                     && !user.getRoles().isEmpty()) {
                 LOG.warnf(
                         "Attempt to grant roles to reserved system account: %s",
                         existingUser.getUsername());
-                throw new SecurityException(
+                throw new AccessDeniedException(
                         "The box office system account must never be granted roles.");
             }
         }
@@ -499,11 +501,11 @@ public class UserService {
      * @param ids The IDs of the users to delete.
      * @param currentUser The currently authenticated user performing the deletion.
      * @throws UserNotFoundException If the user with the given ID does not exist.
-     * @throws SecurityException If the user is attempting to delete their own account.
+     * @throws AccessDeniedException If the user is attempting to delete their own account.
      */
     @Transactional
     public void deleteUser(List<UUID> ids, AuthenticatedUser currentUser)
-            throws UserNotFoundException, SecurityException {
+            throws UserNotFoundException, AccessDeniedException {
         if (ids == null || ids.isEmpty()) {
             return;
         }
@@ -524,11 +526,11 @@ public class UserService {
             }
             if (currentUser != null && id.equals(currentUser.id())) {
                 LOG.warnf("User %s attempted to delete their own account.", currentUser.id());
-                throw new SecurityException("Admins cannot delete their own accounts.");
+                throw new AccessDeniedException("Admins cannot delete their own accounts.");
             }
             if (RESERVED_USERNAMES.contains(user.getUsername().toLowerCase())) {
                 LOG.warnf("Attempt to delete reserved system account: %s", user.getUsername());
-                throw new SecurityException("The box office system account cannot be deleted.");
+                throw new AccessDeniedException("The box office system account cannot be deleted.");
             }
         }
 
@@ -631,8 +633,8 @@ public class UserService {
      *
      * @param verificationCode The 6-digit verification code to verify (must not be null or empty).
      * @return The email address of the user if verification is successful.
-     * @throws IllegalArgumentException If the verification code format is invalid (null, empty, or
-     *     not 6 digits).
+     * @throws ValidationException If the verification code format is invalid (null, empty, or not 6
+     *     digits).
      * @throws VerificationCodeNotFoundException If the verification code is not found.
      * @throws VerifyTokenExpiredException If the verification code has expired.
      */
@@ -643,13 +645,13 @@ public class UserService {
         // Validate verification code
         if (verificationCode == null || verificationCode.trim().isEmpty()) {
             LOG.warn("Invalid verification code provided for email verification.");
-            throw new IllegalArgumentException("Invalid verification code");
+            throw new ValidationException("Invalid verification code");
         }
 
         // Validate that it's a 6-digit code
         if (!verificationCode.matches("\\d{6}")) {
             LOG.warnf("Invalid verification code format: %s", verificationCode);
-            throw new IllegalArgumentException("Verification code must be 6 digits");
+            throw new ValidationException("Verification code must be 6 digits");
         }
 
         // Get the email verification record by token
@@ -709,8 +711,7 @@ public class UserService {
 
         if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
             LOG.warnf("User %s has no email address, cannot resend confirmation.", username);
-            throw new IllegalArgumentException(
-                    "User has no email address to send confirmation to.");
+            throw new ValidationException("User has no email address to send confirmation to.");
         }
 
         Optional<Instant> retryAfter =

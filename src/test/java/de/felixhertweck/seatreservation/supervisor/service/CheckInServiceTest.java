@@ -43,6 +43,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -488,7 +489,7 @@ class CheckInServiceTest {
         user.setRoles(Set.of(Roles.SUPERVISOR));
         when(eventRepository.isUserSupervisor(eq(eventId), eq(id(1)))).thenReturn(false);
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> checkInService.getUsernamesWithReservations(auth(user), eventId));
     }
 

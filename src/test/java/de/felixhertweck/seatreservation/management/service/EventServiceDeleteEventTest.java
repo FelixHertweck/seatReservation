@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -146,7 +147,7 @@ public class EventServiceDeleteEventTest {
                 .thenReturn(List.of(event1));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> eventService.deleteEvent(List.of(id(101)), otherUser));
 
         verify(eventRepository, never()).delete(any());

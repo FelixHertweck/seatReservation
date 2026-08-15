@@ -33,8 +33,10 @@ import jakarta.inject.Inject;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -91,10 +93,10 @@ public class ReservationService {
      * @param currentUser the currently authenticated user
      * @return the user reservation response DTO
      * @throws ReservationNotFoundException if the reservation is not found
-     * @throws SecurityException if the current user does not own the reservation
+     * @throws AccessDeniedException if the current user does not own the reservation
      */
     public UserReservationResponseDTO findReservationByIdForUser(UUID id, User currentUser)
-            throws ReservationNotFoundException, SecurityException {
+            throws ReservationNotFoundException, AccessDeniedException {
         LOG.debugf("Attempting to find reservation with ID %s for user ID: %s", id, currentUser.id);
         Reservation reservation =
                 reservationRepository
@@ -111,7 +113,7 @@ public class ReservationService {
             LOG.warnf(
                     "user ID: %s attempted to access reservation %s which belongs to user ID: %s.",
                     currentUser.id, id, reservation.getUser().id);
-            throw new SecurityException("You are not allowed to access this reservation");
+            throw new AccessDeniedException("You are not allowed to access this reservation");
         }
         LOG.debugf("Reservation with ID %s found for user ID: %s.", id, currentUser.id);
         return new UserReservationResponseDTO(reservation);
@@ -132,8 +134,8 @@ public class ReservationService {
      * @throws EventBookingClosedException if the event booking has not started or has already ended
      * @throws SeatAlreadyReservedException if any of the requested seats are already reserved
      * @throws SeatBlockedException if any of the requested seats are blocked
-     * @throws IllegalStateException if the user does not have a verified email address
-     * @throws IllegalArgumentException if no seats are selected
+     * @throws ValidationException if the user does not have a verified email address, or if no
+     *     seats are selected
      */
     @Transactional
     public List<UserReservationResponseDTO> createReservationForUser(
@@ -150,7 +152,7 @@ public class ReservationService {
             LOG.warnf(
                     "user ID: %s attempted to create reservation without a verified email.",
                     currentUser.id);
-            throw new IllegalStateException(
+            throw new ValidationException(
                     "User must have a verified email address to create a reservation.");
         }
 
@@ -158,7 +160,7 @@ public class ReservationService {
             LOG.warnf(
                     "user ID: %s attempted to create reservation with no seats selected.",
                     currentUser.id);
-            throw new IllegalArgumentException("At least one seat must be selected");
+            throw new ValidationException("At least one seat must be selected");
         }
 
         // Validate the eventId, ensure it exists
@@ -343,24 +345,24 @@ public class ReservationService {
      * @param ids List of reservation IDs to delete.
      * @param currentUser The user attempting to delete the reservations.
      * @throws ReservationNotFoundException if any reservation is not found.
-     * @throws SecurityException if the user is not authorized to delete any reservation.
+     * @throws AccessDeniedException if the user is not authorized to delete any reservation.
      * @throws IOException if sending the confirmation email fails.
      * @throws PersistenceException if the reservation cannot be deleted from the database.
-     * @throws IllegalArgumentException if the list of IDs is null or empty.
+     * @throws ValidationException if the list of IDs is null or empty.
      */
     @Transactional
     public void deleteReservationForUser(List<UUID> ids, User currentUser)
             throws IOException,
                     PersistenceException,
                     ReservationNotFoundException,
-                    SecurityException,
-                    IllegalArgumentException {
+                    AccessDeniedException,
+                    ValidationException {
         LOG.debugf(
                 "Attempting to delete reservations with IDs %s for user ID: %s",
                 ids != null ? ids : Collections.emptyList(), currentUser.id);
         if (ids == null || ids.isEmpty()) {
             LOG.warnf("No reservation IDs provided for deletion by user ID: %s", currentUser.id);
-            throw new IllegalArgumentException(
+            throw new ValidationException(
                     "At least one reservation ID must be provided for deletion");
         }
 
@@ -383,14 +385,14 @@ public class ReservationService {
                         "user ID: %s attempted to delete reservation %s which belongs to user ID:"
                                 + " %s.",
                         currentUser.id, id, uncheckedReservation.getUser().id);
-                throw new SecurityException("You are not allowed to delete this reservation");
+                throw new AccessDeniedException("You are not allowed to delete this reservation");
             }
             reservations.add(uncheckedReservation);
         }
 
         if (reservations.isEmpty()) {
             LOG.warnf("No valid reservations found for deletion by user ID: %s", currentUser.id);
-            throw new IllegalArgumentException("No valid reservations found for deletion");
+            throw new ValidationException("No valid reservations found for deletion");
         }
 
         // Group reservations by event to handle allowance updates and email confirmations correctly

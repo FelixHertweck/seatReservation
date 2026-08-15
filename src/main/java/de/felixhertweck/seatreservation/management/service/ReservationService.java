@@ -36,9 +36,11 @@ import jakarta.inject.Inject;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.management.dto.ReservationConfirmationEmailDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationRequestDTO;
@@ -88,11 +90,11 @@ public class ReservationService {
      *
      * @param id The ID of the reservation to retrieve.
      * @return The Reservation entity.
-     * @throws SecurityException If the current user does not have the necessary permissions.
+     * @throws AccessDeniedException If the current user does not have the necessary permissions.
      * @throws UserNotFoundException If the current user cannot be found.
      */
     public ReservationResponseDTO findReservationById(UUID id, User currentUser)
-            throws SecurityException, UserNotFoundException {
+            throws AccessDeniedException, UserNotFoundException {
         LOG.debugf(
                 "Attempting to retrieve reservation with ID: %s for user ID: %s (ID: %s)",
                 id, currentUser.id, currentUser.getId());
@@ -121,19 +123,20 @@ public class ReservationService {
         LOG.warnf(
                 "user ID: %s (ID: %s) is not allowed to access reservation with ID %s.",
                 currentUser.id, currentUser.getId(), id);
-        throw new SecurityException("You are not allowed to access this reservation.");
+        throw new AccessDeniedException("You are not allowed to access this reservation.");
     }
 
     /**
      * Retrieves reservations for a specific event by its ID. Access is restricted based on user
      * roles: - ADMIN: Returns reservations for any event. - MANAGER: Returns reservations only for
-     * events the manager is allowed to manage. - Other roles: Throws SecurityException.
+     * events the manager is allowed to manage. - Other roles: Throws AccessDeniedException.
      *
      * @param eventId The ID of the event for which to retrieve reservations
      * @param currentUser The user attempting to retrieve the reservations
      * @return A list of DTOs representing the reservations for the specified event
-     * @throws SecurityException If the user is not authorized to access this event's reservations
-     * @throws IllegalArgumentException If the event is not found
+     * @throws AccessDeniedException If the user is not authorized to access this event's
+     *     reservations
+     * @throws ValidationException If the event is not found
      */
     public List<ReservationResponseDTO> findReservationsByEventId(UUID eventId, User currentUser) {
         LOG.debugf(
@@ -148,7 +151,7 @@ public class ReservationService {
                                             "Event with ID %s not found for retrieving reservations"
                                                     + " by user: %s (ID: %s)",
                                             eventId, currentUser.id, currentUser.getId());
-                                    return new IllegalArgumentException(
+                                    return new ValidationException(
                                             "Event with id " + eventId + " not found");
                                 });
 
@@ -157,7 +160,7 @@ public class ReservationService {
                     "user ID: %s (ID: %s) is not allowed to access event ID %s for retrieving"
                             + " reservations.",
                     currentUser.id, currentUser.getId(), eventId);
-            throw new SecurityException("You are not allowed to access this event.");
+            throw new AccessDeniedException("You are not allowed to access this event.");
         }
 
         List<ReservationResponseDTO> result =
@@ -178,13 +181,13 @@ public class ReservationService {
      * @param dto The ReservationCreationDTO containing reservation details.
      * @return The created Reservation entity.
      * @throws UserNotFoundException If the target user or current user cannot be found.
-     * @throws SecurityException If the current user does not have the necessary permissions.
-     * @throws IllegalArgumentException If the user has no reservation allowance for the event.
+     * @throws AccessDeniedException If the current user does not have the necessary permissions.
+     * @throws ValidationException If the user has no reservation allowance for the event.
      */
     @Transactional
     public Set<ReservationResponseDTO> createReservations(
             ReservationRequestDTO dto, User managerUser)
-            throws SecurityException, UserNotFoundException, IllegalArgumentException {
+            throws AccessDeniedException, UserNotFoundException, ValidationException {
         LOG.debugf(
                 "Attempting to create reservation for seat ID: %s, user ID: %s, event ID: %s by"
                         + " user: %s (ID: %s)",
@@ -214,7 +217,7 @@ public class ReservationService {
                                     LOG.warnf(
                                             "Event with ID %s not found for reservation creation.",
                                             dto.getEventId());
-                                    return new IllegalArgumentException(
+                                    return new ValidationException(
                                             "Event with id " + dto.getEventId() + " not found");
                                 });
 
@@ -222,7 +225,7 @@ public class ReservationService {
             LOG.warnf(
                     "user ID: %s (ID: %s) is not allowed to access this reservation for creation.",
                     targetUser.id, targetUser.getId());
-            throw new SecurityException("You are not allowed to access this reservation.");
+            throw new AccessDeniedException("You are not allowed to access this reservation.");
         }
 
         List<Reservation> existingReservations = new ArrayList<>();
@@ -242,7 +245,7 @@ public class ReservationService {
                                                 "User ID %s has no reservation allowance for event"
                                                         + " ID %s.",
                                                 targetUser.getId(), event.getId());
-                                        return new IllegalArgumentException(
+                                        return new ValidationException(
                                                 "User has no reservation allowance for this"
                                                         + " event.");
                                     });
@@ -254,7 +257,7 @@ public class ReservationService {
             if (seat == null) {
                 LOG.errorf(
                         "Seat with ID %s not found for event ID %s.", dtoSeatId, dto.getEventId());
-                throw new IllegalArgumentException("Seat with id " + dtoSeatId + " not found");
+                throw new ValidationException("Seat with id " + dtoSeatId + " not found");
             }
 
             if (!dto.isDeductAllowance()) {
@@ -266,7 +269,7 @@ public class ReservationService {
                     LOG.warnf(
                             "No more reservations allowed for user ID %s and event ID %s.",
                             targetUser.getId(), event.getId());
-                    throw new IllegalArgumentException(
+                    throw new ValidationException(
                             "No more reservations allowed for this user and event.");
                 }
                 allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() - 1);
@@ -322,18 +325,18 @@ public class ReservationService {
      * event the manager is allowed to manage. - Other roles: Throws ForbiddenException.
      *
      * @param ids The IDs of the reservation to delete.
-     * @throws SecurityException If the current user does not have the necessary permissions.
+     * @throws AccessDeniedException If the current user does not have the necessary permissions.
      * @throws UserNotFoundException If the current user cannot be found.
-     * @throws IllegalArgumentException If no IDs are provided.
+     * @throws ValidationException If no IDs are provided.
      */
     @Transactional
     public void deleteReservation(List<UUID> ids, User managerUser)
-            throws SecurityException, UserNotFoundException, IllegalArgumentException {
+            throws AccessDeniedException, UserNotFoundException, ValidationException {
         if (ids == null || ids.isEmpty()) {
             LOG.warnf(
                     "No reservation IDs provided for deletion by user ID: %s (ID: %s)",
                     managerUser.id, managerUser.getId());
-            throw new IllegalArgumentException("No reservation IDs provided for deletion.");
+            throw new ValidationException("No reservation IDs provided for deletion.");
         }
 
         LOG.debugf(
@@ -362,7 +365,7 @@ public class ReservationService {
                 LOG.warnf(
                         "user ID: %s (ID: %s) is not allowed to delete reservation with ID %s.",
                         managerUser.id, managerUser.getId(), id);
-                throw new SecurityException("You are not allowed to delete this reservation.");
+                throw new AccessDeniedException("You are not allowed to delete this reservation.");
             }
 
             reservationRepository.delete(reservation);
@@ -446,19 +449,19 @@ public class ReservationService {
     /**
      * Blocks seats for an event. Access is restricted based on user roles: - ADMIN: Allows blocking
      * seats for any event. - MANAGER: Allows blocking seats only for events the manager is allowed
-     * to manage. - Other roles: Throws SecurityException.
+     * to manage. - Other roles: Throws AccessDeniedException.
      *
      * @param eventId The ID of the event for which to block seats.
      * @param seatIds The IDs of the seats to block.
      * @param currentUser The user performing the action.
-     * @throws IllegalArgumentException If the event or any seat is not found.
-     * @throws SecurityException If the current user does not have the necessary permissions.
-     * @throws IllegalStateException If any of the specified seats are already reserved or blocked.
+     * @throws ValidationException If the event or any seat is not found, or if any of the specified
+     *     seats are already reserved or blocked.
+     * @throws AccessDeniedException If the current user does not have the necessary permissions.
      */
     @Transactional
     public Set<ReservationResponseDTO> blockSeats(
             UUID eventId, List<UUID> seatIds, User currentUser)
-            throws IllegalArgumentException, SecurityException, IllegalStateException {
+            throws ValidationException, AccessDeniedException {
         LOG.debugf(
                 "Attempting to block seats for event ID: %s, seat IDs: %s by user ID: %s (ID: %s)",
                 eventId, seatIds, currentUser.id, currentUser.getId());
@@ -470,7 +473,7 @@ public class ReservationService {
                                     LOG.warnf(
                                             "Event with ID %s not found for blocking seats.",
                                             eventId);
-                                    return new IllegalArgumentException(
+                                    return new ValidationException(
                                             "Event with id " + eventId + " not found");
                                 });
 
@@ -478,7 +481,7 @@ public class ReservationService {
             LOG.warnf(
                     "user ID: %s (ID: %s) is not allowed to block seats for event ID %s.",
                     currentUser.id, currentUser.getId(), eventId);
-            throw new SecurityException("You are not allowed to block seats for this event.");
+            throw new AccessDeniedException("You are not allowed to block seats for this event.");
         }
 
         Map<UUID, Seat> seatMap =
@@ -492,7 +495,7 @@ public class ReservationService {
                 LOG.warnf(
                         "Seat with ID %s not found for blocking seats in event ID %s.",
                         seatId, eventId);
-                throw new IllegalArgumentException("Seat with id " + seatId + " not found");
+                throw new ValidationException("Seat with id " + seatId + " not found");
             }
             seats.add(seat);
         }
@@ -504,7 +507,7 @@ public class ReservationService {
             LOG.warnf(
                     "Seat with ID %s is already reserved or blocked for event ID %s.",
                     conflictingSeatId, eventId);
-            throw new IllegalStateException(
+            throw new ValidationException(
                     "Seat with id " + conflictingSeatId + " is already reserved or blocked.");
         }
 
@@ -539,11 +542,11 @@ public class ReservationService {
      * @param currentUser The user attempting the export
      * @return A byte array containing the CSV export data
      * @throws EventNotFoundException If the event is not found
-     * @throws SecurityException If the user is not authorized to export this event
+     * @throws AccessDeniedException If the user is not authorized to export this event
      * @throws IOException If an I/O error occurs during export
      */
     public byte[] exportReservationsToCsv(UUID eventId, User currentUser)
-            throws EventNotFoundException, SecurityException, IOException {
+            throws EventNotFoundException, AccessDeniedException, IOException {
         LOG.debugf(
                 "Attempting to export reservations for event ID %s by user ID: %s (ID: %s)",
                 eventId, currentUser.id, currentUser.getId());
@@ -567,11 +570,11 @@ public class ReservationService {
      * @param currentUser The user attempting the export
      * @return A byte array containing the PDF export data
      * @throws EventNotFoundException If the event is not found
-     * @throws SecurityException If the user is not authorized to export this event
+     * @throws AccessDeniedException If the user is not authorized to export this event
      * @throws IOException If an I/O error occurs during export
      */
     public byte[] exportReservationsToPdf(UUID eventId, User currentUser)
-            throws EventNotFoundException, SecurityException, IOException {
+            throws EventNotFoundException, AccessDeniedException, IOException {
         LOG.debugf(
                 "Attempting to export reservations for event ID %s by user ID: %s (ID: %s)",
                 eventId, currentUser.id, currentUser.getId());
@@ -605,7 +608,7 @@ public class ReservationService {
      * @param currentUser The user attempting the export
      * @return The Event entity
      * @throws EventNotFoundException If the event is not found
-     * @throws SecurityException If the user is not authorized to export this event
+     * @throws AccessDeniedException If the user is not authorized to export this event
      */
     private Event getSortedReservations(UUID eventId, User currentUser) {
         Event event =
@@ -624,7 +627,7 @@ public class ReservationService {
                     "user ID: %s (ID: %s) is not authorized to export reservations for event ID"
                             + " %s.",
                     currentUser.id, currentUser.getId(), eventId);
-            throw new SecurityException(
+            throw new AccessDeniedException(
                     "User is not authorized to export this event's reservations");
         }
 
@@ -683,7 +686,7 @@ public class ReservationService {
                                                 "Event with id " + eventId + " not found"));
 
         if (!eventAccessService.isManager(event, AuthenticatedUser.of(currentUser))) {
-            throw new SecurityException("You are not allowed to access this event.");
+            throw new AccessDeniedException("You are not allowed to access this event.");
         }
 
         User user =
@@ -695,7 +698,7 @@ public class ReservationService {
                                                 "User with id " + userId + " not found"));
 
         if (BoxOfficeService.BOXOFFICE_USERNAME.equalsIgnoreCase(user.getUsername())) {
-            throw new IllegalArgumentException(
+            throw new ValidationException(
                     "Box office guest reservations share a single account and do not support"
                             + " per-guest confirmation emails.");
         }
@@ -747,7 +750,7 @@ public class ReservationService {
         boolean sent =
                 emailService.sendReservationConfirmation(target.user(), target.reservations());
         if (!sent) {
-            throw new IllegalStateException(
+            throw new ValidationException(
                     "User "
                             + userId
                             + " has no valid email address to resend the confirmation"

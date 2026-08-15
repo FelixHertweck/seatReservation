@@ -29,8 +29,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.dto.EventUserAllowanceUpdateDto;
 import de.felixhertweck.seatreservation.management.dto.EventUserAllowancesCreateDto;
 import de.felixhertweck.seatreservation.management.dto.EventUserAllowancesDto;
@@ -129,13 +131,13 @@ public class EventReservationAllowanceService {
      * @param manager The user attempting to update the allowance.
      * @throws EventNotFoundException If the event or allowance with the specified IDs are not
      *     found.
-     * @throws SecurityException If the user is not authorized to update this allowance.
+     * @throws AccessDeniedException If the user is not authorized to update this allowance.
      * @return A DTO representing the updated reservation allowance.
      */
     @Transactional
     public EventUserAllowancesDto updateReservationAllowance(
             EventUserAllowanceUpdateDto dto, User manager)
-            throws EventNotFoundException, SecurityException {
+            throws EventNotFoundException, AccessDeniedException {
         LOG.debugf(
                 "Attempting to update reservation allowance with ID: %s for user ID: %s, event ID:"
                         + " %s by manager: %s (ID: %s)",
@@ -174,7 +176,7 @@ public class EventReservationAllowanceService {
      * @param manager The user attempting to retrieve the allowance.
      * @throws EventNotFoundException If the reservation allowance with the specified ID is not
      *     found.
-     * @throws SecurityException If the user is not authorized to view this allowance.
+     * @throws AccessDeniedException If the user is not authorized to view this allowance.
      * @return A DTO representing the reservation allowance.
      */
     public EventUserAllowancesDto getReservationAllowanceById(UUID id, User manager) {
@@ -206,11 +208,11 @@ public class EventReservationAllowanceService {
      * events managed by the current user are returned.
      *
      * @param currentUser The currently authenticated user.
-     * @throws SecurityException If the user is not authorized to view the allowances.
+     * @throws AccessDeniedException If the user is not authorized to view the allowances.
      * @return A list of DTOs representing the reservation allowances for the current user.
      */
     public List<EventUserAllowancesDto> getReservationAllowances(AuthenticatedUser currentUser)
-            throws SecurityException {
+            throws AccessDeniedException {
         LOG.debugf(
                 "Attempting to retrieve all reservation allowances for user ID: %s",
                 currentUser.id());
@@ -239,13 +241,13 @@ public class EventReservationAllowanceService {
      *
      * @param eventId The ID of the event for which to retrieve allowances.
      * @param currentUser The currently authenticated user.
-     * @throws SecurityException If the user is not authorized to view the allowances for this
+     * @throws AccessDeniedException If the user is not authorized to view the allowances for this
      *     event.
      * @throws EventNotFoundException If the event with the specified ID is not found.
      * @return A list of DTOs representing the reservation allowances for the specified event.
      */
     public List<EventUserAllowancesDto> getReservationAllowancesByEventId(
-            UUID eventId, User currentUser) throws SecurityException, EventNotFoundException {
+            UUID eventId, User currentUser) throws AccessDeniedException, EventNotFoundException {
         LOG.debugf(
                 "Attempting to retrieve reservation allowances for event ID: %s by user ID: %s (ID:"
                         + " %s)",
@@ -270,18 +272,17 @@ public class EventReservationAllowanceService {
      * @param currentUser The currently authenticated user.
      * @throws EventNotFoundException If the reservation allowance with the specified ID is not
      *     found.
-     * @throws SecurityException If the user is not authorized to delete this allowance.
-     * @throws IllegalArgumentException If no IDs are provided.
+     * @throws AccessDeniedException If the user is not authorized to delete this allowance.
+     * @throws ValidationException If no IDs are provided.
      */
     @Transactional
     public void deleteReservationAllowance(List<UUID> ids, User currentUser)
-            throws EventNotFoundException, SecurityException, IllegalArgumentException {
+            throws EventNotFoundException, AccessDeniedException, ValidationException {
         if (ids == null || ids.isEmpty()) {
             LOG.warnf(
                     "No reservation allowances to delete for user ID: %s (ID: %s)",
                     currentUser.id, currentUser.getId());
-            throw new IllegalArgumentException(
-                    "No reservation allowance IDs provided for deletion.");
+            throw new ValidationException("No reservation allowance IDs provided for deletion.");
         }
 
         Map<UUID, EventUserAllowance> allowanceMap =

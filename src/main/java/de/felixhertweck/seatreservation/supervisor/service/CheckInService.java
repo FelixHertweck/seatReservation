@@ -34,6 +34,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.CheckInToken;
@@ -97,7 +98,7 @@ public class CheckInService {
 
         if (currentUser != null
                 && !eventAuthorizationService.isAuthorizedForEvent(currentUser, eventId)) {
-            throw new SecurityException("User is not authorized to access event " + eventId);
+            throw new AccessDeniedException("User is not authorized to access event " + eventId);
         }
         assertBookingDeadlinePassed(loadEvent(eventId));
         List<SupervisorReservationResponseDTO> processedReservations = new ArrayList<>();
@@ -156,7 +157,7 @@ public class CheckInService {
         UUID eventId = requestDTO.eventId;
         if (currentUser != null
                 && !eventAuthorizationService.isAuthorizedForEvent(currentUser, eventId)) {
-            throw new SecurityException("User is not authorized to access event " + eventId);
+            throw new AccessDeniedException("User is not authorized to access event " + eventId);
         }
         assertBookingDeadlinePassed(loadEvent(eventId));
         UUID userId = requestDTO.userId;
@@ -306,7 +307,7 @@ public class CheckInService {
         LOG.debugf("Retrieving usernames with reservations for event %s.", eventId);
         if (currentUser != null
                 && !eventAuthorizationService.isAuthorizedForEvent(currentUser, eventId)) {
-            throw new SecurityException("User is not authorized to access event " + eventId);
+            throw new AccessDeniedException("User is not authorized to access event " + eventId);
         }
         return reservationRepository.findDistinctUsernamesByEventId(eventId);
     }

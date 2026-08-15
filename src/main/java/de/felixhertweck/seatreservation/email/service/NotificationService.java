@@ -35,6 +35,7 @@ import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.management.service.EventService;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
@@ -347,7 +348,7 @@ public class NotificationService {
                 } else {
                     LOG.warnf("No manager found for event: %s (ID: %s)", event.getName(), event.id);
                 }
-            } catch (EventNotFoundException | SecurityException | IOException e) {
+            } catch (EventNotFoundException | AccessDeniedException | IOException e) {
                 LOG.errorf(
                         e,
                         "Unexpected error during CSV generation or email preparation for event %s",
@@ -392,7 +393,7 @@ public class NotificationService {
      */
     @ActivateRequestContext
     public void sendReservationsCsvToManager(User manager, Event event)
-            throws EventNotFoundException, SecurityException, IOException {
+            throws EventNotFoundException, AccessDeniedException, IOException {
         emailService.sendEventReservationsCsvToManager(manager, event);
     }
 }

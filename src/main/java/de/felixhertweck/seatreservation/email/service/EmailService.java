@@ -25,6 +25,7 @@ import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.email.service.notifications.EmailConfirmationNotification;
 import de.felixhertweck.seatreservation.email.service.notifications.PasswordChangedNotification;
@@ -386,10 +387,10 @@ public class EmailService {
      * @param event the event for which the reservations are to be exported
      * @throws IOException if CSV export fails
      * @throws EventNotFoundException if the event is not found
-     * @throws SecurityException if there are security issues during CSV export
+     * @throws AccessDeniedException if there are security issues during CSV export
      */
     public void sendEventReservationsCsvToManager(User manager, Event event)
-            throws EventNotFoundException, SecurityException, IOException {
+            throws EventNotFoundException, AccessDeniedException, IOException {
         if (!EmailSender.isValidAddress(manager.getEmail())) {
             LOG.warn("No valid email addresses provided to send CSV export.");
             return;

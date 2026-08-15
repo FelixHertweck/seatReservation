@@ -46,8 +46,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -211,7 +213,7 @@ class ReservationServiceTest {
         when(reservationRepository.findByIdOptional(id(1))).thenReturn(Optional.of(reservation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> reservationService.findReservationByIdForUser(id(1), otherUser));
     }
 
@@ -267,7 +269,7 @@ class ReservationServiceTest {
 
         var exception =
                 assertThrows(
-                        IllegalStateException.class,
+                        ValidationException.class,
                         () -> reservationService.createReservationForUser(dto, currentUser));
 
         assertEquals(
@@ -282,7 +284,7 @@ class ReservationServiceTest {
         dto.setSeatIds(Collections.emptySet());
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> reservationService.createReservationForUser(dto, currentUser));
     }
 
@@ -489,7 +491,7 @@ class ReservationServiceTest {
         when(reservationRepository.findByIds(List.of(id(1)))).thenReturn(List.of(reservation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> reservationService.deleteReservationForUser(List.of(id(1)), otherUser));
     }
 

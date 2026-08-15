@@ -28,12 +28,14 @@ import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
 import de.felixhertweck.seatreservation.common.dto.ErrorResponseDTO;
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
 import de.felixhertweck.seatreservation.common.exception.RegistrationDisabledException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.exception.AreaInUseException;
 import de.felixhertweck.seatreservation.management.exception.AreaNotFoundException;
 import de.felixhertweck.seatreservation.management.exception.EntranceInUseException;
@@ -136,9 +138,20 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
                     status = Response.Status.BAD_REQUEST;
             case PasswordResetTokenExpiredException ignored -> status = Response.Status.GONE;
             case UserNotFoundException ignored -> status = Response.Status.NOT_FOUND;
-            case IllegalArgumentException ignored -> status = Response.Status.BAD_REQUEST;
-            case SecurityException ignored -> status = Response.Status.FORBIDDEN;
-            case IllegalStateException ignored -> status = Response.Status.BAD_REQUEST;
+            case ValidationException ignored -> status = Response.Status.BAD_REQUEST;
+            case AccessDeniedException ignored -> status = Response.Status.FORBIDDEN;
+            case IllegalArgumentException ignored -> {
+                status = Response.Status.BAD_REQUEST;
+                errorResponse = new ErrorResponseDTO("Bad Request");
+            }
+            case SecurityException ignored -> {
+                status = Response.Status.FORBIDDEN;
+                errorResponse = new ErrorResponseDTO("Forbidden");
+            }
+            case IllegalStateException ignored -> {
+                status = Response.Status.BAD_REQUEST;
+                errorResponse = new ErrorResponseDTO("Bad Request");
+            }
             case AccountLockedException accountLockedException -> {
                 status = Response.Status.TOO_MANY_REQUESTS;
                 LoginLockedDTO errorResponseLogin =
