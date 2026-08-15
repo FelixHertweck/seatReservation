@@ -19,19 +19,14 @@
  */
 package de.felixhertweck.seatreservation.common.events;
 
-import java.time.Instant;
-import java.util.UUID;
+import java.util.List;
+
+import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.User;
 
 /**
- * Event fired when an Event's details (e.g. name, location, timing) are updated by a manager.
- * Observers can react asynchronously (e.g. updating Google Wallet classes, rescheduling the
- * reminder email).
+ * Event fired synchronously, while the persistence context is still open, when a user successfully
+ * creates one or more reservations. Observers can react (e.g. sending a confirmation email) while
+ * the entities are still attached and safe to lazy-load.
  */
-public record EventUpdatedEvent(
-        UUID eventId,
-        String eventName,
-        String locationName,
-        String locationAddress,
-        Instant startTime,
-        Instant endTime,
-        Instant reminderSendDate) {}
+public record ReservationCreatedEvent(User user, List<Reservation> reservations) {}

@@ -19,19 +19,10 @@
  */
 package de.felixhertweck.seatreservation.common.events;
 
-import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Event fired when an Event's details (e.g. name, location, timing) are updated by a manager.
- * Observers can react asynchronously (e.g. updating Google Wallet classes, rescheduling the
- * reminder email).
+ * Event fired when an Event is deleted by a manager. Observers can react (e.g. cancelling any
+ * reminder scheduled for the event).
  */
-public record EventUpdatedEvent(
-        UUID eventId,
-        String eventName,
-        String locationName,
-        String locationAddress,
-        Instant startTime,
-        Instant endTime,
-        Instant reminderSendDate) {}
+public record EventDeletedEvent(UUID eventId) {}

@@ -26,15 +26,21 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.event.ObservesAsync;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.events.EventCreatedEvent;
+import de.felixhertweck.seatreservation.common.events.EventDeletedEvent;
+import de.felixhertweck.seatreservation.common.events.EventUpdatedEvent;
 import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.management.service.EventService;
@@ -66,36 +72,83 @@ public class NotificationService {
     private final Set<String> scheduledJobIds = ConcurrentHashMap.newKeySet();
 
     /**
-     * Schedules a reminder job for the given event.
-     *
-     * @param event The event for which to schedule a reminder
+     * Cache of the reminder time each scheduled job was scheduled for, to avoid redundant
+     * reschedules
      */
-    public void scheduleEventReminder(Event event) {
-        if (event.getReminderSendDate() == null) {
-            LOG.debugf("No reminder date set for event ID: %s, skipping", event.id);
+    private final Map<String, Instant> scheduledReminderTimes = new ConcurrentHashMap<>();
+
+    /**
+     * Reacts to a newly created event by scheduling its reminder job, if any.
+     *
+     * @param event the event-created notification
+     */
+    public void onEventCreated(@Observes EventCreatedEvent event) {
+        if (event.reminderSendDate() != null) {
+            scheduleEventReminder(event.eventId(), event.reminderSendDate());
+        }
+    }
+
+    /**
+     * Reacts to an updated event by rescheduling (or cancelling) its reminder job to match the
+     * event's current reminder date. Other fields (e.g. venue name/address) can also trigger this
+     * event without affecting the reminder, so this is a no-op when the reminder date is unchanged.
+     *
+     * @param event the event-updated notification
+     */
+    public void onEventUpdated(@ObservesAsync EventUpdatedEvent event) {
+        String jobId = reminderJobId(event.eventId());
+        if (Objects.equals(scheduledReminderTimes.get(jobId), event.reminderSendDate())) {
+            LOG.debugf(
+                    "Reminder date for event ID: %s is unchanged, skipping reschedule",
+                    event.eventId());
             return;
         }
+        scheduleEventReminder(event.eventId(), event.reminderSendDate());
+    }
 
-        cancelEventReminder(event.id);
+    /**
+     * Reacts to a deleted event by cancelling any reminder job scheduled for it.
+     *
+     * @param event the event-deleted notification
+     */
+    public void onEventDeleted(@Observes EventDeletedEvent event) {
+        cancelEventReminder(event.eventId());
+    }
+
+    /**
+     * Schedules a reminder job for the given event. Always cancels any previously scheduled job for
+     * the event first, so this also serves as the reschedule/cancel path when {@code
+     * reminderSendDate} changes or is cleared.
+     *
+     * @param eventId The ID of the event for which to schedule a reminder
+     * @param reminderSendDate The time the reminder should be sent, or {@code null} if no reminder
+     *     should be scheduled
+     */
+    public void scheduleEventReminder(UUID eventId, Instant reminderSendDate) {
+        cancelEventReminder(eventId);
+
+        if (reminderSendDate == null) {
+            LOG.debugf("No reminder date set for event ID: %s, skipping", eventId);
+            return;
+        }
 
         // Calculate delay until reminder should be sent
         Instant now = Instant.now();
-        Instant reminderTime = event.getReminderSendDate();
 
-        if (reminderTime.isBefore(now)) {
+        if (reminderSendDate.isBefore(now)) {
             LOG.warnf(
                     "Reminder date %s for event ID: %s is in the past, skipping",
-                    reminderTime, event.id);
+                    reminderSendDate, eventId);
             return;
         }
 
-        long delaySeconds = Duration.between(now, reminderTime).getSeconds();
+        long delaySeconds = Duration.between(now, reminderSendDate).getSeconds();
 
         LOG.infof(
                 "Scheduling reminder for event ID: %s at %s (in %d seconds)",
-                event.id, reminderTime, delaySeconds);
+                eventId, reminderSendDate, delaySeconds);
 
-        String jobId = "reminder-event-" + event.id;
+        String jobId = reminderJobId(eventId);
         // Schedule the reminder job as a one-time task
         // We use a very long interval (1 year) to make it effectively a one-time job
         // The task itself will unschedule the job after execution
@@ -104,11 +157,12 @@ public class NotificationService {
                 .setInterval("365d") // Set a long interval to satisfy the scheduler requirement
                 .setDelayed(delaySeconds + "s") // Set the delay until first execution
                 // Fast enqueue into the email outbox; no extra thread pool needed
-                .setTask(executionContext -> self.sendReminderForEvent(event.id))
+                .setTask(executionContext -> self.sendReminderForEvent(eventId))
                 .schedule();
 
         // Add to cache for efficient lookups
         scheduledJobIds.add(jobId);
+        scheduledReminderTimes.put(jobId, reminderSendDate);
     }
 
     /**
@@ -310,7 +364,8 @@ public class NotificationService {
      * @param eventId The ID of the event
      */
     public void cancelEventReminder(UUID eventId) {
-        String jobId = "reminder-event-" + eventId;
+        String jobId = reminderJobId(eventId);
+        scheduledReminderTimes.remove(jobId);
 
         if (!scheduledJobIds.contains(jobId)) {
             LOG.debugf("No existing reminder job for event ID: %s to cancel.", eventId);
@@ -320,6 +375,16 @@ public class NotificationService {
         scheduler.unscheduleJob(jobId);
         scheduledJobIds.remove(jobId);
         LOG.debugf("Cancelled reminder job for event ID: %s", eventId);
+    }
+
+    /**
+     * Builds the Quartz job ID used to identify the reminder job for the given event.
+     *
+     * @param eventId The ID of the event
+     * @return the job ID
+     */
+    private static String reminderJobId(UUID eventId) {
+        return "reminder-event-" + eventId;
     }
 
     /**

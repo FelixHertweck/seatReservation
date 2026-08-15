@@ -52,7 +52,8 @@ class GoogleWalletPassGeneratorTest {
                         "Main Hall",
                         "123 Music St",
                         Instant.now(),
-                        Instant.now().plusSeconds(3600));
+                        Instant.now().plusSeconds(3600),
+                        null);
 
         assertDoesNotThrow(() -> googleWalletPassGenerator.onEventUpdated(event));
     }
@@ -68,7 +69,8 @@ class GoogleWalletPassGeneratorTest {
                         "Stadthalle",
                         "Haupstrasse 1",
                         Instant.now(),
-                        Instant.now().plusSeconds(7200));
+                        Instant.now().plusSeconds(7200),
+                        null);
 
         // When key file or remote API is missing/unreachable, onEventUpdated catches exception
         // gracefully (best-effort)

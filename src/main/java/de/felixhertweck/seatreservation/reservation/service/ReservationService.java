@@ -33,11 +33,12 @@ import jakarta.inject.Inject;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.events.ReservationCancelledEvent;
+import de.felixhertweck.seatreservation.common.events.ReservationCreatedEvent;
 import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ValidationException;
-import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
@@ -68,9 +69,10 @@ public class ReservationService {
     @Inject EventRepository eventRepository;
     @Inject SeatRepository seatRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
-    @Inject EmailService emailService;
     @Inject SeatCartService seatCartService;
     @Inject CheckInTokenService checkInTokenService;
+    @Inject jakarta.enterprise.event.Event<ReservationCreatedEvent> reservationCreatedBus;
+    @Inject jakarta.enterprise.event.Event<ReservationCancelledEvent> reservationCancelledBus;
 
     /**
      * Retrieves all reservations for the currently authenticated user.
@@ -319,18 +321,7 @@ public class ReservationService {
                 event.id,
                 eventUserAllowance.getReservationsAllowedCount());
 
-        try {
-            LOG.debugf(
-                    "Attempting to send reservation confirmation email to user ID: %s.",
-                    currentUser.id);
-            emailService.sendReservationConfirmation(currentUser, newReservations);
-            LOG.debugf(
-                    "Reservation confirmation email sent to %s for user ID: %s.",
-                    currentUser.id, currentUser.id);
-        } catch (PersistenceException | IllegalStateException e) {
-            // Log the exception, but don't let it fail the transaction
-            LOG.error("Failed to send reservation confirmation email", e);
-        }
+        reservationCreatedBus.fire(new ReservationCreatedEvent(currentUser, newReservations));
 
         return newReservations.stream()
                 .map(UserReservationResponseDTO::new)
@@ -435,8 +426,9 @@ public class ReservationService {
             List<Reservation> activeReservations =
                     reservationRepository.findByUserAndEventId(currentUser, entry.getKey());
 
-            emailService.sendUpdateReservationConfirmation(
-                    currentUser, entry.getValue(), activeReservations);
+            reservationCancelledBus.fire(
+                    new ReservationCancelledEvent(
+                            currentUser, entry.getValue(), activeReservations));
 
             LOG.debugf(
                     "Sent reservation update confirmation for user ID: %s (ID: %s) and reservations"

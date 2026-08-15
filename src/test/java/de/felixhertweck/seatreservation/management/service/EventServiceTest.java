@@ -42,11 +42,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.common.events.EventCreatedEvent;
 import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ValidationException;
-import de.felixhertweck.seatreservation.email.service.NotificationService;
 import de.felixhertweck.seatreservation.management.dto.EventRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EventUserAllowanceUpdateDto;
@@ -76,11 +76,18 @@ public class EventServiceTest {
     @InjectMock EventLocationRepository eventLocationRepository;
     @InjectMock UserRepository userRepository;
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
-    @InjectMock NotificationService notificationService;
+
+    @InjectMock
+    jakarta.enterprise.event.Event<de.felixhertweck.seatreservation.common.events.EventCreatedEvent>
+            eventCreatedBus;
 
     @InjectMock
     jakarta.enterprise.event.Event<de.felixhertweck.seatreservation.common.events.EventUpdatedEvent>
             eventUpdatedBus;
+
+    @InjectMock
+    jakarta.enterprise.event.Event<de.felixhertweck.seatreservation.common.events.EventDeletedEvent>
+            eventDeletedBus;
 
     @Inject EventService eventService;
     @Inject EventReservationAllowanceService eventReservationAllowanceService;
@@ -104,7 +111,6 @@ public class EventServiceTest {
         Mockito.reset(eventLocationRepository);
         Mockito.reset(userRepository);
         Mockito.reset(eventUserAllowanceRepository);
-        Mockito.reset(notificationService);
 
         adminUser =
                 new User(
@@ -949,8 +955,9 @@ public class EventServiceTest {
     }
 
     @Test
-    void createEvent_WithoutReminderSendDate_NoReminderScheduled() {
-        // Event without reminder date should not schedule a reminder
+    void createEvent_WithoutReminderSendDate_FiresCreatedEventWithNullReminder() {
+        // Event without reminder date should still fire EventCreatedEvent, with a null reminder
+        // date -- NotificationService's own observer decides not to schedule anything for that.
         EventRequestDTO dto = new EventRequestDTO();
         dto.setName("Event without Reminder");
         dto.setDescription("Event Description");
@@ -979,13 +986,16 @@ public class EventServiceTest {
         assertEquals("Event without Reminder", createdEvent.name());
         assertEquals(null, createdEvent.reminderSendDate());
         verify(eventRepository, times(1)).persist(any(Event.class));
-        // Verify that no reminder was scheduled
-        verify(notificationService, never()).scheduleEventReminder(any(Event.class));
+
+        ArgumentCaptor<EventCreatedEvent> captor = ArgumentCaptor.forClass(EventCreatedEvent.class);
+        verify(eventCreatedBus, times(1)).fire(captor.capture());
+        assertEquals(id(10), captor.getValue().eventId());
+        assertEquals(null, captor.getValue().reminderSendDate());
     }
 
     @Test
-    void createEvent_WithReminderSendDate_ReminderScheduled() {
-        // Event with reminder date should schedule a reminder
+    void createEvent_WithReminderSendDate_FiresCreatedEventWithReminder() {
+        // Event with reminder date should fire EventCreatedEvent carrying that reminder date
         EventRequestDTO dto = new EventRequestDTO();
         dto.setName("Event with Reminder");
         dto.setDescription("Event Description");
@@ -1015,12 +1025,15 @@ public class EventServiceTest {
         assertEquals("Event with Reminder", createdEvent.name());
         assertEquals(reminderDate, createdEvent.reminderSendDate());
         verify(eventRepository, times(1)).persist(any(Event.class));
-        // Verify that reminder was scheduled
-        verify(notificationService, times(1)).scheduleEventReminder(any(Event.class));
+
+        ArgumentCaptor<EventCreatedEvent> captor = ArgumentCaptor.forClass(EventCreatedEvent.class);
+        verify(eventCreatedBus, times(1)).fire(captor.capture());
+        assertEquals(id(10), captor.getValue().eventId());
+        assertEquals(reminderDate, captor.getValue().reminderSendDate());
     }
 
     @Test
-    void updateEvent_FromNoReminderToReminder_ReminderScheduled() throws Exception {
+    void updateEvent_FromNoReminderToReminder_FiresUpdatedEventWithReminder() throws Exception {
         // Update event from no reminder to having a reminder
         existingEvent.setReminderSendDate(null); // Start without reminder
 
@@ -1047,13 +1060,16 @@ public class EventServiceTest {
         assertEquals("Updated Event", updatedEvent.name());
         assertEquals(newReminderDate, updatedEvent.reminderSendDate());
         verify(eventRepository, times(1)).persist(any(Event.class));
-        // Should cancel old (non-existent) reminder and schedule new one
-        verify(notificationService, times(1)).cancelEventReminder(existingEvent.id);
-        verify(notificationService, times(1)).scheduleEventReminder(any(Event.class));
+
+        ArgumentCaptor<de.felixhertweck.seatreservation.common.events.EventUpdatedEvent> captor =
+                ArgumentCaptor.forClass(
+                        de.felixhertweck.seatreservation.common.events.EventUpdatedEvent.class);
+        verify(eventUpdatedBus, times(1)).fireAsync(captor.capture());
+        assertEquals(newReminderDate, captor.getValue().reminderSendDate());
     }
 
     @Test
-    void updateEvent_FromReminderToNoReminder_ReminderCancelled() throws Exception {
+    void updateEvent_FromReminderToNoReminder_FiresUpdatedEventWithNullReminder() throws Exception {
         // Update event from having a reminder to no reminder
         Instant oldReminderDate = Instant.now().plusSeconds(Duration.ofDays(3).toSeconds());
         existingEvent.setReminderSendDate(oldReminderDate); // Start with reminder
@@ -1080,13 +1096,16 @@ public class EventServiceTest {
         assertEquals("Updated Event", updatedEvent.name());
         assertEquals(null, updatedEvent.reminderSendDate());
         verify(eventRepository, times(1)).persist(any(Event.class));
-        // Should cancel old reminder and not schedule a new one
-        verify(notificationService, times(1)).cancelEventReminder(existingEvent.id);
-        verify(notificationService, never()).scheduleEventReminder(any(Event.class));
+
+        ArgumentCaptor<de.felixhertweck.seatreservation.common.events.EventUpdatedEvent> captor =
+                ArgumentCaptor.forClass(
+                        de.felixhertweck.seatreservation.common.events.EventUpdatedEvent.class);
+        verify(eventUpdatedBus, times(1)).fireAsync(captor.capture());
+        assertEquals(null, captor.getValue().reminderSendDate());
     }
 
     @Test
-    void updateEvent_FromReminderToNewReminder_ReminderRescheduled() throws Exception {
+    void updateEvent_FromReminderToNewReminder_FiresUpdatedEventWithNewReminder() throws Exception {
         // Update event from one reminder time to another
         Instant oldReminderDate = Instant.now().plusSeconds(Duration.ofDays(3).toSeconds());
         existingEvent.setReminderSendDate(oldReminderDate); // Start with old reminder
@@ -1114,9 +1133,12 @@ public class EventServiceTest {
         assertEquals("Updated Event", updatedEvent.name());
         assertEquals(newReminderDate, updatedEvent.reminderSendDate());
         verify(eventRepository, times(1)).persist(any(Event.class));
-        // Should cancel old reminder and schedule new one
-        verify(notificationService, times(1)).cancelEventReminder(existingEvent.id);
-        verify(notificationService, times(1)).scheduleEventReminder(any(Event.class));
+
+        ArgumentCaptor<de.felixhertweck.seatreservation.common.events.EventUpdatedEvent> captor =
+                ArgumentCaptor.forClass(
+                        de.felixhertweck.seatreservation.common.events.EventUpdatedEvent.class);
+        verify(eventUpdatedBus, times(1)).fireAsync(captor.capture());
+        assertEquals(newReminderDate, captor.getValue().reminderSendDate());
     }
 
     @Test

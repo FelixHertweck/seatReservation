@@ -247,7 +247,8 @@ public class EventLocationService {
                             location.getName(),
                             location.getAddress(),
                             ev.getStartTime(),
-                            ev.getEndTime()));
+                            ev.getEndTime(),
+                            ev.getReminderSendDate()));
         }
 
         return new EventLocationResponseDTO(location);
