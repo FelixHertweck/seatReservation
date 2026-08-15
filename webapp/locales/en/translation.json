@@ -629,7 +629,8 @@
   "seatMap": {
     "seatTitle": "Seat {{seatNumber}} ({{seatRow}})",
     "resetButton": "Reset",
-    "stageText": "STAGE"
+    "stageText": "STAGE",
+    "loading": "Loading seat map..."
   },
   "eventCard": {
     "statusAvailable": "Available",

@@ -129,6 +129,10 @@
   animation: shimmer-sweep 1.6s ease-in-out infinite;
 }
 
+@utility animate-seat-in {
+  animation: seatPopIn 0.4s ease-out both;
+}
+
 :root {
   --background: hsl(0 0% 100%);
   --foreground: hsl(240 20% 3%);
@@ -328,6 +332,21 @@
     }
     100% {
       transform: translateX(100%);
+    }
+  }
+
+  @keyframes seatPopIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    70% {
+      opacity: 1;
+      transform: scale(1.12);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
     }
   }
 }

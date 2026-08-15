@@ -2,6 +2,7 @@
 
 import React, { useRef, useCallback, useMemo, useLayoutEffect } from "react";
 import type { ReactElement } from "react";
+import { Armchair } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type {
@@ -25,7 +26,6 @@ import {
   boundaryToPixelPolygon,
 } from "@/components/common/seat-map-geometry";
 import { useMapViewport } from "@/components/common/use-map-viewport";
-import { Skeleton } from "@/components/custom-ui/skeleton";
 
 interface SeatMapProps {
   seats: SeatDto[];
@@ -46,14 +46,18 @@ const SeatComponent = React.memo(
     seatColor,
     clickable,
     highlighted,
+    selected,
     showSeatNumber,
+    popDelayMs,
     onSeatSelect,
   }: {
     seat: SeatDto | undefined;
     seatColor: string;
     clickable: boolean;
     highlighted: boolean;
+    selected: boolean;
     showSeatNumber: boolean;
+    popDelayMs: number;
     onSeatSelect: (seat: SeatDto) => void;
   }) => {
     const t = useT();
@@ -71,11 +75,13 @@ const SeatComponent = React.memo(
     return (
       <div
         className={cn(
-          "w-8 h-8 flex items-center justify-center text-xs font-medium relative z-10",
-          clickable && "cursor-pointer",
+          "w-8 h-8 flex items-center justify-center text-xs font-medium relative z-10 animate-seat-in transition-transform duration-200 ease-out",
+          clickable && "cursor-pointer hover:scale-110 active:scale-90",
+          selected && "scale-105",
           highlighted &&
             "rounded-full ring-4 ring-primary ring-offset-2 ring-offset-seatmap animate-pulse",
         )}
+        style={{ animationDelay: `${popDelayMs}ms` }}
         onClick={handleClick}
         title={t("seatMap.seatTitle", {
           seatNumber: seat.seatNumber,
@@ -84,8 +90,10 @@ const SeatComponent = React.memo(
       >
         <div
           className={cn(
-            "w-full h-full rounded-full flex items-center justify-center text-white text-xs font-medium",
+            "w-full h-full rounded-full flex items-center justify-center text-white text-xs font-medium transition-colors duration-300 ease-out",
             seatColor,
+            selected &&
+              "ring-2 ring-white/80 dark:ring-white/50 shadow-md shadow-black/25",
           )}
         >
           {showSeatNumber ? seat.seatNumber : ""}
@@ -99,7 +107,9 @@ const SeatComponent = React.memo(
       prevProps.seatColor === nextProps.seatColor &&
       prevProps.clickable === nextProps.clickable &&
       prevProps.highlighted === nextProps.highlighted &&
+      prevProps.selected === nextProps.selected &&
       prevProps.showSeatNumber === nextProps.showSeatNumber &&
+      prevProps.popDelayMs === nextProps.popDelayMs &&
       prevProps.onSeatSelect === nextProps.onSeatSelect
     );
   },
@@ -154,7 +164,7 @@ const MarkerComponent = React.memo(
     return (
       <div
         ref={containerRef}
-        className="absolute z-0 flex items-center justify-center font-bold text-gray-800 dark:text-gray-200 rounded-md overflow-hidden"
+        className="absolute z-0 flex items-center justify-center font-bold text-gray-800 dark:text-gray-200 rounded-md overflow-hidden fade-in"
         style={{
           // Initial position and size before dynamic adjustment
           left: `${cellToPx(marker.coordinate?.xCoordinate ?? 1)}px`,
@@ -233,7 +243,7 @@ const AreaZoneComponent = React.memo(({ zone }: { zone: AreaRectZone }) => {
   return (
     <div
       className={cn(
-        "absolute rounded-lg border-2 border-dashed pointer-events-none",
+        "absolute rounded-lg border-2 border-dashed pointer-events-none fade-in",
         color.fill,
         color.border,
       )}
@@ -259,7 +269,7 @@ const AreaPolygonZoneComponent = React.memo(
 
     return (
       <div
-        className="absolute pointer-events-none"
+        className="absolute pointer-events-none fade-in"
         style={{
           left: `${zone.left}px`,
           top: `${zone.top}px`,
@@ -302,6 +312,23 @@ const AreaPolygonZoneComponent = React.memo(
 );
 
 AreaPolygonZoneComponent.displayName = "AreaPolygonZoneComponent";
+
+const SeatMapLoadingSpinner = () => {
+  const t = useT();
+
+  return (
+    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3">
+      <div className="relative h-16 w-16">
+        <div className="absolute inset-0 rounded-full border-4 border-primary/15" />
+        <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-primary border-r-primary/40" />
+        <Armchair className="absolute inset-0 m-auto h-7 w-7 animate-pulse text-primary" />
+      </div>
+      <span className="text-sm font-medium text-muted-foreground animate-pulse">
+        {t("seatMap.loading")}
+      </span>
+    </div>
+  );
+};
 
 export function SeatMap({
   seats,
@@ -559,6 +586,7 @@ export function SeatMap({
         const seatColor = getSeatColor(seat);
         const clickable = canSelectSeat(seat);
         const highlighted = !!seat && seat.id === highlightedSeatId;
+        const selected = !!seat && selectedSeatIds.has(seat.id);
 
         return {
           key: `${x}-${y}`,
@@ -566,6 +594,10 @@ export function SeatMap({
           seatColor,
           clickable,
           highlighted,
+          selected,
+          // Staggered wave from the stage outward, capped so large maps
+          // still finish revealing themselves quickly.
+          popDelayMs: Math.min(x * 18 + y * 26, 480),
         };
       }),
     ).flat();
@@ -576,6 +608,7 @@ export function SeatMap({
     getSeatColor,
     canSelectSeat,
     highlightedSeatId,
+    selectedSeatIds,
   ]);
 
   const displayFlags = useMemo(
@@ -586,42 +619,30 @@ export function SeatMap({
   );
 
   const gridItems = useMemo(() => {
-    if (isLoading) {
-      return Array.from({ length: maxX * maxY }).map((_, index) => (
-        <div
-          key={`skel-${index}`}
-          className="w-8 h-8 flex items-center justify-center"
-        >
-          <Skeleton
-            className="w-full h-full rounded-full opacity-40"
-            style={{
-              animationDelay: `${(index % maxX) * 35 + Math.floor(index / maxX) * 45}ms`,
-            }}
-          />
-        </div>
-      ));
-    }
     return gridStructure.map(
-      ({ key, seat, seatColor, clickable, highlighted }) => (
+      ({
+        key,
+        seat,
+        seatColor,
+        clickable,
+        highlighted,
+        selected,
+        popDelayMs,
+      }) => (
         <SeatComponent
           key={key}
           seat={seat}
           seatColor={seatColor}
           clickable={clickable}
           highlighted={highlighted}
+          selected={selected}
+          popDelayMs={popDelayMs}
           showSeatNumber={displayFlags.showSeatNumber}
           onSeatSelect={onSeatSelect}
         />
       ),
     );
-  }, [
-    isLoading,
-    maxX,
-    maxY,
-    gridStructure,
-    displayFlags.showSeatNumber,
-    onSeatSelect,
-  ]);
+  }, [gridStructure, displayFlags.showSeatNumber, onSeatSelect]);
 
   return (
     <div className="relative w-full h-full rounded-lg overflow-hidden">
@@ -690,6 +711,8 @@ export function SeatMap({
               height: `${mapPxSize(maxY)}px`,
             }}
           >
+            {isLoading && <SeatMapLoadingSpinner />}
+
             {/* Area Zone Layer - ganz im Hintergrund */}
             {areaZones.map((zone) =>
               zone.shape === "polygon" ? (

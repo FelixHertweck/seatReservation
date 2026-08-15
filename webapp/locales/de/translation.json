@@ -467,7 +467,8 @@
   "seatMap": {
     "seatTitle": "Platz {{seatNumber}} ({{seatRow}})",
     "resetButton": "Zurücksetzen",
-    "stageText": "BÜHNE"
+    "stageText": "BÜHNE",
+    "loading": "Sitzplan wird geladen..."
   },
   "eventCard": {
     "statusAvailable": "Verfügbar",
