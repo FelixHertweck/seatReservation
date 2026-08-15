@@ -135,7 +135,12 @@ public class EventUserAllowanceRepository
      * @return Optional event user allowance entity
      */
     public Optional<EventUserAllowance> findByUserAndEventId(User user, UUID eventId) {
-        return find("user = ?1 and event.id = ?2", user, eventId).firstResultOptional();
+        return find(
+                        "select a from EventUserAllowance a join fetch a.event e left join fetch"
+                                + " e.event_location where a.user = ?1 and a.event.id = ?2",
+                        user,
+                        eventId)
+                .firstResultOptional();
     }
 
     /**

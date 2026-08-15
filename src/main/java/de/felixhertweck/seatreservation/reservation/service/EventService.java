@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -112,30 +113,38 @@ public class EventService {
     public UserEventResponseDTO getEventByIdForCurrentUser(UUID eventId, User user)
             throws EventNotFoundException {
         LOG.debugf("Retrieving event detail for event ID %s, user ID %s", eventId, user.id);
-        List<UserEventResponseDTO> userEvents = getEventsForCurrentUser(user);
-        UserEventResponseDTO userEvent =
-                userEvents.stream()
-                        .filter(e -> e.id().equals(eventId))
-                        .findFirst()
-                        .orElseThrow(
-                                () ->
-                                        new EventNotFoundException(
-                                                "Event with id " + eventId + " not found"));
+
+        Event event = null;
+        int allowedCount = 0;
+
+        Optional<EventUserAllowance> allowanceOpt =
+                eventUserAllowanceRepository.findByUserAndEventId(user, eventId);
+        if (allowanceOpt.isPresent()) {
+            EventUserAllowance allowance = allowanceOpt.get();
+            event = allowance.getEvent();
+            allowedCount = allowance.getReservationsAllowedCount();
+            seatCartService.grantAccess(
+                    event.getId(), user.id, allowance.getReservationsAllowedCount());
+        } else {
+            // BLOCKED reservations must not grant access here, matching
+            // getEventsForCurrentUser()/findByUserWithEvent, which excludes them too.
+            event =
+                    reservationRepository.findByUserAndEventId(user, eventId).stream()
+                            .filter(r -> r.getStatus() != ReservationStatus.BLOCKED)
+                            .findFirst()
+                            .map(Reservation::getEvent)
+                            .orElse(null);
+        }
+
+        if (event == null) {
+            throw new EventNotFoundException("Event with id " + eventId + " not found");
+        }
 
         List<Reservation> reservations =
                 reservationRepository.findByEventIdsWithSeat(Set.of(eventId));
+
         UserEventResponseDTO dtoWithStatuses =
-                new UserEventResponseDTO(
-                        userEvent.id(),
-                        userEvent.name(),
-                        userEvent.description(),
-                        userEvent.startTime(),
-                        userEvent.endTime(),
-                        userEvent.bookingDeadline(),
-                        userEvent.bookingStartTime(),
-                        reservations.stream().map(SeatStatusDTO::new).toList(),
-                        userEvent.locationId(),
-                        userEvent.reservationsAllowed());
+                new UserEventResponseDTO(event, allowedCount, reservations);
 
         return withPendingSeatStatuses(dtoWithStatuses, user.id);
     }

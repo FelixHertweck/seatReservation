@@ -285,7 +285,12 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
      * @return a list of reservations for the specified user and event
      */
     public List<Reservation> findByUserAndEventId(User user, UUID eventId) {
-        return find("user = ?1 and event.id = ?2", user, eventId).list();
+        return find(
+                        "select r from Reservation r join fetch r.event e left join fetch"
+                                + " e.event_location where r.user = ?1 and r.event.id = ?2",
+                        user,
+                        eventId)
+                .list();
     }
 
     /**
