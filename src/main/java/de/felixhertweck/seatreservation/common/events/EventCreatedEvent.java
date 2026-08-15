@@ -23,15 +23,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Event fired when an Event's details (e.g. name, location, timing) are updated by a manager.
- * Observers can react asynchronously (e.g. updating Google Wallet classes, rescheduling the
- * reminder email).
+ * Event fired when a new Event is created by a manager. Observers can react (e.g. scheduling the
+ * event's reminder email).
  */
-public record EventUpdatedEvent(
-        UUID eventId,
-        String eventName,
-        String locationName,
-        String locationAddress,
-        Instant startTime,
-        Instant endTime,
-        Instant reminderSendDate) {}
+public record EventCreatedEvent(UUID eventId, Instant reminderSendDate) {}

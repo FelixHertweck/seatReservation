@@ -31,11 +31,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.events.EventCreatedEvent;
+import de.felixhertweck.seatreservation.common.events.EventDeletedEvent;
 import de.felixhertweck.seatreservation.common.events.EventUpdatedEvent;
 import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ValidationException;
-import de.felixhertweck.seatreservation.email.service.NotificationService;
 import de.felixhertweck.seatreservation.management.dto.EventRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -63,11 +64,13 @@ public class EventService {
 
     @Inject ReservationRepository reservationRepository;
 
-    @Inject NotificationService notificationService;
-
     @Inject EventAccessService eventAccessService;
 
+    @Inject jakarta.enterprise.event.Event<EventCreatedEvent> eventCreatedBus;
+
     @Inject jakarta.enterprise.event.Event<EventUpdatedEvent> eventUpdatedBus;
+
+    @Inject jakarta.enterprise.event.Event<EventDeletedEvent> eventDeletedBus;
 
     /**
      * Creates a new Event and assigns the currently authenticated manager as its creator. Access
@@ -133,10 +136,7 @@ public class EventService {
                 supervisors.size(),
                 event.getManagers().size());
 
-        // Schedule reminder if reminder date is set
-        if (event.getReminderSendDate() != null) {
-            notificationService.scheduleEventReminder(event);
-        }
+        eventCreatedBus.fire(new EventCreatedEvent(event.getId(), event.getReminderSendDate()));
 
         return new EventResponseDTO(event);
     }
@@ -244,23 +244,15 @@ public class EventService {
                 "Event '%s' (ID: %s) updated successfully by manager: %s (ID: %s)",
                 event.getName(), event.getId(), manager.id, manager.getId());
 
-        // Reschedule reminder when event is updated
-        if (event.getReminderSendDate() != null) {
-            notificationService.cancelEventReminder(event.getId());
-            notificationService.scheduleEventReminder(event);
-        } else {
-            // Cancel reminder if reminder date was removed
-            notificationService.cancelEventReminder(event.getId());
-        }
-
         eventUpdatedBus.fireAsync(
-                new de.felixhertweck.seatreservation.common.events.EventUpdatedEvent(
+                new EventUpdatedEvent(
                         event.getId(),
                         event.getName(),
                         location != null ? location.getName() : null,
                         location != null ? location.getAddress() : null,
                         event.getStartTime(),
-                        event.getEndTime()));
+                        event.getEndTime(),
+                        event.getReminderSendDate()));
 
         return new EventResponseDTO(event);
     }
@@ -472,6 +464,7 @@ public class EventService {
             LOG.debugf(
                     "Event '%s' (ID: %s) deleted successfully by user ID: %s (ID: %s)",
                     event.getName(), event.getId(), currentUser.id, currentUser.getId());
+            eventDeletedBus.fire(new EventDeletedEvent(event.getId()));
         }
 
         LOG.infof("Events '%s' deleted successfully", ids);

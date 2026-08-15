@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+import de.felixhertweck.seatreservation.common.events.EventDeletedEvent;
 import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -44,6 +45,8 @@ import org.mockito.MockitoAnnotations;
 public class EventServiceDeleteEventTest {
 
     @Mock EventRepository eventRepository;
+
+    @Mock jakarta.enterprise.event.Event<EventDeletedEvent> eventDeletedBus;
 
     @InjectMocks EventService eventService;
 

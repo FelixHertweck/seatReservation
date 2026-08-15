@@ -23,8 +23,12 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
+import jakarta.persistence.PersistenceException;
 
+import de.felixhertweck.seatreservation.common.events.ReservationCancelledEvent;
+import de.felixhertweck.seatreservation.common.events.ReservationCreatedEvent;
 import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.email.service.notifications.EmailConfirmationNotification;
@@ -240,6 +244,34 @@ public class EmailService {
         emailSender.send(
                 new PasswordChangedNotification(
                         user, EMAIL_HEADER_PASSWORD_CHANGED, passwordChangedTemplate));
+    }
+
+    /**
+     * Reacts to a reservation creation by sending the confirmation email. Observed synchronously
+     * (same transaction as the reservation) so the entities are still attached and safe to
+     * lazy-load. Failures are swallowed here rather than propagated, matching the previous
+     * caller-side behavior of not letting a mail failure roll back the reservation.
+     *
+     * @param event the reservation-created notification
+     */
+    public void onReservationCreated(@Observes ReservationCreatedEvent event) {
+        try {
+            sendReservationConfirmation(event.user(), event.reservations());
+        } catch (PersistenceException | IllegalStateException e) {
+            LOG.error("Failed to send reservation confirmation email", e);
+        }
+    }
+
+    /**
+     * Reacts to a reservation cancellation by sending the update confirmation email. Observed
+     * synchronously (same transaction as the cancellation) so the entities are still attached and
+     * safe to lazy-load.
+     *
+     * @param event the reservation-cancelled notification
+     */
+    public void onReservationCancelled(@Observes ReservationCancelledEvent event) {
+        sendUpdateReservationConfirmation(
+                event.user(), event.deletedReservations(), event.activeReservations());
     }
 
     /**

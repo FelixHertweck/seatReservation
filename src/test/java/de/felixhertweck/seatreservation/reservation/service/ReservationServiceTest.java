@@ -46,11 +46,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.common.events.ReservationCancelledEvent;
+import de.felixhertweck.seatreservation.common.events.ReservationCreatedEvent;
 import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ValidationException;
-import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -92,7 +93,9 @@ class ReservationServiceTest {
 
     @InjectMock EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
-    @InjectMock EmailService emailService;
+    @InjectMock jakarta.enterprise.event.Event<ReservationCreatedEvent> reservationCreatedBus;
+
+    @InjectMock jakarta.enterprise.event.Event<ReservationCancelledEvent> reservationCancelledBus;
 
     @InjectMock SeatCartService seatCartService;
 
