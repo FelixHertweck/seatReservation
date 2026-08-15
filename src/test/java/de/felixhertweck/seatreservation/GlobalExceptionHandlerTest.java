@@ -321,4 +321,38 @@ class GlobalExceptionHandlerTest {
         ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
         assertEquals("Seat already reserved.", errorResponse.getMessage());
     }
+
+    @Test
+    void testIllegalArgumentException() {
+        IllegalArgumentException exception =
+                new IllegalArgumentException("Sensitive internal details");
+        Response response = exceptionHandler.toResponse(exception);
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity() instanceof ErrorResponseDTO);
+        ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
+        assertEquals("Bad Request", errorResponse.getMessage());
+    }
+
+    @Test
+    void testSecurityException() {
+        SecurityException exception = new SecurityException("Sensitive internal details");
+        Response response = exceptionHandler.toResponse(exception);
+
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity() instanceof ErrorResponseDTO);
+        ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
+        assertEquals("Forbidden", errorResponse.getMessage());
+    }
+
+    @Test
+    void testIllegalStateException() {
+        IllegalStateException exception = new IllegalStateException("Sensitive internal details");
+        Response response = exceptionHandler.toResponse(exception);
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity() instanceof ErrorResponseDTO);
+        ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
+        assertEquals("Bad Request", errorResponse.getMessage());
+    }
 }

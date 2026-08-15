@@ -136,9 +136,18 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
                     status = Response.Status.BAD_REQUEST;
             case PasswordResetTokenExpiredException ignored -> status = Response.Status.GONE;
             case UserNotFoundException ignored -> status = Response.Status.NOT_FOUND;
-            case IllegalArgumentException ignored -> status = Response.Status.BAD_REQUEST;
-            case SecurityException ignored -> status = Response.Status.FORBIDDEN;
-            case IllegalStateException ignored -> status = Response.Status.BAD_REQUEST;
+            case IllegalArgumentException ignored -> {
+                status = Response.Status.BAD_REQUEST;
+                errorResponse = new ErrorResponseDTO("Bad Request");
+            }
+            case SecurityException ignored -> {
+                status = Response.Status.FORBIDDEN;
+                errorResponse = new ErrorResponseDTO("Forbidden");
+            }
+            case IllegalStateException ignored -> {
+                status = Response.Status.BAD_REQUEST;
+                errorResponse = new ErrorResponseDTO("Bad Request");
+            }
             case AccountLockedException accountLockedException -> {
                 status = Response.Status.TOO_MANY_REQUESTS;
                 LoginLockedDTO errorResponseLogin =
