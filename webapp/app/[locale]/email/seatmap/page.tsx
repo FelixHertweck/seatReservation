@@ -80,7 +80,11 @@ export default function EmailSeatmapPage() {
 
         // Convert Blob to SVG text
         const svg = await response.data.text();
-        setSvgContent(DOMPurify.sanitize(svg));
+        setSvgContent(
+          DOMPurify.sanitize(svg, {
+            USE_PROFILES: { svg: true, svgFilters: true },
+          }),
+        );
       } catch (err) {
         const errorMessage =
           err instanceof Error
