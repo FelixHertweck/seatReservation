@@ -473,12 +473,12 @@ class ReservationServiceTest {
         mockReservationFind(List.of(reservation.id), List.of(reservation));
         when(eventUserAllowanceRepository.findByEventAndUserIds(event, Set.of(regularUser.id)))
                 .thenReturn(List.of(allowance));
-        doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
+        doNothing().when(eventUserAllowanceRepository).persist(any(Iterable.class));
 
         reservationService.deleteReservation(List.of(reservation.id), managerUser);
 
         verify(reservationRepository, times(1)).deleteByIds(List.of(reservation.id));
-        verify(eventUserAllowanceRepository, times(1)).persist(allowance);
+        verify(eventUserAllowanceRepository, times(1)).persist(List.of(allowance));
         assertEquals(1, allowance.getReservationsAllowedCount()); // Allowance should be incremented
     }
 
@@ -541,14 +541,14 @@ class ReservationServiceTest {
                 List.of(reservation.id, reservation2.id), List.of(reservation, reservation2));
         when(eventUserAllowanceRepository.findByEventAndUserIds(event, Set.of(regularUser.id)))
                 .thenReturn(List.of(allowance));
-        doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
+        doNothing().when(eventUserAllowanceRepository).persist(any(Iterable.class));
 
         reservationService.deleteReservation(List.of(reservation.id, reservation2.id), managerUser);
 
         verify(reservationRepository, times(1))
                 .deleteByIds(List.of(reservation.id, reservation2.id));
-        // Allowance should be incremented twice (once for each reservation)
-        verify(eventUserAllowanceRepository, times(2)).persist(allowance);
+        // Allowance should be incremented twice, but persisted in a single batch
+        verify(eventUserAllowanceRepository, times(1)).persist(List.of(allowance));
         assertEquals(2, allowance.getReservationsAllowedCount());
     }
 
@@ -593,7 +593,7 @@ class ReservationServiceTest {
                 List.of(blockedReservation, reservedReservation));
         when(eventUserAllowanceRepository.findByEventAndUserIds(event, Set.of(regularUser.id)))
                 .thenReturn(List.of(allowance));
-        doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
+        doNothing().when(eventUserAllowanceRepository).persist(any(Iterable.class));
 
         reservationService.deleteReservation(
                 List.of(blockedReservation.id, reservedReservation.id), managerUser);
@@ -601,7 +601,7 @@ class ReservationServiceTest {
         verify(reservationRepository, times(1))
                 .deleteByIds(List.of(blockedReservation.id, reservedReservation.id));
         // Allowance should be incremented only once (for the reserved reservation)
-        verify(eventUserAllowanceRepository, times(1)).persist(allowance);
+        verify(eventUserAllowanceRepository, times(1)).persist(List.of(allowance));
         assertEquals(1, allowance.getReservationsAllowedCount());
     }
 
@@ -613,12 +613,12 @@ class ReservationServiceTest {
         mockReservationFind(List.of(reservation.id), List.of(reservation));
         when(eventUserAllowanceRepository.findByEventAndUserIds(event, Set.of(regularUser.id)))
                 .thenReturn(List.of(allowance));
-        doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
+        doNothing().when(eventUserAllowanceRepository).persist(any(Iterable.class));
 
         reservationService.deleteReservation(List.of(reservation.id), managerUser);
 
         verify(reservationRepository, times(1)).deleteByIds(List.of(reservation.id));
-        verify(eventUserAllowanceRepository, times(1)).persist(allowance);
+        verify(eventUserAllowanceRepository, times(1)).persist(List.of(allowance));
         assertEquals(6, allowance.getReservationsAllowedCount());
     }
 

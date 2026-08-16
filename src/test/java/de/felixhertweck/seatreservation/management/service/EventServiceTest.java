@@ -535,16 +535,18 @@ public class EventServiceTest {
                 .thenReturn(List.of());
         doAnswer(
                         invocation -> {
-                            EventUserAllowance allowance = invocation.getArgument(0);
-                            allowance.id = id(1); // Simulate ID generation
+                            Iterable<EventUserAllowance> allowances = invocation.getArgument(0);
+                            for (EventUserAllowance allowance : allowances) {
+                                allowance.id = id(100);
+                            }
                             return null;
                         })
                 .when(eventUserAllowanceRepository)
-                .persist(any(EventUserAllowance.class));
+                .persist(any(Iterable.class));
 
         eventReservationAllowanceService.setReservationsAllowedForUser(dto, managerAuth);
 
-        verify(eventUserAllowanceRepository, times(1)).persist(any(EventUserAllowance.class));
+        verify(eventUserAllowanceRepository, times(1)).persist(any(Iterable.class));
     }
 
     @Test
@@ -561,12 +563,12 @@ public class EventServiceTest {
                 .thenReturn(List.of(regularUser));
         when(eventUserAllowanceRepository.findByEventAndUserIds(existingEvent, dto.getUserIds()))
                 .thenReturn(List.of(existingAllowance));
-        doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
+        doNothing().when(eventUserAllowanceRepository).persist(any(Iterable.class));
 
         eventReservationAllowanceService.setReservationsAllowedForUser(dto, managerAuth);
 
         assertEquals(10, existingAllowance.getReservationsAllowedCount());
-        verify(eventUserAllowanceRepository, times(1)).persist(existingAllowance);
+        verify(eventUserAllowanceRepository, times(1)).persist(List.of(existingAllowance));
     }
 
     @Test
@@ -575,8 +577,10 @@ public class EventServiceTest {
         // Arrange
         EventUserAllowancesCreateDto dto =
                 new EventUserAllowancesCreateDto(Set.of(regularUser.id), existingEvent.id, 5);
-        ArgumentCaptor<EventUserAllowance> allowanceCaptor =
-                ArgumentCaptor.forClass(EventUserAllowance.class);
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Iterable<EventUserAllowance>> allowanceCaptor =
+                ArgumentCaptor.forClass(Iterable.class);
 
         when(eventRepository.findByIdOptional(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
@@ -590,7 +594,7 @@ public class EventServiceTest {
 
         // Assert
         verify(eventUserAllowanceRepository).persist(allowanceCaptor.capture());
-        EventUserAllowance capturedAllowance = allowanceCaptor.getValue();
+        EventUserAllowance capturedAllowance = allowanceCaptor.getValue().iterator().next();
 
         assertNotNull(capturedAllowance);
         assertEquals(regularUser, capturedAllowance.getUser());

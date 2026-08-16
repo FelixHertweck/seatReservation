@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -91,6 +92,7 @@ public class EventReservationAllowanceService {
                 eventUserAllowanceRepository.findByEventAndUserIds(event, dto.getUserIds()).stream()
                         .collect(Collectors.toMap(a -> a.getUser().id, a -> a));
 
+        List<EventUserAllowance> allowancesToPersist = new ArrayList<>();
         for (UUID userId : dto.getUserIds()) {
             User user = userMap.get(userId);
             if (user == null) {
@@ -104,9 +106,13 @@ public class EventReservationAllowanceService {
             }
 
             allowance.setReservationsAllowedCount(dto.getReservationsAllowedCount());
-            eventUserAllowanceRepository.persist(allowance);
+            allowancesToPersist.add(allowance);
 
             resultAllowances.add(new EventUserAllowancesDto(allowance));
+        }
+
+        if (!allowancesToPersist.isEmpty()) {
+            eventUserAllowanceRepository.persist(allowancesToPersist);
         }
 
         LOG.infof(
