@@ -53,7 +53,7 @@ export function ReservationCard({
 
   return (
     <>
-      <Card className="h-full flex flex-col hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group animate-in fade-in slide-in-from-bottom duration-500">
+      <Card className="h-full min-h-[26rem] flex flex-col hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group animate-in fade-in slide-in-from-bottom duration-500">
         <CardHeader>
           <div className="flex items-start justify-between gap-2 mb-3">
             <Badge
@@ -66,7 +66,7 @@ export function ReservationCard({
                 : t("reservationCard.seatPlural")}
             </Badge>
           </div>
-          <div className="flex flex-col">
+          <div className="h-[6rem] flex flex-col">
             <CardTitle className="line-clamp-2 leading-tight mb-2">
               {eventName || t("reservationCard.unknownEvent")}
             </CardTitle>

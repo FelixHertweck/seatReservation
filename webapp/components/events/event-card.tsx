@@ -61,7 +61,7 @@ export function EventCard({
   };
 
   return (
-    <Card className="relative overflow-hidden h-full flex flex-col hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group animate-in fade-in slide-in-from-bottom duration-500">
+    <Card className="relative overflow-hidden h-full min-h-[26rem] flex flex-col hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group animate-in fade-in slide-in-from-bottom duration-500">
       {location?.address && (
         <LocationCardMapBackground address={location.address} />
       )}

@@ -215,7 +215,7 @@ export default function ManagementLocationsPage() {
                 {paginatedData.map((location) => (
                   <Card
                     key={location.id}
-                    className="relative flex flex-col overflow-hidden"
+                    className="relative flex h-full min-h-[26rem] flex-col overflow-hidden"
                   >
                     {location.address && (
                       <LocationCardMapBackground address={location.address} />
@@ -231,7 +231,7 @@ export default function ManagementLocationsPage() {
                         </CardDescription>
                       )}
                     </CardHeader>
-                    <CardContent className="relative z-10 min-h-48 flex-1 space-y-2">
+                    <CardContent className="relative z-10 flex-1 space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="secondary">
                           {t("management.locations.seatsLabel", {
