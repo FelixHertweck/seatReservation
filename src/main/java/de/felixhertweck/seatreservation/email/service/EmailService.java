@@ -512,4 +512,15 @@ public class EmailService {
 
         reservationEmailContent.sendEventReservationsCsvToManager(manager, event, csvData);
     }
+
+    /**
+     * Sends an event cancelled notification email to the specified user.
+     *
+     * @param user the user to notify
+     * @param event the event cancelled event details
+     */
+    public void sendEventCancelledNotification(
+            User user, de.felixhertweck.seatreservation.common.events.EventCancelledEvent event) {
+        reservationEmailContent.sendEventCancelledNotification(user, event);
+    }
 }

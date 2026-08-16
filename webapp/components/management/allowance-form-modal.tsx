@@ -167,14 +167,20 @@ export function AllowanceFormModal({
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {events.map((event) => (
-                    <SelectItem
-                      key={event.id?.toString()}
-                      value={event.id?.toString() || ""}
-                    >
-                      {event.name}
-                    </SelectItem>
-                  ))}
+                  {events
+                    .filter(
+                      (event) =>
+                        event.status !== "CANCELLED" ||
+                        event.id?.toString() === selectedEventId,
+                    )
+                    .map((event) => (
+                      <SelectItem
+                        key={event.id?.toString()}
+                        value={event.id?.toString() || ""}
+                      >
+                        {event.name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>

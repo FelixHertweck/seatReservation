@@ -78,6 +78,9 @@ public class EventServiceTest {
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
 
     @InjectMock
+    de.felixhertweck.seatreservation.model.repository.ReservationRepository reservationRepository;
+
+    @InjectMock
     jakarta.enterprise.event.Event<de.felixhertweck.seatreservation.common.events.EventCreatedEvent>
             eventCreatedBus;
 
@@ -93,6 +96,11 @@ public class EventServiceTest {
     jakarta.enterprise.event.Event<
                     de.felixhertweck.seatreservation.common.events.EventRescheduledEvent>
             eventRescheduledBus;
+
+    @InjectMock
+    jakarta.enterprise.event.Event<
+                    de.felixhertweck.seatreservation.common.events.EventCancelledEvent>
+            eventCancelledBus;
 
     @Inject EventService eventService;
     @Inject EventReservationAllowanceService eventReservationAllowanceService;
@@ -116,10 +124,12 @@ public class EventServiceTest {
         Mockito.reset(eventLocationRepository);
         Mockito.reset(userRepository);
         Mockito.reset(eventUserAllowanceRepository);
+        Mockito.reset(reservationRepository);
         Mockito.reset(eventCreatedBus);
         Mockito.reset(eventUpdatedBus);
         Mockito.reset(eventDeletedBus);
         Mockito.reset(eventRescheduledBus);
+        Mockito.reset(eventCancelledBus);
 
         adminUser =
                 new User(
@@ -1404,5 +1414,72 @@ public class EventServiceTest {
         assertNotNull(result);
 
         verify(eventRescheduledBus, never()).fireAsync(any());
+    }
+
+    @Test
+    void cancelEvent_Success_FiresEventCancelledEventAndSetsStatus() throws Exception {
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        when(reservationRepository.findActiveByEventWithUserAndSeat(existingEvent))
+                .thenReturn(List.of());
+
+        EventResponseDTO result =
+                eventService.cancelEvent(existingEvent.id, "Weather conditions", managerUser);
+
+        assertNotNull(result);
+        assertEquals(
+                de.felixhertweck.seatreservation.model.entity.EventStatus.CANCELLED,
+                result.status());
+        assertEquals("Weather conditions", result.cancellationReason());
+        assertEquals(
+                de.felixhertweck.seatreservation.model.entity.EventStatus.CANCELLED,
+                existingEvent.getStatus());
+        assertEquals("Weather conditions", existingEvent.getCancellationReason());
+
+        verify(eventCancelledBus, times(1)).fire(any());
+    }
+
+    @Test
+    void cancelEvent_AlreadyCancelled_ThrowsValidationException() {
+        existingEvent.setStatus(
+                de.felixhertweck.seatreservation.model.entity.EventStatus.CANCELLED);
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+
+        assertThrows(
+                ValidationException.class,
+                () -> eventService.cancelEvent(existingEvent.id, "Another reason", managerUser));
+        verify(eventCancelledBus, never()).fire(any());
+    }
+
+    @Test
+    void cancelEvent_BlankReason_ThrowsValidationException() {
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+
+        assertThrows(
+                ValidationException.class,
+                () -> eventService.cancelEvent(existingEvent.id, "   ", managerUser));
+        verify(eventCancelledBus, never()).fire(any());
+    }
+
+    @Test
+    void updateEvent_CancelledEvent_ThrowsValidationException() {
+        existingEvent.setStatus(
+                de.felixhertweck.seatreservation.model.entity.EventStatus.CANCELLED);
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Updated");
+        dto.setStartTime(existingEvent.getStartTime());
+        dto.setEndTime(existingEvent.getEndTime());
+        dto.setBookingStartTime(existingEvent.getBookingStartTime());
+        dto.setBookingDeadline(existingEvent.getBookingDeadline());
+        dto.setEventLocationId(existingEvent.getEventLocation().id);
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+
+        assertThrows(
+                ValidationException.class,
+                () -> eventService.updateEvent(existingEvent.id, dto, managerUser));
     }
 }

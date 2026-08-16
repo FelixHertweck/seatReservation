@@ -372,4 +372,21 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
                         seatIds)
                 .list();
     }
+
+    /**
+     * Finds active reservations for a given event, eagerly fetching user and seat.
+     *
+     * @param event the event
+     * @return list of active reservations with user and seat pre-fetched
+     */
+    public List<Reservation> findActiveByEventWithUserAndSeat(Event event) {
+        return find(
+                        "select r from Reservation r"
+                                + " left join fetch r.user"
+                                + " left join fetch r.seat"
+                                + " where r.event = ?1 and r.status != ?2",
+                        event,
+                        ReservationStatus.BLOCKED)
+                .list();
+    }
 }

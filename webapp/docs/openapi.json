@@ -364,6 +364,17 @@
           }
         }
       },
+      "EventCancelRequestDTO" : {
+        "type" : "object",
+        "required" : [ "reason" ],
+        "properties" : {
+          "reason" : {
+            "type" : "string",
+            "pattern" : "\\S",
+            "maxLength" : 1000
+          }
+        }
+      },
       "EventLocationMakerDTO" : {
         "type" : "object",
         "properties" : {
@@ -601,8 +612,18 @@
           "reservedCount" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/EventStatus"
+          },
+          "cancellationReason" : {
+            "type" : "string"
           }
         }
+      },
+      "EventStatus" : {
+        "type" : "string",
+        "enum" : [ "ACTIVE", "CANCELLED" ]
       },
       "EventUserAllowanceUpdateDto" : {
         "type" : "object",
@@ -1515,6 +1536,12 @@
           "reservationsAllowed" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/EventStatus"
+          },
+          "cancellationReason" : {
+            "type" : "string"
           }
         }
       },
@@ -3233,6 +3260,60 @@
           }
         },
         "summary" : "Get Event By Id",
+        "tags" : [ "Event Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/manager/events/{id}/cancel" : {
+      "post" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EventCancelRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EventResponseDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event not found"
+          },
+          "422" : {
+            "description" : "Validation error: Reason missing or already cancelled"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Cancel Event",
         "tags" : [ "Event Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]

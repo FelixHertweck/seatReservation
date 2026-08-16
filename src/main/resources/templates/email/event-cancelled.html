@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Important: Event Cancellation</title>
+      <style>
+{#include email/fragments/card-layout-styles /}
+          ul {
+              list-style-type: none;
+              padding: 0;
+          }
+          li {
+              margin-bottom: 5px;
+          }
+          .cancellation-box {
+              background-color: #fef2f2;
+              border-left: 4px solid #ef4444;
+              padding: 12px 16px;
+              margin: 15px 0;
+              border-radius: 0 4px 4px 0;
+              color: #991b1b;
+          }
+{#include email/fragments/action-styles /}
+      </style>
+  </head>
+  <body>
+      <div class="container">
+          <h1 style="color: #dc2626;">Important: Event Cancelled</h1>
+          <p>Hello {fullName},</p>
+          <p>We regret to inform you that the event <strong>"{eventName}"</strong> has been cancelled by the organizer.</p>
+
+          <p><strong>Event Details:</strong></p>
+          <ul>
+              <li><strong>Date & Time:</strong> {eventStartTime}{#if eventEndTime??} &ndash; {eventEndTime}{/if}</li>
+              {#if eventLocation??}
+              <li><strong>Location:</strong> {eventLocation}</li>
+              {/if}
+          </ul>
+
+          <div class="cancellation-box">
+              <p style="margin: 0 0 6px 0; font-weight: bold;">Reason for Cancellation:</p>
+              <p style="margin: 0; white-space: pre-wrap;">{cancellationReason}</p>
+          </div>
+
+          <p>Your reservation(s) for this event have been automatically cancelled.</p>
+
+          <p style="margin-top: 20px;">We apologize for any inconvenience caused.</p>
+          <p>Sincerely,</p>
+          <p>Your Seat Reservation Team</p>
+          <div class="footer">
+              <p>&copy; {currentYear} Seat Reservation. All rights reserved.</p>
+          </div>
+      </div>
+  </body>
+</html>

@@ -230,6 +230,12 @@ public class ReservationService {
                     "You have reached your reservation limit for this event");
         }
 
+        if (event.getStatus()
+                == de.felixhertweck.seatreservation.model.entity.EventStatus.CANCELLED) {
+            LOG.warnf("Attempted to reserve seats for cancelled event ID: %s", event.id);
+            throw new EventBookingClosedException("Event is cancelled and cannot be booked");
+        }
+
         Instant reservationTime = Instant.now();
 
         // Check if the event is already available for booking

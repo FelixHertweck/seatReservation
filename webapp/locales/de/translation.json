@@ -473,6 +473,7 @@
   "eventCard": {
     "statusAvailable": "Verfügbar",
     "statusNotAvailable": "Nicht verfügbar",
+    "statusCancelled": "Abgesagt",
     "tbd": "TBD",
     "timeTbd": "Uhrzeit TBD",
     "locationTbd": "Ort TBD",
@@ -480,12 +481,14 @@
     "bookingUntil": "Buchung bis",
     "reserveSeatsButton": "Plätze reservieren",
     "notAvailableButton": "Nicht verfügbar",
+    "cancelledButton": "Veranstaltung abgesagt",
     "bookingOpenOnButtonWithDate": "Buchung öffnet am {{date}} um {{time}}",
     "myReservationsButton": "{{count}} Plätze reserviert"
   },
   "eventReservationModal": {
     "title": "Plätze reservieren - {{eventName}}",
     "description": "Wählen Sie Ihre Plätze für diese Veranstaltung aus. Verfügbar: {{availableSeats}}",
+    "cancelledNotice": "Diese Veranstaltung wurde abgesagt. Es können keine neuen Plätze mehr reserviert werden.",
     "selectedSeatsTitle": "Ausgewählte Plätze:",
     "selectedSeatButton": "1 Platz ausgewählt",
     "selectedSeatsButton": "{{count}} Plätze ausgewählt",

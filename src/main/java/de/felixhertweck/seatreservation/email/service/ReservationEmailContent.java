@@ -131,6 +131,11 @@ public class ReservationEmailContent {
             defaultValue = "Reservation Overview")
     String reservationOverviewSubject;
 
+    @ConfigProperty(
+            name = "email.header.event-cancelled",
+            defaultValue = "Important: Event Cancelled")
+    String eventCancelledSubject;
+
     @Inject
     @Location("email/reservation-confirmation")
     Template reservationConfirmationTemplate;
@@ -154,6 +159,10 @@ public class ReservationEmailContent {
     @Inject
     @Location("email/manager-reservation-export")
     Template managerExportTemplate;
+
+    @Inject
+    @Location("email/event-cancelled")
+    Template eventCancelledTemplate;
 
     // ---------------------------------------------------------------------
     // Shared helpers
@@ -847,6 +856,41 @@ public class ReservationEmailContent {
                         htmlContent,
                         pngImage,
                         qrCodeImage));
+    }
+
+    // ---------------------------------------------------------------------
+    // Event cancelled
+    // ---------------------------------------------------------------------
+
+    public void sendEventCancelledNotification(
+            User user, de.felixhertweck.seatreservation.common.events.EventCancelledEvent event) {
+        if (user == null || !EmailSender.isValidAddress(user.getEmail())) {
+            LOG.warn("No valid email address provided for event cancellation notification.");
+            return;
+        }
+
+        String htmlContent =
+                eventCancelledTemplate
+                        .data(KEY_USER_NAME, user.getUsername())
+                        .data(KEY_FULL_NAME, fullName(user))
+                        .data(KEY_EVENT_NAME, event.eventName() != null ? event.eventName() : "")
+                        .data(
+                                KEY_EVENT_LOCATION,
+                                event.locationName() != null ? event.locationName() : "")
+                        .data(KEY_EVENT_START_TIME, formatDateTime(event.startTime()))
+                        .data(KEY_EVENT_END_TIME, formatDateTime(event.endTime()))
+                        .data(
+                                "cancellationReason",
+                                event.cancellationReason() != null
+                                        ? event.cancellationReason()
+                                        : "")
+                        .data(KEY_FRONTEND_BASE_URL, frontendBaseUrl.trim())
+                        .data(KEY_CURRENT_YEAR, currentYear())
+                        .render();
+
+        emailSender.send(
+                new de.felixhertweck.seatreservation.email.service.notifications
+                        .EventCancelledNotification(user, eventCancelledSubject, htmlContent));
     }
 
     // ---------------------------------------------------------------------

@@ -121,6 +121,10 @@ export type EntranceResponseDto = {
     eventLocationId?: Uuid;
 };
 
+export type EventCancelRequestDto = {
+    reason: string;
+};
+
 export type EventLocationMakerDto = {
     id?: Uuid;
     label?: string;
@@ -186,7 +190,13 @@ export type EventResponseDto = {
     managerIds?: Array<string>;
     supervisorIds?: Array<string>;
     reservedCount?: number;
+    status?: EventStatus;
+    cancellationReason?: string;
 };
+
+export const EventStatus = { ACTIVE: 'ACTIVE', CANCELLED: 'CANCELLED' } as const;
+
+export type EventStatus = typeof EventStatus[keyof typeof EventStatus];
 
 export type EventUserAllowanceUpdateDto = {
     id: Uuid;
@@ -624,6 +634,8 @@ export type UserEventResponseDto = {
     seatStatuses?: Array<SeatStatusDto>;
     locationId?: Uuid;
     reservationsAllowed?: number;
+    status?: EventStatus;
+    cancellationReason?: string;
 };
 
 export type UserProfileUpdateDto = {
@@ -1985,6 +1997,47 @@ export type PutApiManagerEventsByIdResponses = {
 };
 
 export type PutApiManagerEventsByIdResponse = PutApiManagerEventsByIdResponses[keyof PutApiManagerEventsByIdResponses];
+
+export type PostApiManagerEventsByIdCancelData = {
+    body: EventCancelRequestDto;
+    path: {
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/manager/events/{id}/cancel';
+};
+
+export type PostApiManagerEventsByIdCancelErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
+     */
+    403: unknown;
+    /**
+     * Not Found: Event not found
+     */
+    404: unknown;
+    /**
+     * Validation error: Reason missing or already cancelled
+     */
+    422: unknown;
+};
+
+export type PostApiManagerEventsByIdCancelResponses = {
+    /**
+     * OK
+     */
+    200: EventResponseDto;
+};
+
+export type PostApiManagerEventsByIdCancelResponse = PostApiManagerEventsByIdCancelResponses[keyof PostApiManagerEventsByIdCancelResponses];
 
 export type DeleteApiManagerEventsByIdManagersByUserIdData = {
     body?: never;

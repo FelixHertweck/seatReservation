@@ -32,6 +32,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.events.EventCancelledEvent;
 import de.felixhertweck.seatreservation.common.events.EventCreatedEvent;
 import de.felixhertweck.seatreservation.common.events.EventDeletedEvent;
 import de.felixhertweck.seatreservation.common.events.EventRescheduledEvent;
@@ -43,10 +44,13 @@ import de.felixhertweck.seatreservation.management.dto.EventRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
+import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
@@ -66,6 +70,8 @@ public class EventService {
 
     @Inject ReservationRepository reservationRepository;
 
+    @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+
     @Inject EventAccessService eventAccessService;
 
     @Inject jakarta.enterprise.event.Event<EventCreatedEvent> eventCreatedBus;
@@ -75,6 +81,8 @@ public class EventService {
     @Inject jakarta.enterprise.event.Event<EventDeletedEvent> eventDeletedBus;
 
     @Inject jakarta.enterprise.event.Event<EventRescheduledEvent> eventRescheduledBus;
+
+    @Inject jakarta.enterprise.event.Event<EventCancelledEvent> eventCancelledBus;
 
     /**
      * Creates a new Event and assigns the currently authenticated manager as its creator. Access
@@ -177,6 +185,11 @@ public class EventService {
         // Access control: Checks if the current user is a manager of the event
         // or if the user has the ADMIN role.
         eventAccessService.requireAccess(event, AuthenticatedUser.of(manager));
+
+        if (event.getStatus()
+                == de.felixhertweck.seatreservation.model.entity.EventStatus.CANCELLED) {
+            throw new ValidationException("Abgesagte Events können nicht mehr bearbeitet werden.");
+        }
 
         EventLocation location =
                 eventLocationRepository
@@ -616,6 +629,109 @@ public class EventService {
         if (dto.getReminderSendDate() != null
                 && !dto.getReminderSendDate().isBefore(dto.getStartTime())) {
             throw new ValidationException("Reminder send date must be before event start time");
+        }
+    }
+
+    /**
+     * Cancels an event with a reason, notifies all reservation holders, and cancels their
+     * reservations.
+     *
+     * @param id the event ID
+     * @param reason the reason for cancellation
+     * @param manager the manager requesting cancellation
+     * @return the updated EventResponseDTO
+     * @throws ValidationException if event is already cancelled or reason is invalid
+     */
+    @Transactional
+    public EventResponseDTO cancelEvent(UUID id, String reason, User manager)
+            throws ValidationException {
+        LOG.debugf(
+                "Attempting to cancel event ID: %s for manager: %s (ID: %s)",
+                id, manager.id, manager.getId());
+
+        Event event =
+                eventRepository
+                        .findByIdOptional(id)
+                        .orElseThrow(
+                                () -> {
+                                    LOG.warnf(
+                                            "Event with ID %s not found for cancellation by"
+                                                    + " manager: %s (ID: %s)",
+                                            id, manager.id, manager.getId());
+                                    return new EventNotFoundException(
+                                            "Event with id " + id + " not found");
+                                });
+
+        eventAccessService.requireAccess(event, AuthenticatedUser.of(manager));
+
+        if (event.getStatus()
+                == de.felixhertweck.seatreservation.model.entity.EventStatus.CANCELLED) {
+            throw new ValidationException("Das Event ist bereits abgesagt.");
+        }
+
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new ValidationException("Ein Absagegrund ist Pflicht.");
+        }
+
+        List<Reservation> activeReservations =
+                reservationRepository.findActiveByEventWithUserAndSeat(event);
+
+        eventCancelledBus.fire(
+                new EventCancelledEvent(
+                        event.getId(),
+                        event.getName(),
+                        event.getStartTime(),
+                        event.getEndTime(),
+                        event.getEventLocation() != null
+                                ? event.getEventLocation().getName()
+                                : null,
+                        reason.trim(),
+                        activeReservations));
+
+        event.setStatus(de.felixhertweck.seatreservation.model.entity.EventStatus.CANCELLED);
+        event.setCancellationReason(reason.trim());
+        activeReservations.forEach(reservationRepository::delete);
+        restoreAllowances(event, activeReservations);
+
+        LOG.infof(
+                "Event '%s' (ID: %s) cancelled successfully. %d reservations cancelled.",
+                event.getName(), event.id, activeReservations.size());
+
+        return new EventResponseDTO(event, 0, null);
+    }
+
+    /**
+     * Restores each affected user's EventUserAllowance.reservationsAllowedCount by one per deleted
+     * reservation, since the reservation slot is being freed on the event without the user having
+     * chosen to give it up.
+     */
+    private void restoreAllowances(Event event, List<Reservation> deletedReservations) {
+        if (deletedReservations.isEmpty()) {
+            return;
+        }
+
+        Set<UUID> userIds =
+                deletedReservations.stream().map(r -> r.getUser().id).collect(Collectors.toSet());
+        Map<UUID, EventUserAllowance> allowanceByUserId =
+                eventUserAllowanceRepository.findByEventAndUserIds(event, userIds).stream()
+                        .collect(Collectors.toMap(a -> a.getUser().id, a -> a));
+
+        Map<UUID, EventUserAllowance> updatedAllowancesByUserId = new java.util.LinkedHashMap<>();
+        for (Reservation reservation : deletedReservations) {
+            EventUserAllowance allowance = allowanceByUserId.get(reservation.getUser().id);
+            if (allowance == null) {
+                LOG.debugf(
+                        "No allowance found for user ID %s and event ID %s, skipping allowance"
+                                + " increment.",
+                        reservation.getUser().getId(), event.getId());
+                continue;
+            }
+            allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() + 1);
+            updatedAllowancesByUserId.put(reservation.getUser().id, allowance);
+        }
+        if (!updatedAllowancesByUserId.isEmpty()) {
+            eventUserAllowanceRepository.persist(
+                    new ArrayList<>(updatedAllowancesByUserId.values()));
         }
     }
 }

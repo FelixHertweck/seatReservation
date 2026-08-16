@@ -185,6 +185,8 @@ public class EventService {
                 dto.bookingStartTime(),
                 seatStatuses,
                 dto.locationId(),
-                dto.reservationsAllowed());
+                dto.reservationsAllowed(),
+                dto.status(),
+                dto.cancellationReason());
     }
 }

@@ -46,6 +46,7 @@ import de.felixhertweck.seatreservation.management.dto.ReservationConfirmationEm
 import de.felixhertweck.seatreservation.management.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventStatus;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
@@ -225,6 +226,12 @@ public class ReservationService {
                     "user ID: %s (ID: %s) is not allowed to access this reservation for creation.",
                     targetUser.id, targetUser.getId());
             throw new AccessDeniedException("You are not allowed to access this reservation.");
+        }
+
+        if (event.getStatus() == EventStatus.CANCELLED) {
+            LOG.warnf("Attempted to create reservation for cancelled event ID: %s", event.getId());
+            throw new ValidationException(
+                    "This event has been cancelled and no longer accepts reservations.");
         }
 
         List<Reservation> existingReservations = new ArrayList<>();

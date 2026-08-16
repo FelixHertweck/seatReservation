@@ -10,6 +10,7 @@ import {
   getApiManagerEventsQueryKey,
   postApiManagerEventsMutation,
   putApiManagerEventsByIdMutation,
+  postApiManagerEventsByIdCancelMutation,
   deleteApiManagerEventsMutation,
   getApiManagerEventlocationsOptions,
   getApiUsersManagerOptions,
@@ -43,6 +44,19 @@ export function useManagementEvents() {
 
   const updateMutation = useMutation({
     ...putApiManagerEventsByIdMutation(),
+    onSuccess: (data) => {
+      queryClient.setQueriesData(
+        { queryKey: getApiManagerEventsQueryKey() },
+        (oldData: EventResponseDto[] | undefined) =>
+          oldData
+            ? oldData.map((event) => (event.id === data.id ? data : event))
+            : [data],
+      );
+    },
+  });
+
+  const cancelMutation = useMutation({
+    ...postApiManagerEventsByIdCancelMutation(),
     onSuccess: (data) => {
       queryClient.setQueriesData(
         { queryKey: getApiManagerEventsQueryKey() },
@@ -92,6 +106,22 @@ export function useManagementEvents() {
     return request;
   };
 
+  const cancelEvent = async (id: string, reason: string) => {
+    const request = cancelMutation.mutateAsync({
+      path: { id },
+      body: { reason },
+    });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("management.events.cancelSuccess"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("management.events.cancelError"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
   const deleteEvent = async (ids: string[]) => {
     const request = deleteMutation.mutateAsync({ query: { ids } });
     toast.promise(request, {
@@ -112,6 +142,7 @@ export function useManagementEvents() {
     isLoading: eventsLoading || locationsLoading || usersLoading,
     createEvent,
     updateEvent,
+    cancelEvent,
     deleteEvent,
   };
 }

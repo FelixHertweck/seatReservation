@@ -26,7 +26,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -47,6 +50,13 @@ public class Event extends AbstractEntity {
     private Instant bookingStartTime;
     private Instant reminderSendDate;
     private boolean reminderSent;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private EventStatus status = EventStatus.ACTIVE;
+
+    @Column(columnDefinition = "TEXT")
+    private String cancellationReason;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private EventLocation event_location;
@@ -314,6 +324,22 @@ public class Event extends AbstractEntity {
                 userAllowances,
                 createdBy,
                 reservations);
+    }
+
+    public EventStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(EventStatus status) {
+        this.status = status;
+    }
+
+    public String getCancellationReason() {
+        return cancellationReason;
+    }
+
+    public void setCancellationReason(String cancellationReason) {
+        this.cancellationReason = cancellationReason;
     }
 
     @Override
