@@ -33,6 +33,16 @@ import { LocationImportModal } from "@/components/management/location-import-mod
 import { LocationFormModal } from "@/components/management/location-form-modal";
 import { LocationCardMapBackground } from "@/components/management/location-card-map-background";
 import { LocationCardSkeleton } from "@/components/management/location-card-skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/custom-ui/alert-dialog";
 import type { EventLocationResponseDto } from "@/api";
 
 export default function ManagementLocationsPage() {
@@ -54,6 +64,11 @@ export default function ManagementLocationsPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [selectedLocationForEdit, setSelectedLocationForEdit] =
     useState<EventLocationResponseDto | null>(null);
+  const [deleteLocationTarget, setDeleteLocationTarget] = useState<{
+    id: string;
+    name?: string;
+    hasLinkedEvents?: boolean;
+  } | null>(null);
 
   const handleCreate = () => {
     setSelectedLocationForEdit(null);
@@ -103,14 +118,22 @@ export default function ManagementLocationsPage() {
     null,
   );
 
-  const handleDelete = async (id: string, name: string | undefined) => {
-    if (confirm(t("management.locations.deleteConfirm", { name }))) {
-      setDeletingLocationId(id);
-      try {
-        await deleteLocation([id]);
-      } finally {
-        setDeletingLocationId(null);
-      }
+  const handleDelete = (
+    id: string,
+    name: string | undefined,
+    hasLinkedEvents: boolean | undefined,
+  ) => {
+    setDeleteLocationTarget({ id, name, hasLinkedEvents });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteLocationTarget?.id) return;
+    setDeletingLocationId(deleteLocationTarget.id);
+    try {
+      await deleteLocation([deleteLocationTarget.id]);
+      setDeleteLocationTarget(null);
+    } finally {
+      setDeletingLocationId(null);
     }
   };
 
@@ -280,7 +303,11 @@ export default function ManagementLocationsPage() {
                         size="icon"
                         onClick={() =>
                           location.id &&
-                          handleDelete(location.id, location.name)
+                          handleDelete(
+                            location.id,
+                            location.name,
+                            location.hasLinkedEvents,
+                          )
                         }
                         isLoading={deletingLocationId === location.id}
                       >
@@ -325,6 +352,47 @@ export default function ManagementLocationsPage() {
           }}
         />
       )}
+
+      <AlertDialog
+        open={!!deleteLocationTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteLocationTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {deleteLocationTarget?.hasLinkedEvents
+                ? t("management.locations.deleteBlockedTitle")
+                : t("management.locations.deleteConfirmTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteLocationTarget?.hasLinkedEvents
+                ? t("management.locations.deleteBlockedDescription")
+                : t("management.locations.deleteConfirmDescription", {
+                    name: deleteLocationTarget?.name ?? "",
+                  })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            {deleteLocationTarget?.hasLinkedEvents ? (
+              <AlertDialogAction onClick={() => setDeleteLocationTarget(null)}>
+                {t("common.close")}
+              </AlertDialogAction>
+            ) : (
+              <>
+                <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={confirmDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {t("common.delete")}
+                </AlertDialogAction>
+              </>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

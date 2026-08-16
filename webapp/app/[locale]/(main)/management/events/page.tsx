@@ -22,6 +22,16 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/custom-ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { EventFormModal } from "@/components/management/event-form-modal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/custom-ui/alert-dialog";
 import { useManagementEvents } from "@/hooks/use-management-events";
 import type { EventResponseDto } from "@/api";
 
@@ -48,6 +58,8 @@ export default function ManagementEventsPage() {
     null,
   );
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
+  const [deleteEventTarget, setDeleteEventTarget] =
+    useState<EventResponseDto | null>(null);
 
   const locationById = useMemo(
     () => new Map(locations.map((l) => [l.id, l])),
@@ -63,18 +75,25 @@ export default function ManagementEventsPage() {
   );
 
   const filteredEvents = useMemo(() => {
-    const query = searchQuery.toLowerCase();
-    const locationId = filters.locationId as string | undefined;
-    const base = events.filter((e) => {
-      const matchesQuery = !query || e.name?.toLowerCase().includes(query);
-      const matchesLocation = !locationId || e.eventLocationId === locationId;
-      return matchesQuery && matchesLocation;
-    });
-    return [...base].sort(
+    let result = [...events];
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (e) =>
+          e.name?.toLowerCase().includes(q) ||
+          e.description?.toLowerCase().includes(q) ||
+          locationById.get(e.eventLocationId)?.name?.toLowerCase().includes(q),
+      );
+    }
+    if (filters.locationId) {
+      result = result.filter((e) => e.eventLocationId === filters.locationId);
+    }
+    return result.sort(
       (a, b) => (a.startTime?.getTime() ?? 0) - (b.startTime?.getTime() ?? 0),
     );
-  }, [events, searchQuery, filters]);
+  }, [events, searchQuery, filters, locationById]);
 
+  // Group events by location
   const groups = useMemo(() => {
     const map = new Map<string, EventResponseDto[]>();
     for (const event of filteredEvents) {
@@ -96,15 +115,19 @@ export default function ManagementEventsPage() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (event: EventResponseDto) => {
+  const handleDelete = (event: EventResponseDto) => {
     if (!event.id) return;
-    if (confirm(t("management.events.deleteConfirm", { name: event.name }))) {
-      setDeletingEventId(event.id);
-      try {
-        await deleteEvent([event.id]);
-      } finally {
-        setDeletingEventId(null);
-      }
+    setDeleteEventTarget(event);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteEventTarget?.id) return;
+    setDeletingEventId(deleteEventTarget.id);
+    try {
+      await deleteEvent([deleteEventTarget.id]);
+      setDeleteEventTarget(null);
+    } finally {
+      setDeletingEventId(null);
     }
   };
 
@@ -311,6 +334,49 @@ export default function ManagementEventsPage() {
           onClose={() => setIsModalOpen(false)}
         />
       )}
+
+      <AlertDialog
+        open={!!deleteEventTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteEventTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {(deleteEventTarget?.reservedCount ?? 0) > 0
+                ? t("management.events.deleteBlockedTitle")
+                : t("management.events.deleteConfirmTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {(deleteEventTarget?.reservedCount ?? 0) > 0
+                ? t("management.events.deleteBlockedDescription", {
+                    count: deleteEventTarget?.reservedCount ?? 0,
+                  })
+                : t("management.events.deleteConfirmDescription", {
+                    name: deleteEventTarget?.name ?? "",
+                  })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            {(deleteEventTarget?.reservedCount ?? 0) > 0 ? (
+              <AlertDialogAction onClick={() => setDeleteEventTarget(null)}>
+                {t("common.close")}
+              </AlertDialogAction>
+            ) : (
+              <>
+                <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={confirmDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {t("common.delete")}
+                </AlertDialogAction>
+              </>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

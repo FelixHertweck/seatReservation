@@ -653,12 +653,36 @@ public class ReservationEmailContent {
             List<Reservation> deletedReservations,
             List<Reservation> activeReservations,
             String additionalMailAddress) {
-        if (deletedReservations == null || deletedReservations.isEmpty()) {
-            LOG.warnf("No reservations deleted to user %s.", user.getEmail());
+        sendUpdateReservationConfirmation(
+                user,
+                deletedReservations,
+                activeReservations,
+                additionalMailAddress,
+                reservationUpdateSubject,
+                null,
+                null);
+    }
+
+    public void sendUpdateReservationConfirmation(
+            User user,
+            List<Reservation> deletedReservations,
+            List<Reservation> activeReservations,
+            String additionalMailAddress,
+            String customSubject,
+            String customHeader,
+            String noticeMessage) {
+        if ((deletedReservations == null || deletedReservations.isEmpty())
+                && (activeReservations == null || activeReservations.isEmpty())) {
+            LOG.warnf(
+                    "No reservations provided for update email to user %s.",
+                    user != null ? user.getEmail() : null);
             return;
         }
 
-        Event event = deletedReservations.getFirst().getEvent();
+        Event event =
+                (deletedReservations != null && !deletedReservations.isEmpty())
+                        ? deletedReservations.getFirst().getEvent()
+                        : activeReservations.getFirst().getEvent();
         String eventName = event.getName();
 
         boolean hasActiveSeats = activeReservations != null && !activeReservations.isEmpty();
@@ -677,7 +701,10 @@ public class ReservationEmailContent {
         Map<UUID, Seat> seatById =
                 loadSeatsForReservations(deletedReservations, activeReservations);
 
-        List<SeatView> deletedSeats = toSeatViews(deletedReservations, seatById);
+        List<SeatView> deletedSeats =
+                deletedReservations != null
+                        ? toSeatViews(deletedReservations, seatById)
+                        : List.of();
         List<SeatView> activeSeats =
                 hasActiveSeats ? toSeatViews(activeReservations, seatById) : List.of();
 
@@ -690,12 +717,23 @@ public class ReservationEmailContent {
                         : null;
         String appleWalletLink = generateAppleWalletLink(seatmapToken);
 
+        String subject = customSubject != null ? customSubject : reservationUpdateSubject;
+        String header =
+                customHeader != null ? customHeader : "Your reservation update confirmation";
+
         String htmlContent =
                 reservationUpdateTemplate
                         .data(KEY_USER_NAME, user.getUsername())
                         .data(KEY_FULL_NAME, fullName(user))
+                        .data("emailTitle", subject)
+                        .data("emailHeader", header)
+                        .data("noticeMessage", noticeMessage)
                         .data(KEY_EVENT_NAME, eventName != null ? eventName : "")
-                        .data(KEY_EVENT_LOCATION, event.getEventLocation().getName())
+                        .data(
+                                KEY_EVENT_LOCATION,
+                                event.getEventLocation() != null
+                                        ? event.getEventLocation().getName()
+                                        : "")
                         .data(KEY_EVENT_START_TIME, formatDateTime(event.getStartTime()))
                         .data(KEY_EVENT_END_TIME, formatDateTime(event.getEndTime()))
                         .data("deletedSeats", deletedSeats)
@@ -719,12 +757,7 @@ public class ReservationEmailContent {
 
         emailSender.send(
                 new ReservationUpdateNotification(
-                        user,
-                        additionalMailAddress,
-                        reservationUpdateSubject,
-                        htmlContent,
-                        pngImage,
-                        qrCodeImage));
+                        user, additionalMailAddress, subject, htmlContent, pngImage, qrCodeImage));
     }
 
     // ---------------------------------------------------------------------

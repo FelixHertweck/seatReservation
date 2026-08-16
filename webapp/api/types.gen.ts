@@ -146,6 +146,8 @@ export type EventLocationResponseDto = {
     seatCount?: number;
     markerCount?: number;
     areaCount?: number;
+    hasEventsWithActiveBooking?: boolean;
+    hasLinkedEvents?: boolean;
 };
 
 export type EventLocationUpdateDto = {

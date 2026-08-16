@@ -32,10 +32,12 @@ import static org.mockito.Mockito.*;
 import de.felixhertweck.seatreservation.common.events.EventDeletedEvent;
 import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -45,6 +47,7 @@ import org.mockito.MockitoAnnotations;
 public class EventServiceDeleteEventTest {
 
     @Mock EventRepository eventRepository;
+    @Mock ReservationRepository reservationRepository;
 
     @Mock jakarta.enterprise.event.Event<EventDeletedEvent> eventDeletedBus;
 
@@ -62,6 +65,7 @@ public class EventServiceDeleteEventTest {
         EventAccessService eventAccessService = new EventAccessService();
         eventAccessService.eventRepository = eventRepository;
         eventService.eventAccessService = eventAccessService;
+        eventService.reservationRepository = reservationRepository;
 
         adminUser = new User();
         adminUser.id = id(1);
@@ -153,6 +157,27 @@ public class EventServiceDeleteEventTest {
                 AccessDeniedException.class,
                 () -> eventService.deleteEvent(List.of(id(101)), otherUser));
 
+        verify(eventRepository, never()).delete(any());
+    }
+
+    @Test
+    void deleteEvent_WithActiveReservations_ThrowsValidationExceptionAndDoesNotDelete() {
+        Event event1 = new Event();
+        event1.id = id(101);
+        event1.setName("Event 1");
+        event1.setManager(managerUser);
+
+        when(eventRepository.findByIdsWithManager(eq(List.of(id(101)))))
+                .thenReturn(List.of(event1));
+        stubIsUserManager(event1);
+        when(reservationRepository.countActiveByEvent(event1)).thenReturn(3L);
+
+        ValidationException ex =
+                assertThrows(
+                        ValidationException.class,
+                        () -> eventService.deleteEvent(List.of(id(101)), managerUser));
+
+        assertTrue(ex.getMessage().contains("aktive Reservierungen"));
         verify(eventRepository, never()).delete(any());
     }
 

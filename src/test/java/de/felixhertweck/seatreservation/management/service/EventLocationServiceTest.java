@@ -50,6 +50,7 @@ import de.felixhertweck.seatreservation.management.dto.ImportAreaDto;
 import de.felixhertweck.seatreservation.management.dto.ImportMarkerDto;
 import de.felixhertweck.seatreservation.management.dto.ImportSeatDto;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
+import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -396,6 +397,26 @@ public class EventLocationServiceTest {
         eventLocationService.deleteEventLocation(List.of(id(1)), managerAuth);
 
         verify(eventLocationRepository, times(1)).delete(existingLocation);
+    }
+
+    @Test
+    void deleteEventLocation_HasLinkedEvents_ThrowsValidationException() {
+        Event linkedEvent = new Event();
+        linkedEvent.setName("Active Concert");
+        when(eventLocationRepository.findByIdsWithManager(List.of(id(1))))
+                .thenReturn(List.of(existingLocation));
+        when(eventRepository.findByEventLocation(existingLocation))
+                .thenReturn(List.of(linkedEvent));
+
+        ValidationException ex =
+                assertThrows(
+                        ValidationException.class,
+                        () ->
+                                eventLocationService.deleteEventLocation(
+                                        List.of(id(1)), managerAuth));
+
+        assertTrue(ex.getMessage().contains("Active Concert"));
+        verify(eventLocationRepository, never()).delete(any(EventLocation.class));
     }
 
     @Test

@@ -3,24 +3,39 @@
   <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Update Reservation Confirmation</title>
+      <title>{#if emailTitle}{emailTitle}{#else}Reservation Update Confirmation{/if}</title>
       <style>
 {#include email/fragments/simple-card-styles /}
 {#include email/fragments/action-styles /}
+          .notice-box {
+              background-color: #f8f9fa;
+              border-left: 4px solid #3b82f6;
+              padding: 12px 16px;
+              margin: 15px 0;
+              border-radius: 0 4px 4px 0;
+          }
       </style>
   </head>
   <body>
       <div class="container">
-          <div class="header">Your reservation update confirmation</div>
+          <div class="header">{#if emailHeader}{emailHeader}{#else}Your reservation update confirmation{/if}</div>
           <p>Hello {fullName},</p>
+          {#if noticeMessage}
+          <div class="notice-box">
+              <p style="margin: 0;">{noticeMessage}</p>
+          </div>
+          {#else}
           <p>Thank you for your reservation update for the event "{eventName}".</p>
+          {/if}
           <p><strong>Location:</strong> {eventLocation}</p>
           <p><strong>Start:</strong> {eventStartTime}</p>
           <p><strong>End:</strong> {eventEndTime}</p>
-          <p>You have deleted the following seats:</p>
+          {#if deletedSeats}
+          <p>You have deleted/cancelled the following seat(s):</p>
           <ul>
               {#for seat in deletedSeats}<li>{seat.number} ({seat.row}){#if seat.area} - {seat.area}{/if}</li>{/for}
           </ul>
+          {/if}
           {#if hasActiveSeats}
           <p>You have still reserved the following seats:</p>
           <ul>
@@ -40,9 +55,11 @@
               </div>
               <a href="{seatmapLink}" class="button">🪑 View Interactive Seat Map</a>
           </div>
+          {#else}
+          <p style="color: #6b7280; margin-top: 15px;">You currently have no active seat reservations remaining for this event.</p>
           {/if}
           <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>
-          <p style="margin-top: 20px;">We wish you a great time at the event!</p>
+          <p style="margin-top: 20px;">{#if hasActiveSeats}We wish you a great time at the event!{#else}If you have any questions, please contact the event organizer.{/if}</p>
           <p>Best regards</p>
           <div class="footer">
               &copy; {currentYear} - All rights reserved

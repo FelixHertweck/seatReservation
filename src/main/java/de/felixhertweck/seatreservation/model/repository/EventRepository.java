@@ -22,8 +22,10 @@ package de.felixhertweck.seatreservation.model.repository;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -152,5 +154,53 @@ public class EventRepository implements PanacheRepositoryBase<Event, UUID> {
                                 + " e.managers m WHERE m = ?1 OR s = ?1",
                         user)
                 .list();
+    }
+
+    /**
+     * Checks which of the given location IDs have associated events where booking has started
+     * (bookingStartTime <= now).
+     *
+     * @param locationIds the location IDs to check
+     * @param now current timestamp
+     * @return map of location ID to true for locations with active booking events
+     */
+    public Map<UUID, Boolean> getHasActiveBookingEventsByLocationIds(
+            Collection<UUID> locationIds, Instant now) {
+        if (locationIds == null || locationIds.isEmpty()) {
+            return Map.of();
+        }
+        List<UUID> activeLocationIds =
+                getEntityManager()
+                        .createQuery(
+                                "SELECT DISTINCT e.event_location.id FROM Event e WHERE"
+                                        + " e.event_location.id IN ?1 AND e.bookingStartTime IS NOT"
+                                        + " NULL AND e.bookingStartTime <= ?2",
+                                UUID.class)
+                        .setParameter(1, locationIds)
+                        .setParameter(2, now)
+                        .getResultList();
+        return activeLocationIds.stream().collect(Collectors.toMap(id -> id, id -> true));
+    }
+
+    /**
+     * Checks which of the given location IDs have at least one linked event, regardless of booking
+     * status. This reflects the same condition that blocks EventLocation deletion.
+     *
+     * @param locationIds the location IDs to check
+     * @return map of location ID to true for locations with at least one linked event
+     */
+    public Map<UUID, Boolean> getHasLinkedEventsByLocationIds(Collection<UUID> locationIds) {
+        if (locationIds == null || locationIds.isEmpty()) {
+            return Map.of();
+        }
+        List<UUID> linkedLocationIds =
+                getEntityManager()
+                        .createQuery(
+                                "SELECT DISTINCT e.event_location.id FROM Event e WHERE"
+                                        + " e.event_location.id IN ?1",
+                                UUID.class)
+                        .setParameter(1, locationIds)
+                        .getResultList();
+        return linkedLocationIds.stream().collect(Collectors.toMap(id -> id, id -> true));
     }
 }

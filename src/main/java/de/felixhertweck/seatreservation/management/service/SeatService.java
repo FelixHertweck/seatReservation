@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -30,16 +31,24 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
+import de.felixhertweck.seatreservation.common.events.ReservationCancelledEvent;
 import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.SeatNotFoundException;
+import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
+import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import org.jboss.logging.Logger;
@@ -51,6 +60,10 @@ public class SeatService {
 
     @Inject SeatRepository seatRepository;
 
+    @Inject ReservationRepository reservationRepository;
+
+    @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+
     @Inject EventLocationAccessService eventLocationAccessService;
 
     @Inject EventLocationAreaRepository eventLocationAreaRepository;
@@ -58,6 +71,8 @@ public class SeatService {
     @Inject EventLocationEntranceRepository eventLocationEntranceRepository;
 
     @Inject SeatmapCacheService seatmapCacheService;
+
+    @Inject jakarta.enterprise.event.Event<ReservationCancelledEvent> reservationCancelledBus;
 
     /**
      * Creates a new seat for the specified event location by a manager.
@@ -303,7 +318,6 @@ public class SeatService {
                 seatRepository.findByIdsWithLocation(ids).stream()
                         .collect(Collectors.toMap(s -> s.id, s -> s));
 
-        Set<UUID> locationIdsToInvalidate = new HashSet<>();
         for (UUID id : ids) {
             Seat seat = seatMap.get(id);
             if (seat == null) {
@@ -311,6 +325,66 @@ public class SeatService {
                 throw new SeatNotFoundException("Seat with id " + id + " not found");
             }
             eventLocationAccessService.requireAccess(seat.getLocation(), manager);
+        }
+
+        List<Reservation> allReservations =
+                reservationRepository.findBySeatIdsWithUserAndEvent(ids);
+        List<Reservation> activeReservations =
+                allReservations.stream()
+                        .filter(r -> r.getStatus() != ReservationStatus.BLOCKED)
+                        .toList();
+
+        if (!activeReservations.isEmpty()) {
+            Map<Event, List<Reservation>> byEvent =
+                    activeReservations.stream()
+                            .filter(r -> r.getEvent() != null)
+                            .collect(Collectors.groupingBy(Reservation::getEvent));
+
+            Set<UUID> deletingSeatIds = new HashSet<>(ids);
+
+            for (Map.Entry<Event, List<Reservation>> entry : byEvent.entrySet()) {
+                Event event = entry.getKey();
+                List<Reservation> eventRes = entry.getValue();
+
+                Map<User, List<Reservation>> byUser =
+                        eventRes.stream()
+                                .filter(r -> r.getUser() != null)
+                                .collect(Collectors.groupingBy(Reservation::getUser));
+
+                for (Map.Entry<User, List<Reservation>> userEntry : byUser.entrySet()) {
+                    User user = userEntry.getKey();
+                    List<Reservation> userDeletedReservations = userEntry.getValue();
+
+                    List<Reservation> allUserEventReservations =
+                            reservationRepository.findByUserAndEvent(user, event);
+                    List<Reservation> remainingActive =
+                            allUserEventReservations.stream()
+                                    .filter(
+                                            r ->
+                                                    r.getStatus() != ReservationStatus.BLOCKED
+                                                            && r.getSeat() != null
+                                                            && !deletingSeatIds.contains(
+                                                                    r.getSeat().id))
+                                    .toList();
+
+                    reservationCancelledBus.fire(
+                            new ReservationCancelledEvent(
+                                    user,
+                                    userDeletedReservations,
+                                    remainingActive,
+                                    "One or more of your reserved seats have been removed by the"
+                                            + " event organizer."));
+                }
+
+                restoreAllowances(event, eventRes);
+            }
+        }
+
+        allReservations.forEach(reservationRepository::delete);
+
+        Set<UUID> locationIdsToInvalidate = new HashSet<>();
+        for (UUID id : ids) {
+            Seat seat = seatMap.get(id);
             seatRepository.delete(seat);
             locationIdsToInvalidate.add(seat.getLocation().getId());
             LOG.infof("Seat ID: %s deleted successfully", seat.id);
@@ -320,6 +394,47 @@ public class SeatService {
                     () -> locationIdsToInvalidate.forEach(seatmapCacheService::invalidateSeats));
         }
         LOG.debugf("Seats with IDs %s deleted successfully by manager ID: %s", ids, manager.id());
+    }
+
+    /**
+     * Restores each affected user's EventUserAllowance.reservationsAllowedCount by one per deleted
+     * reservation, since the reservation slot is being freed by a manager-initiated seat deletion
+     * without the user having chosen to give it up.
+     */
+    private void restoreAllowances(Event event, List<Reservation> deletedReservations) {
+        if (deletedReservations.isEmpty()) {
+            return;
+        }
+
+        Set<UUID> userIds =
+                deletedReservations.stream()
+                        .filter(r -> r.getUser() != null)
+                        .map(r -> r.getUser().id)
+                        .collect(Collectors.toSet());
+        Map<UUID, EventUserAllowance> allowanceByUserId =
+                eventUserAllowanceRepository.findByEventAndUserIds(event, userIds).stream()
+                        .collect(Collectors.toMap(a -> a.getUser().id, a -> a));
+
+        Map<UUID, EventUserAllowance> updatedAllowancesByUserId = new java.util.LinkedHashMap<>();
+        for (Reservation reservation : deletedReservations) {
+            if (reservation.getUser() == null) {
+                continue;
+            }
+            EventUserAllowance allowance = allowanceByUserId.get(reservation.getUser().id);
+            if (allowance == null) {
+                LOG.debugf(
+                        "No allowance found for user ID %s and event ID %s, skipping allowance"
+                                + " increment.",
+                        reservation.getUser().getId(), event.getId());
+                continue;
+            }
+            allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() + 1);
+            updatedAllowancesByUserId.put(reservation.getUser().id, allowance);
+        }
+        if (!updatedAllowancesByUserId.isEmpty()) {
+            eventUserAllowanceRepository.persist(
+                    new ArrayList<>(updatedAllowancesByUserId.values()));
+        }
     }
 
     /**
