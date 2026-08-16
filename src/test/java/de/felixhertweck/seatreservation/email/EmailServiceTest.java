@@ -659,4 +659,50 @@ class EmailServiceTest {
         assertEquals("text/csv", attachment.getContentType());
         assertFalse(attachment.isInlineAttachment());
     }
+
+    @Test
+    void sendEventRescheduledNotification_Success() {
+        User user = createTestUser();
+        EventLocation location = createTestEventLocation();
+        Event event = createTestEvent(location);
+        event.setBookingDeadline(Instant.now().plusSeconds(Duration.ofHours(12).toSeconds()));
+        Seat seat = createTestSeat(location, "A1");
+        seat.setSeatRow("1");
+        Reservation reservation = createTestReservation(user, event, seat);
+        List<Reservation> reservations = List.of(reservation);
+
+        Instant oldStartTime = event.getStartTime().minusSeconds(7200);
+        Instant oldEndTime = event.getEndTime().minusSeconds(7200);
+        String oldLocation = "Alte Halle";
+        Instant oldBookingDeadline = event.getBookingDeadline().minusSeconds(7200);
+
+        when(seatRepository.findByIdsWithAreaAndEntrance(any())).thenReturn(List.of(seat));
+        when(emailSeatMapService.createEmailSeatMapToken(any(), any(), any()))
+                .thenReturn("test-reschedule-token");
+        when(emailSeatMapService.getPngImage(anyString()))
+                .thenReturn(Optional.of(new byte[] {1, 2, 3}));
+
+        emailService.sendEventRescheduledNotification(
+                user,
+                event,
+                reservations,
+                oldStartTime,
+                oldEndTime,
+                oldLocation,
+                oldBookingDeadline,
+                null);
+        emailDispatcher.drainQueue();
+
+        List<Mail> sentMails = mailbox.getMailsSentTo(user.getEmail());
+        assertEquals(1, sentMails.size());
+
+        Mail sentMail = sentMails.getFirst();
+        assertEquals("Important: Your Event Schedule Has Changed", sentMail.getSubject());
+        assertTrue(sentMail.getHtml().contains(event.getName()));
+        assertTrue(sentMail.getHtml().contains("Important: Event Schedule Update"));
+        assertTrue(sentMail.getHtml().contains("A1 (1) - Parkett"));
+        assertTrue(sentMail.getHtml().contains(oldLocation));
+        assertTrue(sentMail.getHtml().contains(location.getName()));
+        assertEquals(2, sentMail.getAttachments().size(), "Should attach seatmap and qrcode PNGs");
+    }
 }

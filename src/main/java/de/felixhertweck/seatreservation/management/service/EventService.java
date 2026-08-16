@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -33,6 +34,7 @@ import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.events.EventCreatedEvent;
 import de.felixhertweck.seatreservation.common.events.EventDeletedEvent;
+import de.felixhertweck.seatreservation.common.events.EventRescheduledEvent;
 import de.felixhertweck.seatreservation.common.events.EventUpdatedEvent;
 import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
@@ -71,6 +73,8 @@ public class EventService {
     @Inject jakarta.enterprise.event.Event<EventUpdatedEvent> eventUpdatedBus;
 
     @Inject jakarta.enterprise.event.Event<EventDeletedEvent> eventDeletedBus;
+
+    @Inject jakarta.enterprise.event.Event<EventRescheduledEvent> eventRescheduledBus;
 
     /**
      * Creates a new Event and assigns the currently authenticated manager as its creator. Access
@@ -208,6 +212,23 @@ public class EventService {
         int oldSupervisorCount = event.getSupervisors() == null ? 0 : event.getSupervisors().size();
         int newSupervisorCount = supervisors == null ? 0 : supervisors.size();
 
+        Instant oldStartTime = event.getStartTime();
+        Instant oldEndTime = event.getEndTime();
+        Instant oldBookingDeadline = event.getBookingDeadline();
+        String oldLocationName =
+                event.getEventLocation() != null ? event.getEventLocation().getName() : null;
+
+        Instant newStartTime = dto.getStartTime();
+        Instant newEndTime = dto.getEndTime();
+        Instant newBookingDeadline = dto.getBookingDeadline();
+        String newLocationName = location != null ? location.getName() : null;
+
+        boolean scheduleChanged =
+                !Objects.equals(oldStartTime, newStartTime)
+                        || !Objects.equals(oldEndTime, newEndTime)
+                        || !Objects.equals(oldBookingDeadline, newBookingDeadline)
+                        || !Objects.equals(oldLocationName, newLocationName);
+
         LOG.debugf(
                 "Updating event ID %s: name='%s' -> '%s', description='%s' -> '%s', startTime='%s'"
                         + " -> '%s', endTime='%s' -> '%s', bookingDeadline='%s' -> '%s',"
@@ -253,6 +274,21 @@ public class EventService {
                         event.getStartTime(),
                         event.getEndTime(),
                         event.getReminderSendDate()));
+
+        if (scheduleChanged) {
+            eventRescheduledBus.fireAsync(
+                    new EventRescheduledEvent(
+                            event.getId(),
+                            event.getName(),
+                            oldStartTime,
+                            newStartTime,
+                            oldEndTime,
+                            newEndTime,
+                            oldLocationName,
+                            newLocationName,
+                            oldBookingDeadline,
+                            newBookingDeadline));
+        }
 
         return new EventResponseDTO(event);
     }

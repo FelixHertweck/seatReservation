@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Event Schedule Update</title>
+      <style>
+{#include email/fragments/card-layout-styles /}
+          ul {
+              list-style-type: none;
+              padding: 0;
+          }
+          li {
+              margin-bottom: 5px;
+          }
+{#include email/fragments/action-styles /}
+      </style>
+  </head>
+  <body>
+      <div class="container">
+          <h1>Important: Event Schedule Update</h1>
+          <p>Hello {fullName},</p>
+          <p>Please note that details for the event <strong>"{eventName}"</strong> have changed.</p>
+          
+          <p><strong>Updated Event Details:</strong></p>
+          <ul>
+              {#if startTimeChanged}
+              <li><strong>Start Time:</strong> <del>{oldStartTime}</del> &rarr; <strong>{newStartTime}</strong></li>
+              {#else}
+              <li><strong>Start Time:</strong> {eventStartTime}</li>
+              {/if}
+
+              {#if endTimeChanged}
+              <li><strong>End Time:</strong> <del>{oldEndTime}</del> &rarr; <strong>{newEndTime}</strong></li>
+              {#else}
+              <li><strong>End Time:</strong> {eventEndTime}</li>
+              {/if}
+
+              {#if locationChanged}
+              <li><strong>Location:</strong> <del>{oldLocation}</del> &rarr; <strong>{newLocation}</strong></li>
+              {#else}
+              <li><strong>Location:</strong> {eventLocation}</li>
+              {/if}
+
+              {#if bookingDeadlineChanged}
+              <li><strong>Booking Deadline:</strong> <del>{oldBookingDeadline}</del> &rarr; <strong>{newBookingDeadline}</strong></li>
+              {/if}
+          </ul>
+
+          <p>You have reserved the following seats for this event:</p>
+          <ul>
+              {#for seat in seats}<li>{seat.number} ({seat.row}){#if seat.area} - {seat.area}{/if}</li>{/for}
+          </ul>
+
+{#include email/fragments/qrcode-block /}
+{#include email/fragments/wallet-block /}
+{#include email/fragments/entrance-info-block /}
+
+          <div class="seatmap-container">
+              <p><strong>Here is an overview of your seats:</strong></p>
+              <img src="cid:seatmap-image" alt="Seat Map" class="seatmap-image" />
+              <div style="margin-bottom: 20px;">
+                  <span style="display: inline-block; width: 15px; height: 15px; background-color: #2B7FFF; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
+                  <span style="vertical-align: middle;">My Reserved</span>
+                  <span style="display: inline-block; width: 15px; height: 15px; background-color: #F0B100; border-radius: 3px; vertical-align: middle; margin-right: 5px; margin-left: 15px;"></span>
+                  <span style="vertical-align: middle;">Already Reserved</span>
+              </div>
+              <a href="{seatmapLink}" class="button">🪑 View Interactive Seat Map</a>
+          </div>
+
+          <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>
+          <p style="margin-top: 20px;">We apologize for any inconvenience and look forward to seeing you!</p>
+          <p>Sincerely,</p>
+          <p>Your Seat Reservation Team</p>
+          <div class="footer">
+              <p>&copy; {currentYear} Seat Reservation. All rights reserved.</p>
+          </div>
+      </div>
+  </body>
+</html>

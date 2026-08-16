@@ -823,7 +823,12 @@
     "cancelButton": "Cancel",
     "savingButton": "Saving...",
     "createButton": "Create",
-    "updateButton": "Update"
+    "updateButton": "Update",
+    "existingReservationsWarning": "This event already has {{count}} reservation(s). Modifying the schedule, location, or booking deadline will notify all affected attendees via email.",
+    "rescheduleConfirmTitle": "Confirm Event Reschedule",
+    "rescheduleConfirmDescription": "You have modified relevant details (time, location, or deadline) for an event with existing reservations. All affected users will be notified by email. Do you want to proceed?",
+    "rescheduleConfirmButton": "Save and Notify Users",
+    "rescheduleCancelButton": "Cancel"
   },
   "eventManagement": {
     "confirmDelete": "Are you sure you want to delete {{eventName}}?",

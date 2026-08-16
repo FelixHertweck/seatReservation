@@ -40,6 +40,7 @@ import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.events.EventCreatedEvent;
 import de.felixhertweck.seatreservation.common.events.EventDeletedEvent;
+import de.felixhertweck.seatreservation.common.events.EventRescheduledEvent;
 import de.felixhertweck.seatreservation.common.events.EventUpdatedEvent;
 import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
@@ -48,6 +49,7 @@ import de.felixhertweck.seatreservation.management.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import io.quarkus.scheduler.Scheduled;
 import io.quarkus.scheduler.Scheduler;
 import org.hibernate.Hibernate;
@@ -61,6 +63,8 @@ public class NotificationService {
     @Inject EventService eventService;
 
     @Inject ReservationService reservationService;
+
+    @Inject ReservationRepository reservationRepository;
 
     @Inject EmailService emailService;
 
@@ -353,6 +357,115 @@ public class NotificationService {
         final List<Reservation> reservations;
 
         ReminderData(Event event, List<Reservation> reservations) {
+            this.event = event;
+            this.reservations = reservations;
+        }
+    }
+
+    /**
+     * Handles asynchronous event rescheduled events. Loads affected reservations and dispatches
+     * notification emails to booked users.
+     *
+     * @param event The event rescheduled event
+     */
+    public void onEventRescheduled(@ObservesAsync EventRescheduledEvent event) {
+        try {
+            LOG.infof("Handling EventRescheduledEvent for event ID: %s", event.eventId());
+            RescheduledData data = self.loadRescheduledData(event.eventId());
+            if (data == null || data.reservations.isEmpty()) {
+                LOG.debugf(
+                        "No reservations found for rescheduled event ID: %s, skipping notification",
+                        event.eventId());
+                return;
+            }
+
+            self.sendRescheduledEmails(data, event);
+        } catch (Exception e) {
+            LOG.errorf(
+                    e,
+                    "Error processing reschedule notification for event ID: %s",
+                    event.eventId());
+        }
+    }
+
+    /**
+     * Loads event and reservation data for rescheduled event in a short transaction. Eagerly loads
+     * entities required outside transaction boundary.
+     *
+     * @param eventId The ID of the event
+     * @return RescheduledData containing event and reservations, or null if not found
+     */
+    @Transactional
+    public RescheduledData loadRescheduledData(UUID eventId) {
+        Event event = eventService.findById(eventId);
+        if (event == null) {
+            LOG.warnf("Event with ID %s not found for reschedule notification", eventId);
+            return null;
+        }
+
+        List<Reservation> reservations =
+                reservationRepository.findByEventIdWithUserAndSeat(eventId);
+        if (reservations.isEmpty()) {
+            LOG.debugf(
+                    "No reservations found for event %s (ID: %s) upon reschedule",
+                    event.getName(), eventId);
+            return new RescheduledData(event, reservations);
+        }
+
+        eagerLoadEntities(event, reservations);
+        return new RescheduledData(event, reservations);
+    }
+
+    /**
+     * Sends reschedule notification emails to users with reservations.
+     *
+     * @param data The rescheduled data containing event and reservations
+     * @param event The EventRescheduledEvent with old and new values
+     */
+    @ActivateRequestContext
+    public void sendRescheduledEmails(RescheduledData data, EventRescheduledEvent event) {
+        Map<User, List<Reservation>> reservationsByUser =
+                data.reservations.stream().collect(Collectors.groupingBy(Reservation::getUser));
+
+        LOG.debugf(
+                "Sending reschedule notifications to %d users for event ID: %s",
+                reservationsByUser.size(), data.event.id);
+
+        reservationsByUser.forEach(
+                (user, userReservations) -> {
+                    try {
+                        LOG.debugf(
+                                "Sending reschedule notification to user: %s for event: %s",
+                                user.id, data.event.getName());
+                        emailService.sendEventRescheduledNotification(
+                                user,
+                                data.event,
+                                userReservations,
+                                event.oldStartTime(),
+                                event.oldEndTime(),
+                                event.oldLocationName(),
+                                event.oldBookingDeadline(),
+                                null);
+                    } catch (Exception e) {
+                        LOG.errorf(
+                                e,
+                                "Error sending reschedule notification email to user ID: %s for"
+                                        + " event ID: %s",
+                                user.id,
+                                data.event.id);
+                    }
+                });
+    }
+
+    /**
+     * Helper class to hold rescheduled event data loaded from database. Used to pass data between
+     * transactional boundaries.
+     */
+    public static class RescheduledData {
+        public final Event event;
+        public final List<Reservation> reservations;
+
+        public RescheduledData(Event event, List<Reservation> reservations) {
             this.event = event;
             this.reservations = reservations;
         }
