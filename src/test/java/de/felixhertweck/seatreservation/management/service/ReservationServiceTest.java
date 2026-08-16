@@ -23,6 +23,7 @@ import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -70,6 +71,7 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 @QuarkusTest
@@ -252,6 +254,34 @@ class ReservationServiceTest {
         verify(reservationRepository).persistAll(anyList());
         verify(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
         assertEquals(0, allowance.getReservationsAllowedCount()); // Allowance should be decremented
+    }
+
+    @Test
+    void createReservation_Success_MultipleSeats_PersistsAllowanceOnceAfterLoop() {
+        allowance.setReservationsAllowedCount(10);
+
+        Seat seat2 = new Seat("A2", event.getEventLocation(), "2", 1, 2, null, null);
+        seat2.id = id(2);
+        Seat seat3 = new Seat("A3", event.getEventLocation(), "3", 1, 3, null, null);
+        seat3.id = id(3);
+        Set<UUID> seatIds = Set.of(seat.id, seat2.id, seat3.id);
+
+        ReservationRequestDTO dto = new ReservationRequestDTO();
+        dto.setEventId(event.id);
+        dto.setSeatIds(seatIds);
+        dto.setUserId(regularUser.id);
+
+        when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        mockSeatFind(seatIds, List.of(seat, seat2, seat3));
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.of(allowance));
+
+        reservationService.createReservations(dto, adminUser);
+
+        // Allowance decremented once per seat, but persisted exactly once after the loop
+        assertEquals(7, allowance.getReservationsAllowedCount());
+        verify(eventUserAllowanceRepository, times(1)).persist(allowance);
     }
 
     @Test
@@ -473,12 +503,12 @@ class ReservationServiceTest {
         mockReservationFind(List.of(reservation.id), List.of(reservation));
         when(eventUserAllowanceRepository.findByEventAndUserIds(event, Set.of(regularUser.id)))
                 .thenReturn(List.of(allowance));
-        doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
+        doNothing().when(eventUserAllowanceRepository).persist(any(Iterable.class));
 
         reservationService.deleteReservation(List.of(reservation.id), managerUser);
 
         verify(reservationRepository, times(1)).deleteByIds(List.of(reservation.id));
-        verify(eventUserAllowanceRepository, times(1)).persist(allowance);
+        verify(eventUserAllowanceRepository, times(1)).persist(List.of(allowance));
         assertEquals(1, allowance.getReservationsAllowedCount()); // Allowance should be incremented
     }
 
@@ -541,15 +571,71 @@ class ReservationServiceTest {
                 List.of(reservation.id, reservation2.id), List.of(reservation, reservation2));
         when(eventUserAllowanceRepository.findByEventAndUserIds(event, Set.of(regularUser.id)))
                 .thenReturn(List.of(allowance));
-        doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
+        doNothing().when(eventUserAllowanceRepository).persist(any(Iterable.class));
 
         reservationService.deleteReservation(List.of(reservation.id, reservation2.id), managerUser);
 
         verify(reservationRepository, times(1))
                 .deleteByIds(List.of(reservation.id, reservation2.id));
-        // Allowance should be incremented twice (once for each reservation)
-        verify(eventUserAllowanceRepository, times(2)).persist(allowance);
+        // Allowance should be incremented twice, but persisted in a single batch
+        verify(eventUserAllowanceRepository, times(1)).persist(List.of(allowance));
         assertEquals(2, allowance.getReservationsAllowedCount());
+    }
+
+    @Test
+    void deleteReservation_Success_MultipleUsers_PersistsAllowancesInSingleBatch() {
+        // Two users, each with reservations on the same event
+        User otherUser =
+                new User(
+                        "user2",
+                        "user2@example.com",
+                        true,
+                        false,
+                        "hash",
+                        "salt",
+                        "Other",
+                        "User",
+                        Set.of(Roles.USER),
+                        Set.of());
+        otherUser.id = id(4);
+
+        EventUserAllowance otherAllowance = new EventUserAllowance(otherUser, event, 0);
+
+        Reservation otherReservation =
+                new Reservation(
+                        otherUser,
+                        event,
+                        null,
+                        Instant.now(),
+                        ReservationStatus.RESERVED,
+                        new de.felixhertweck.seatreservation.model.entity.CheckInToken(
+                                otherUser, event, "CODE456"));
+        otherReservation.id = id(5);
+
+        allowance.setReservationsAllowedCount(0);
+
+        mockReservationFind(
+                List.of(reservation.id, otherReservation.id),
+                List.of(reservation, otherReservation));
+        when(eventUserAllowanceRepository.findByEventAndUserIds(
+                        event, Set.of(regularUser.id, otherUser.id)))
+                .thenReturn(List.of(allowance, otherAllowance));
+        doNothing().when(eventUserAllowanceRepository).persist(any(Iterable.class));
+
+        reservationService.deleteReservation(
+                List.of(reservation.id, otherReservation.id), managerUser);
+
+        assertEquals(1, allowance.getReservationsAllowedCount());
+        assertEquals(1, otherAllowance.getReservationsAllowedCount());
+
+        // Both users' allowances are restored in a single batch persist call, not one per user
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Iterable<EventUserAllowance>> captor =
+                ArgumentCaptor.forClass(Iterable.class);
+        verify(eventUserAllowanceRepository, times(1)).persist(captor.capture());
+        List<EventUserAllowance> persisted = new ArrayList<>();
+        captor.getValue().forEach(persisted::add);
+        assertEquals(Set.of(allowance, otherAllowance), Set.copyOf(persisted));
     }
 
     @Test
@@ -593,7 +679,7 @@ class ReservationServiceTest {
                 List.of(blockedReservation, reservedReservation));
         when(eventUserAllowanceRepository.findByEventAndUserIds(event, Set.of(regularUser.id)))
                 .thenReturn(List.of(allowance));
-        doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
+        doNothing().when(eventUserAllowanceRepository).persist(any(Iterable.class));
 
         reservationService.deleteReservation(
                 List.of(blockedReservation.id, reservedReservation.id), managerUser);
@@ -601,7 +687,7 @@ class ReservationServiceTest {
         verify(reservationRepository, times(1))
                 .deleteByIds(List.of(blockedReservation.id, reservedReservation.id));
         // Allowance should be incremented only once (for the reserved reservation)
-        verify(eventUserAllowanceRepository, times(1)).persist(allowance);
+        verify(eventUserAllowanceRepository, times(1)).persist(List.of(allowance));
         assertEquals(1, allowance.getReservationsAllowedCount());
     }
 
@@ -613,12 +699,12 @@ class ReservationServiceTest {
         mockReservationFind(List.of(reservation.id), List.of(reservation));
         when(eventUserAllowanceRepository.findByEventAndUserIds(event, Set.of(regularUser.id)))
                 .thenReturn(List.of(allowance));
-        doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
+        doNothing().when(eventUserAllowanceRepository).persist(any(Iterable.class));
 
         reservationService.deleteReservation(List.of(reservation.id), managerUser);
 
         verify(reservationRepository, times(1)).deleteByIds(List.of(reservation.id));
-        verify(eventUserAllowanceRepository, times(1)).persist(allowance);
+        verify(eventUserAllowanceRepository, times(1)).persist(List.of(allowance));
         assertEquals(6, allowance.getReservationsAllowedCount());
     }
 

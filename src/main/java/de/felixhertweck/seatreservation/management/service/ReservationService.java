@@ -272,7 +272,6 @@ public class ReservationService {
                             "No more reservations allowed for this user and event.");
                 }
                 allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() - 1);
-                eventUserAllowanceRepository.persist(allowance);
                 LOG.debug(
                         String.format(
                                 "Decremented reservation allowance for user ID %s and event ID"
@@ -294,6 +293,10 @@ public class ReservationService {
             LOG.infof(
                     "Reservation created successfully for seat ID %s, user ID %s, event ID %s.",
                     dtoSeatId, dto.getUserId(), dto.getEventId());
+        }
+
+        if (dto.isDeductAllowance() && allowance != null) {
+            eventUserAllowanceRepository.persist(allowance);
         }
 
         reservationRepository.persistAll(existingReservations);
@@ -392,6 +395,8 @@ public class ReservationService {
                     eventUserAllowanceRepository.findByEventAndUserIds(event, userIds).stream()
                             .collect(Collectors.toMap(a -> a.getUser().id, a -> a));
 
+            Map<UUID, EventUserAllowance> updatedAllowancesByUserId =
+                    new java.util.LinkedHashMap<>();
             for (Reservation reservation : reservationsForEvent) {
                 EventUserAllowance allowance = allowanceByUserId.get(reservation.getUser().id);
                 if (allowance == null) {
@@ -402,7 +407,7 @@ public class ReservationService {
                     continue;
                 }
                 allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() + 1);
-                eventUserAllowanceRepository.persist(allowance);
+                updatedAllowancesByUserId.put(reservation.getUser().id, allowance);
                 LOG.debug(
                         String.format(
                                 "Incremented reservation allowance for user ID %s and event ID %s."
@@ -410,6 +415,10 @@ public class ReservationService {
                                 reservation.getUser().getId(),
                                 event.getId(),
                                 allowance.getReservationsAllowedCount()));
+            }
+            if (!updatedAllowancesByUserId.isEmpty()) {
+                eventUserAllowanceRepository.persist(
+                        new ArrayList<>(updatedAllowancesByUserId.values()));
             }
         }
 

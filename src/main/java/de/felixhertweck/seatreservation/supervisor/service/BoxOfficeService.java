@@ -260,7 +260,6 @@ public class BoxOfficeService {
                             "No more reservations allowed for this user and event.");
                 }
                 allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() - 1);
-                eventUserAllowanceRepository.persist(allowance);
             }
 
             Reservation reservation =
@@ -276,6 +275,11 @@ public class BoxOfficeService {
             }
             newReservations.add(reservation);
         }
+
+        if (deductAllowance && allowance != null) {
+            eventUserAllowanceRepository.persist(allowance);
+        }
+
         return newReservations;
     }
 

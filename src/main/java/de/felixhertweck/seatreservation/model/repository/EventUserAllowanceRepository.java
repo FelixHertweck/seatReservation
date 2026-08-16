@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -57,6 +58,31 @@ public class EventUserAllowanceRepository
     public void persist(EventUserAllowance allowance) {
         PanacheRepositoryBase.super.persist(allowance);
         invalidateAccessGrant(allowance);
+    }
+
+    /**
+     * Persists a collection of allowances in batch, then invalidates cached seat-cart access grants
+     * for each allowance.
+     */
+    @Override
+    public void persist(Iterable<EventUserAllowance> entities) {
+        PanacheRepositoryBase.super.persist(entities);
+        for (EventUserAllowance allowance : entities) {
+            invalidateAccessGrant(allowance);
+        }
+    }
+
+    /**
+     * Persists a stream of allowances in batch, then invalidates cached seat-cart access grants for
+     * each allowance.
+     */
+    @Override
+    public void persist(Stream<EventUserAllowance> entities) {
+        List<EventUserAllowance> list = entities.toList();
+        PanacheRepositoryBase.super.persist(list);
+        for (EventUserAllowance allowance : list) {
+            invalidateAccessGrant(allowance);
+        }
     }
 
     /**
