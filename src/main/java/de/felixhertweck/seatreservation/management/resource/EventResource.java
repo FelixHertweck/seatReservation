@@ -205,4 +205,26 @@ public class EventResource {
         User currentUser = userSecurityContext.getCurrentUser();
         return eventService.removeManager(eventId, userId, currentUser);
     }
+
+    @POST
+    @Path("/{id}/cancel")
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(schema = @Schema(implementation = EventResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(responseCode = "404", description = "Not Found: Event not found")
+    @APIResponse(
+            responseCode = "422",
+            description = "Validation error: Reason missing or already cancelled")
+    public EventResponseDTO cancelEvent(
+            @PathParam("id") UUID id,
+            @Valid de.felixhertweck.seatreservation.management.dto.EventCancelRequestDTO dto) {
+        LOG.debugf("Received POST request to /api/manager/events/%s/cancel.", id);
+        User currentUser = userSecurityContext.getCurrentUser();
+        return eventService.cancelEvent(id, dto.reason(), currentUser);
+    }
 }

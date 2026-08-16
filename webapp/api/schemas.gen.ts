@@ -415,6 +415,20 @@ export const EntranceResponseDTOSchema = {
     }
 } as const;
 
+export const EventCancelRequestDTOSchema = {
+    type: 'object',
+    required: [
+        'reason'
+    ],
+    properties: {
+        reason: {
+            type: 'string',
+            pattern: '\\S',
+            maxLength: 1000
+        }
+    }
+} as const;
+
 export const EventLocationMakerDTOSchema = {
     type: 'object',
     properties: {
@@ -671,8 +685,22 @@ export const EventResponseDTOSchema = {
         reservedCount: {
             type: 'integer',
             format: 'int32'
+        },
+        status: {
+            $ref: '#/components/schemas/EventStatus'
+        },
+        cancellationReason: {
+            type: 'string'
         }
     }
+} as const;
+
+export const EventStatusSchema = {
+    type: 'string',
+    enum: [
+        'ACTIVE',
+        'CANCELLED'
+    ]
 } as const;
 
 export const EventUserAllowanceUpdateDtoSchema = {
@@ -1712,6 +1740,12 @@ export const UserEventResponseDTOSchema = {
         reservationsAllowed: {
             type: 'integer',
             format: 'int32'
+        },
+        status: {
+            $ref: '#/components/schemas/EventStatus'
+        },
+        cancellationReason: {
+            type: 'string'
         }
     }
 } as const;

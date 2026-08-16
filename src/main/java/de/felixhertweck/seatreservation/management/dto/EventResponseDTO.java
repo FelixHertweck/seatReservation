@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import de.felixhertweck.seatreservation.common.dto.SeatStatusDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventStatus;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
@@ -47,6 +48,8 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
  * @param managerIds IDs of manager users
  * @param supervisorIds IDs of supervisor users
  * @param reservedCount total count of reserved seats
+ * @param status current status of event (ACTIVE, CANCELLED)
+ * @param cancellationReason reason for cancellation if cancelled
  */
 @RegisterForReflection
 public record EventResponseDTO(
@@ -65,7 +68,9 @@ public record EventResponseDTO(
         UUID createdByUserId,
         List<UUID> managerIds,
         List<UUID> supervisorIds,
-        Integer reservedCount) {
+        Integer reservedCount,
+        EventStatus status,
+        String cancellationReason) {
 
     /**
      * Constructs EventResponseDTO for a given event, reserved count, and seat status list.
@@ -99,7 +104,9 @@ public record EventResponseDTO(
                 event.getSupervisors() != null
                         ? event.getSupervisors().stream().map(u -> u.id).toList()
                         : List.of(),
-                reservedCount);
+                reservedCount,
+                event.getStatus(),
+                event.getCancellationReason());
     }
 
     /**

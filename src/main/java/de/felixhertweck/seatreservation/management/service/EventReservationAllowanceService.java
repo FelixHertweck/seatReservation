@@ -38,6 +38,7 @@ import de.felixhertweck.seatreservation.management.dto.EventUserAllowanceUpdateD
 import de.felixhertweck.seatreservation.management.dto.EventUserAllowancesCreateDto;
 import de.felixhertweck.seatreservation.management.dto.EventUserAllowancesDto;
 import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventStatus;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
@@ -81,6 +82,15 @@ public class EventReservationAllowanceService {
         Event event = getEventById(dto.getEventId());
 
         eventAccessService.requireAccess(event, manager);
+
+        if (event.getStatus() == EventStatus.CANCELLED) {
+            LOG.warnf(
+                    "Attempted to set reservation allowance for cancelled event ID: %s",
+                    event.getId());
+            throw new ValidationException(
+                    "This event has been cancelled and no longer accepts reservation"
+                            + " allowances.");
+        }
 
         Set<EventUserAllowancesDto> resultAllowances = new HashSet<>();
 
@@ -162,6 +172,15 @@ public class EventReservationAllowanceService {
                                 });
 
         eventAccessService.requireAccess(allowance.getEvent(), AuthenticatedUser.of(manager));
+
+        if (allowance.getEvent().getStatus() == EventStatus.CANCELLED) {
+            LOG.warnf(
+                    "Attempted to update reservation allowance for cancelled event ID: %s",
+                    allowance.getEvent().getId());
+            throw new ValidationException(
+                    "This event has been cancelled and no longer accepts reservation"
+                            + " allowances.");
+        }
 
         allowance.setReservationsAllowedCount(dto.reservationsAllowedCount());
         eventUserAllowanceRepository.persist(allowance);

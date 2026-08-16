@@ -38,6 +38,7 @@ import jakarta.enterprise.event.ObservesAsync;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.events.EventCancelledEvent;
 import de.felixhertweck.seatreservation.common.events.EventCreatedEvent;
 import de.felixhertweck.seatreservation.common.events.EventDeletedEvent;
 import de.felixhertweck.seatreservation.common.events.EventRescheduledEvent;
@@ -117,6 +118,42 @@ public class NotificationService {
      */
     public void onEventDeleted(@Observes EventDeletedEvent event) {
         cancelEventReminder(event.eventId());
+    }
+
+    /**
+     * Reacts to an event cancelled event by cancelling its reminder job and notifying all affected
+     * users with reservations.
+     *
+     * @param event the event-cancelled notification
+     */
+    public void onEventCancelled(@Observes EventCancelledEvent event) {
+        if (event == null) {
+            return;
+        }
+        cancelEventReminder(event.eventId());
+
+        if (event.cancelledReservations() == null || event.cancelledReservations().isEmpty()) {
+            return;
+        }
+
+        Set<User> affectedUsers =
+                event.cancelledReservations().stream()
+                        .map(Reservation::getUser)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet());
+
+        affectedUsers.forEach(
+                user -> {
+                    try {
+                        emailService.sendEventCancelledNotification(user, event);
+                    } catch (Exception e) {
+                        LOG.errorf(
+                                e,
+                                "Error sending event cancelled notification to %s for event %s",
+                                user.getEmail(),
+                                event.eventId());
+                    }
+                });
     }
 
     /**

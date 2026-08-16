@@ -322,7 +322,7 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent className="p-0 md:p-6 md:pt-0">
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label htmlFor="username">{t("login.username")}</Label>
                 <Link
@@ -356,7 +356,7 @@ export default function LoginPage() {
                 </p>
               )}
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">{t("login.password")}</Label>
                 <Link

@@ -637,6 +637,7 @@
   "eventCard": {
     "statusAvailable": "Available",
     "statusNotAvailable": "Not Available",
+    "statusCancelled": "Cancelled",
     "tbd": "TBD",
     "timeTbd": "Time TBD",
     "locationTbd": "Location TBD",
@@ -644,12 +645,14 @@
     "bookingUntil": "Booking until",
     "reserveSeatsButton": "Reserve Seats",
     "notAvailableButton": "Not Available",
+    "cancelledButton": "Event Cancelled",
     "bookingOpenOnButtonWithDate": "Booking opens on {{date}} at {{time}}",
     "myReservationsButton": "{{count}} seats reserved"
   },
   "eventReservationModal": {
     "title": "Reserve Seats - {{eventName}}",
     "description": "Select your seats for this event. Available: {{availableSeats}}",
+    "cancelledNotice": "This event has been cancelled. No new seats can be reserved.",
     "selectedSeatsTitle": "Selected Seats:",
     "selectedSeatButton": "1 seat selected",
     "selectedSeatsButton": "{{count}} seats selected",

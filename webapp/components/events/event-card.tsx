@@ -31,6 +31,7 @@ export function EventCard({
 }: EventCardProps) {
   const t = useT();
 
+  const isCancelled = event.status === "CANCELLED";
   const bookingAlreadyStarted = event.bookingStartTime
     ? new Date(event.bookingStartTime) < new Date()
     : false;
@@ -38,8 +39,24 @@ export function EventCard({
   const isBookingOpen = event.bookingDeadline
     ? new Date(event.bookingDeadline) > new Date()
     : true;
+  const isAvailable =
+    hasAvailableSeats && isBookingOpen && bookingAlreadyStarted;
+
+  let badgeVariant: "destructive" | "default" | "secondary" = "secondary";
+  let badgeLabel = t("eventCard.statusNotAvailable");
+  if (isCancelled) {
+    badgeVariant = "destructive";
+    badgeLabel = t("eventCard.statusCancelled");
+  } else if (isAvailable) {
+    badgeVariant = "default";
+    badgeLabel = t("eventCard.statusAvailable");
+  }
 
   const buttonLabel = () => {
+    if (isCancelled) {
+      return t("eventCard.cancelledButton");
+    }
+
     if (!bookingAlreadyStarted) {
       // Booking start date and replace with formatted date
       if (event.bookingStartTime) {
@@ -68,16 +85,10 @@ export function EventCard({
       <CardHeader className="relative z-10">
         <div className="flex items-start justify-between gap-2 mb-3">
           <Badge
-            variant={
-              hasAvailableSeats && isBookingOpen && bookingAlreadyStarted
-                ? "default"
-                : "secondary"
-            }
+            variant={badgeVariant}
             className="animate-in zoom-in duration-300 group-hover:scale-105 transition-transform shrink-0 whitespace-nowrap"
           >
-            {hasAvailableSeats && isBookingOpen && bookingAlreadyStarted
-              ? t("eventCard.statusAvailable")
-              : t("eventCard.statusNotAvailable")}
+            {badgeLabel}
           </Badge>
           {reservationCount > 0 && (
             <Link
@@ -149,7 +160,10 @@ export function EventCard({
           onClick={onReserve}
           className="w-full hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]"
           disabled={
-            !hasAvailableSeats || !isBookingOpen || !bookingAlreadyStarted
+            isCancelled ||
+            !hasAvailableSeats ||
+            !isBookingOpen ||
+            !bookingAlreadyStarted
           }
         >
           {buttonLabel()}

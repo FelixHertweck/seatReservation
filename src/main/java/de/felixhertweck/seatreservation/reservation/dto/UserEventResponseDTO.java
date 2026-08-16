@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import de.felixhertweck.seatreservation.common.dto.SeatStatusDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventStatus;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
@@ -41,6 +42,8 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
  * @param seatStatuses detailed seat statuses, present on detail requests
  * @param locationId ID of associated location
  * @param reservationsAllowed reservations allowed for current user
+ * @param status current status of event (ACTIVE, CANCELLED)
+ * @param cancellationReason reason for cancellation if cancelled
  */
 @RegisterForReflection
 public record UserEventResponseDTO(
@@ -53,7 +56,9 @@ public record UserEventResponseDTO(
         Instant bookingStartTime,
         List<SeatStatusDTO> seatStatuses,
         UUID locationId,
-        Integer reservationsAllowed) {
+        Integer reservationsAllowed,
+        EventStatus status,
+        String cancellationReason) {
 
     /**
      * Constructs UserEventResponseDTO for a given event, reservations allowed count, and
@@ -77,6 +82,8 @@ public record UserEventResponseDTO(
                         ? null
                         : reservations.stream().map(SeatStatusDTO::new).toList(),
                 event.getEventLocation() == null ? null : event.getEventLocation().getId(),
-                reservationsAllowed);
+                reservationsAllowed,
+                event.getStatus(),
+                event.getCancellationReason());
     }
 }

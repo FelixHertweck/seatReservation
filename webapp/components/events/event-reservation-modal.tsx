@@ -146,8 +146,10 @@ export function EventReservationModal({
     [userReservations, event.id, seatById],
   );
 
+  const isCancelled = event.status === "CANCELLED";
+
   const handleSeatSelect = async (seat: SeatDto) => {
-    if (!event.id || !seat.id) return;
+    if (!event.id || !seat.id || isCancelled) return;
 
     const isSelected = selectedSeats.some((s) => s.id === seat.id);
 
@@ -179,7 +181,7 @@ export function EventReservationModal({
   };
 
   const handleReserve = async () => {
-    if (!event.id || selectedSeats.length === 0) return;
+    if (!event.id || selectedSeats.length === 0 || isCancelled) return;
 
     setIsLoading(true);
     try {
@@ -212,6 +214,12 @@ export function EventReservationModal({
             })}
           </DialogDescription>
         </DialogHeader>
+
+        {isCancelled && (
+          <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {t("eventReservationModal.cancelledNotice")}
+          </div>
+        )}
 
         <div className="flex-1 flex flex-col min-h-0 min-w-0 max-w-full overflow-hidden">
           <SeatmapLegend
@@ -324,7 +332,9 @@ export function EventReservationModal({
               <Button
                 onClick={handleReserve}
                 isLoading={isLoading}
-                disabled={selectedSeats.length === 0 || isLoading}
+                disabled={
+                  selectedSeats.length === 0 || isLoading || isCancelled
+                }
                 className="text-sm md:text-base px-3 py-2"
               >
                 {selectedSeats.length === 1

@@ -483,4 +483,59 @@ class NotificationServiceTest {
                 .sendEventRescheduledNotification(
                         any(), any(), any(), any(), any(), any(), any(), any());
     }
+
+    @Test
+    void onEventCancelled_WithReservations_SendsCancellationEmailPerUser() {
+        UUID eventId = id(10);
+        User user2 = new User();
+        user2.id = id(2);
+        user2.setUsername("user2");
+        user2.setEmail("user2@example.com");
+
+        testUser.id = id(1);
+
+        Reservation res1 = new Reservation();
+        res1.setUser(testUser);
+        Reservation res2 = new Reservation();
+        res2.setUser(user2);
+
+        de.felixhertweck.seatreservation.common.events.EventCancelledEvent cancelledEvent =
+                new de.felixhertweck.seatreservation.common.events.EventCancelledEvent(
+                        eventId,
+                        "Test Event",
+                        Instant.now(),
+                        Instant.now().plusSeconds(3600),
+                        "Test Location",
+                        "Cancelled due to storm",
+                        List.of(res1, res2));
+
+        notificationService.onEventCancelled(cancelledEvent);
+
+        verify(emailService)
+                .sendEventCancelledNotification(
+                        org.mockito.ArgumentMatchers.eq(testUser),
+                        org.mockito.ArgumentMatchers.eq(cancelledEvent));
+        verify(emailService)
+                .sendEventCancelledNotification(
+                        org.mockito.ArgumentMatchers.eq(user2),
+                        org.mockito.ArgumentMatchers.eq(cancelledEvent));
+    }
+
+    @Test
+    void onEventCancelled_NoReservations_DoesNotSendEmail() {
+        UUID eventId = id(10);
+        de.felixhertweck.seatreservation.common.events.EventCancelledEvent cancelledEvent =
+                new de.felixhertweck.seatreservation.common.events.EventCancelledEvent(
+                        eventId,
+                        "Test Event",
+                        Instant.now(),
+                        Instant.now().plusSeconds(3600),
+                        "Test Location",
+                        "Cancelled due to storm",
+                        List.of());
+
+        notificationService.onEventCancelled(cancelledEvent);
+
+        verify(emailService, never()).sendEventCancelledNotification(any(), any());
+    }
 }
