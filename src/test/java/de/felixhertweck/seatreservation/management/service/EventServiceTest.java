@@ -89,6 +89,11 @@ public class EventServiceTest {
     jakarta.enterprise.event.Event<de.felixhertweck.seatreservation.common.events.EventDeletedEvent>
             eventDeletedBus;
 
+    @InjectMock
+    jakarta.enterprise.event.Event<
+                    de.felixhertweck.seatreservation.common.events.EventRescheduledEvent>
+            eventRescheduledBus;
+
     @Inject EventService eventService;
     @Inject EventReservationAllowanceService eventReservationAllowanceService;
 
@@ -111,6 +116,10 @@ public class EventServiceTest {
         Mockito.reset(eventLocationRepository);
         Mockito.reset(userRepository);
         Mockito.reset(eventUserAllowanceRepository);
+        Mockito.reset(eventCreatedBus);
+        Mockito.reset(eventUpdatedBus);
+        Mockito.reset(eventDeletedBus);
+        Mockito.reset(eventRescheduledBus);
 
         adminUser =
                 new User(
@@ -1264,5 +1273,136 @@ public class EventServiceTest {
                 eventService.removeManager(existingEvent.id, coManager.id, managerUser);
         assertNotNull(result);
         assertTrue(!result.managerIds().contains(coManager.id));
+    }
+
+    @Test
+    void updateEvent_ScheduleChanged_FiresEventRescheduledEvent() throws Exception {
+        Instant newStartTime = existingEvent.getStartTime().plusSeconds(3600);
+        Instant newEndTime = existingEvent.getEndTime().plusSeconds(3600);
+
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName(existingEvent.getName());
+        dto.setDescription(existingEvent.getDescription());
+        dto.setStartTime(newStartTime);
+        dto.setEndTime(newEndTime);
+        dto.setBookingStartTime(existingEvent.getBookingStartTime());
+        dto.setBookingDeadline(existingEvent.getBookingDeadline());
+        dto.setReminderSendDate(existingEvent.getReminderSendDate());
+        dto.setEventLocationId(existingEvent.getEventLocation().id);
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        when(eventLocationRepository.findByIdOptional(existingEvent.getEventLocation().id))
+                .thenReturn(Optional.of(existingEvent.getEventLocation()));
+
+        EventResponseDTO result = eventService.updateEvent(existingEvent.id, dto, managerUser);
+        assertNotNull(result);
+
+        ArgumentCaptor<de.felixhertweck.seatreservation.common.events.EventRescheduledEvent>
+                captor =
+                        ArgumentCaptor.forClass(
+                                de.felixhertweck.seatreservation.common.events.EventRescheduledEvent
+                                        .class);
+        verify(eventRescheduledBus, times(1)).fireAsync(captor.capture());
+
+        de.felixhertweck.seatreservation.common.events.EventRescheduledEvent captured =
+                captor.getValue();
+        assertEquals(existingEvent.id, captured.eventId());
+        assertEquals(newStartTime, captured.newStartTime());
+        assertEquals(newEndTime, captured.newEndTime());
+    }
+
+    @Test
+    void updateEvent_LocationChanged_FiresEventRescheduledEvent() throws Exception {
+        EventLocation newLocation = new EventLocation("Neue Halle", "Neue Straße 2", managerUser);
+        newLocation.id = id(99);
+
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName(existingEvent.getName());
+        dto.setDescription(existingEvent.getDescription());
+        dto.setStartTime(existingEvent.getStartTime());
+        dto.setEndTime(existingEvent.getEndTime());
+        dto.setBookingStartTime(existingEvent.getBookingStartTime());
+        dto.setBookingDeadline(existingEvent.getBookingDeadline());
+        dto.setReminderSendDate(existingEvent.getReminderSendDate());
+        dto.setEventLocationId(newLocation.id);
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        when(eventLocationRepository.findByIdOptional(newLocation.id))
+                .thenReturn(Optional.of(newLocation));
+
+        EventResponseDTO result = eventService.updateEvent(existingEvent.id, dto, managerUser);
+        assertNotNull(result);
+
+        ArgumentCaptor<de.felixhertweck.seatreservation.common.events.EventRescheduledEvent>
+                captor =
+                        ArgumentCaptor.forClass(
+                                de.felixhertweck.seatreservation.common.events.EventRescheduledEvent
+                                        .class);
+        verify(eventRescheduledBus, times(1)).fireAsync(captor.capture());
+
+        de.felixhertweck.seatreservation.common.events.EventRescheduledEvent captured =
+                captor.getValue();
+        assertEquals("Stadthalle", captured.oldLocationName());
+        assertEquals("Neue Halle", captured.newLocationName());
+    }
+
+    @Test
+    void updateEvent_BookingDeadlineChanged_FiresEventRescheduledEvent() throws Exception {
+        Instant newDeadline = existingEvent.getBookingDeadline().minusSeconds(1800);
+
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName(existingEvent.getName());
+        dto.setDescription(existingEvent.getDescription());
+        dto.setStartTime(existingEvent.getStartTime());
+        dto.setEndTime(existingEvent.getEndTime());
+        dto.setBookingStartTime(existingEvent.getBookingStartTime());
+        dto.setBookingDeadline(newDeadline);
+        dto.setReminderSendDate(existingEvent.getReminderSendDate());
+        dto.setEventLocationId(existingEvent.getEventLocation().id);
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        when(eventLocationRepository.findByIdOptional(existingEvent.getEventLocation().id))
+                .thenReturn(Optional.of(existingEvent.getEventLocation()));
+
+        EventResponseDTO result = eventService.updateEvent(existingEvent.id, dto, managerUser);
+        assertNotNull(result);
+
+        ArgumentCaptor<de.felixhertweck.seatreservation.common.events.EventRescheduledEvent>
+                captor =
+                        ArgumentCaptor.forClass(
+                                de.felixhertweck.seatreservation.common.events.EventRescheduledEvent
+                                        .class);
+        verify(eventRescheduledBus, times(1)).fireAsync(captor.capture());
+
+        de.felixhertweck.seatreservation.common.events.EventRescheduledEvent captured =
+                captor.getValue();
+        assertEquals(newDeadline, captured.newBookingDeadline());
+    }
+
+    @Test
+    void updateEvent_OnlyNameOrDescriptionChanged_DoesNotFireEventRescheduledEvent()
+            throws Exception {
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Updated Title Only");
+        dto.setDescription("Updated Description Only");
+        dto.setStartTime(existingEvent.getStartTime());
+        dto.setEndTime(existingEvent.getEndTime());
+        dto.setBookingStartTime(existingEvent.getBookingStartTime());
+        dto.setBookingDeadline(existingEvent.getBookingDeadline());
+        dto.setReminderSendDate(existingEvent.getReminderSendDate());
+        dto.setEventLocationId(existingEvent.getEventLocation().id);
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        when(eventLocationRepository.findByIdOptional(existingEvent.getEventLocation().id))
+                .thenReturn(Optional.of(existingEvent.getEventLocation()));
+
+        EventResponseDTO result = eventService.updateEvent(existingEvent.id, dto, managerUser);
+        assertNotNull(result);
+
+        verify(eventRescheduledBus, never()).fireAsync(any());
     }
 }

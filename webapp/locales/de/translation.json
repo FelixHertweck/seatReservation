@@ -661,7 +661,12 @@
     "cancelButton": "Abbrechen",
     "savingButton": "Speichern...",
     "createButton": "Erstellen",
-    "updateButton": "Aktualisieren"
+    "updateButton": "Aktualisieren",
+    "existingReservationsWarning": "Diese Veranstaltung hat bereits {{count}} Reservierung(en). Änderungen am Zeitplan, Ort oder der Buchungsfrist werden allen betroffenen Teilnehmern per E-Mail mitgeteilt.",
+    "rescheduleConfirmTitle": "Veranstaltungsänderung bestätigen",
+    "rescheduleConfirmDescription": "Sie haben relevante Details (Zeit, Ort oder Buchungsfrist) für eine Veranstaltung mit bestehenden Reservierungen geändert. Alle betroffenen Benutzer werden per E-Mail benachrichtigt. Möchten Sie fortfahren?",
+    "rescheduleConfirmButton": "Speichern und Benutzer benachrichtigen",
+    "rescheduleCancelButton": "Abbrechen"
   },
   "eventManagement": {
     "confirmDelete": "Sind Sie sicher, dass Sie {{eventName}} löschen möchten?",

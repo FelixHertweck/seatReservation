@@ -118,6 +118,11 @@ public class ReservationEmailContent {
     @ConfigProperty(name = "email.header.reservation-update", defaultValue = "Reservation Update")
     String reservationUpdateSubject;
 
+    @ConfigProperty(
+            name = "email.header.event-rescheduled",
+            defaultValue = "Important: Your Event Schedule Has Changed")
+    String eventRescheduledSubject;
+
     @ConfigProperty(name = "email.header.reminder", defaultValue = "Reservation Reminder")
     String eventReminderSubject;
 
@@ -137,6 +142,10 @@ public class ReservationEmailContent {
     @Inject
     @Location("email/reservation-update-confirmation")
     Template reservationUpdateTemplate;
+
+    @Inject
+    @Location("email/event-rescheduled")
+    Template eventRescheduledTemplate;
 
     @Inject
     @Location("email/event-reminder")
@@ -713,6 +722,95 @@ public class ReservationEmailContent {
                         user,
                         additionalMailAddress,
                         reservationUpdateSubject,
+                        htmlContent,
+                        pngImage,
+                        qrCodeImage));
+    }
+
+    // ---------------------------------------------------------------------
+    // Event rescheduled
+    // ---------------------------------------------------------------------
+
+    public void sendEventRescheduledNotification(
+            User user,
+            Event event,
+            List<Reservation> reservations,
+            Instant oldStartTime,
+            Instant oldEndTime,
+            String oldLocationName,
+            Instant oldBookingDeadline,
+            String additionalMailAddress) {
+        if (reservations == null || reservations.isEmpty()) {
+            LOG.warnf(
+                    "No reservations provided for reschedule notification to user %s.",
+                    user != null ? user.getEmail() : null);
+            return;
+        }
+
+        String eventName = event.getName();
+
+        String seatmapToken =
+                emailSeatMapService.createEmailSeatMapToken(user, event, reservations);
+        String seatmapLink = seatmapToken != null ? generateSeatmapLink(seatmapToken) : "";
+        byte[] pngImage =
+                seatmapToken != null
+                        ? emailSeatMapService.getPngImage(seatmapToken).orElse(new byte[0])
+                        : new byte[0];
+
+        Map<UUID, Seat> seatById = loadSeatsForReservations(reservations, null);
+        List<SeatView> seats = toSeatViews(reservations, seatById);
+        String entranceInfo = generateEntranceInfo(reservations, seatById);
+
+        String googleWalletLink = generateGoogleWalletLink(user, reservations.getFirst());
+        String appleWalletLink = generateAppleWalletLink(seatmapToken);
+
+        boolean startTimeChanged = !Objects.equals(oldStartTime, event.getStartTime());
+        boolean endTimeChanged = !Objects.equals(oldEndTime, event.getEndTime());
+        String newLocationName =
+                event.getEventLocation() != null ? event.getEventLocation().getName() : "";
+        boolean locationChanged = !Objects.equals(oldLocationName, newLocationName);
+        boolean bookingDeadlineChanged =
+                !Objects.equals(oldBookingDeadline, event.getBookingDeadline());
+
+        String htmlContent =
+                eventRescheduledTemplate
+                        .data(KEY_USER_NAME, user.getUsername())
+                        .data(KEY_FULL_NAME, fullName(user))
+                        .data(KEY_EVENT_NAME, eventName != null ? eventName : "")
+                        .data(KEY_EVENT_LOCATION, newLocationName)
+                        .data(KEY_EVENT_START_TIME, formatDateTime(event.getStartTime()))
+                        .data(KEY_EVENT_END_TIME, formatDateTime(event.getEndTime()))
+                        .data("oldStartTime", formatDateTime(oldStartTime))
+                        .data("newStartTime", formatDateTime(event.getStartTime()))
+                        .data("startTimeChanged", startTimeChanged)
+                        .data("oldEndTime", formatDateTime(oldEndTime))
+                        .data("newEndTime", formatDateTime(event.getEndTime()))
+                        .data("endTimeChanged", endTimeChanged)
+                        .data("oldLocation", oldLocationName != null ? oldLocationName : "")
+                        .data("newLocation", newLocationName)
+                        .data("locationChanged", locationChanged)
+                        .data("oldBookingDeadline", formatDateTime(oldBookingDeadline))
+                        .data("newBookingDeadline", formatDateTime(event.getBookingDeadline()))
+                        .data("bookingDeadlineChanged", bookingDeadlineChanged)
+                        .data(KEY_SEATS, seats)
+                        .data(KEY_ENTRANCE_INFO, entranceInfo)
+                        .data(KEY_EVENT_LINK, generateEventLink(event.id))
+                        .data(KEY_SEATMAP_LINK, seatmapLink)
+                        .data(KEY_GOOGLE_WALLET_LINK, googleWalletLink)
+                        .data(KEY_APPLE_WALLET_LINK, appleWalletLink)
+                        .data(KEY_FRONTEND_BASE_URL, frontendBaseUrl.trim())
+                        .data(KEY_CURRENT_YEAR, currentYear())
+                        .render();
+
+        CheckInToken token = reservations.getFirst().getCheckInToken();
+        String qrCodeContent = generateQrCodeContent(user, event, token);
+        byte[] qrCodeImage = generateQrCodeImage(qrCodeContent);
+
+        emailSender.send(
+                new ReservationUpdateNotification(
+                        user,
+                        additionalMailAddress,
+                        eventRescheduledSubject,
                         htmlContent,
                         pngImage,
                         qrCodeImage));

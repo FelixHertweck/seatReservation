@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -40,6 +41,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.common.events.EventRescheduledEvent;
 import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.email.service.NotificationService;
 import de.felixhertweck.seatreservation.management.service.EventService;
@@ -53,6 +55,7 @@ import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -66,6 +69,8 @@ class NotificationServiceTest {
     @Mock private EventService eventService;
 
     @Mock private ReservationService reservationService;
+
+    @Mock private ReservationRepository reservationRepository;
 
     @Mock private EmailService emailService;
 
@@ -357,5 +362,125 @@ class NotificationServiceTest {
 
         verify(eventService).findEventsBetweenDates(startOfToday, endOfToday);
         verify(emailService, never()).sendEventReservationsCsvToManager(any(), any());
+    }
+
+    @Test
+    void onEventRescheduled_NoReservations_DoesNotSendEmail() {
+        UUID eventId = id(10);
+        testEvent.id = eventId;
+
+        EventRescheduledEvent rescheduledEvent =
+                new EventRescheduledEvent(
+                        eventId,
+                        "Test Event",
+                        Instant.now(),
+                        Instant.now().plusSeconds(3600),
+                        Instant.now().plusSeconds(7200),
+                        Instant.now().plusSeconds(10800),
+                        "Old Location",
+                        "New Location",
+                        Instant.now().minusSeconds(3600),
+                        Instant.now().minusSeconds(1800));
+
+        when(eventService.findById(eventId)).thenReturn(testEvent);
+        when(reservationRepository.findByEventIdWithUserAndSeat(eventId)).thenReturn(List.of());
+
+        assertDoesNotThrow(() -> notificationService.onEventRescheduled(rescheduledEvent));
+
+        verify(emailService, never())
+                .sendEventRescheduledNotification(
+                        any(), any(), any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void onEventRescheduled_WithReservations_SendsEmailPerUser() {
+        UUID eventId = id(10);
+        testEvent.id = eventId;
+
+        User user2 = new User();
+        user2.id = id(2);
+        user2.setUsername("user2");
+        user2.setEmail("user2@example.com");
+
+        testUser.id = id(1);
+
+        Reservation res1 = new Reservation();
+        res1.setUser(testUser);
+        res1.setEvent(testEvent);
+
+        Reservation res2 = new Reservation();
+        res2.setUser(testUser);
+        res2.setEvent(testEvent);
+
+        Reservation res3 = new Reservation();
+        res3.setUser(user2);
+        res3.setEvent(testEvent);
+
+        EventRescheduledEvent rescheduledEvent =
+                new EventRescheduledEvent(
+                        eventId,
+                        "Test Event",
+                        Instant.now(),
+                        Instant.now().plusSeconds(3600),
+                        Instant.now().plusSeconds(7200),
+                        Instant.now().plusSeconds(10800),
+                        "Old Location",
+                        "New Location",
+                        Instant.now().minusSeconds(3600),
+                        Instant.now().minusSeconds(1800));
+
+        when(eventService.findById(eventId)).thenReturn(testEvent);
+        when(reservationRepository.findByEventIdWithUserAndSeat(eventId))
+                .thenReturn(List.of(res1, res2, res3));
+
+        assertDoesNotThrow(() -> notificationService.onEventRescheduled(rescheduledEvent));
+
+        verify(emailService)
+                .sendEventRescheduledNotification(
+                        org.mockito.ArgumentMatchers.eq(testUser),
+                        org.mockito.ArgumentMatchers.eq(testEvent),
+                        org.mockito.ArgumentMatchers.argThat(list -> list.size() == 2),
+                        org.mockito.ArgumentMatchers.eq(rescheduledEvent.oldStartTime()),
+                        org.mockito.ArgumentMatchers.eq(rescheduledEvent.oldEndTime()),
+                        org.mockito.ArgumentMatchers.eq(rescheduledEvent.oldLocationName()),
+                        org.mockito.ArgumentMatchers.eq(rescheduledEvent.oldBookingDeadline()),
+                        org.mockito.ArgumentMatchers.isNull());
+
+        verify(emailService)
+                .sendEventRescheduledNotification(
+                        org.mockito.ArgumentMatchers.eq(user2),
+                        org.mockito.ArgumentMatchers.eq(testEvent),
+                        org.mockito.ArgumentMatchers.argThat(list -> list.size() == 1),
+                        org.mockito.ArgumentMatchers.eq(rescheduledEvent.oldStartTime()),
+                        org.mockito.ArgumentMatchers.eq(rescheduledEvent.oldEndTime()),
+                        org.mockito.ArgumentMatchers.eq(rescheduledEvent.oldLocationName()),
+                        org.mockito.ArgumentMatchers.eq(rescheduledEvent.oldBookingDeadline()),
+                        org.mockito.ArgumentMatchers.isNull());
+    }
+
+    @Test
+    void onEventRescheduled_EventNotFound_DoesNotSendEmail() {
+        UUID eventId = id(10);
+        EventRescheduledEvent rescheduledEvent =
+                new EventRescheduledEvent(
+                        eventId,
+                        "Test Event",
+                        Instant.now(),
+                        Instant.now().plusSeconds(3600),
+                        Instant.now().plusSeconds(7200),
+                        Instant.now().plusSeconds(10800),
+                        "Old Location",
+                        "New Location",
+                        Instant.now().minusSeconds(3600),
+                        Instant.now().minusSeconds(1800));
+
+        when(eventService.findById(eventId)).thenReturn(null);
+
+        assertDoesNotThrow(() -> notificationService.onEventRescheduled(rescheduledEvent));
+
+        verify(reservationRepository, never()).findByEventIdWithUserAndSeat(any());
+        verify(emailService, never())
+                .sendEventRescheduledNotification(
+                        any(), any(), any(), any(), any(), any(), any(), any());
     }
 }

@@ -413,6 +413,42 @@ public class EmailService {
     }
 
     /**
+     * Sends an event rescheduled notification email to the specified user.
+     *
+     * @param user the user to whom the reschedule notification email will be sent
+     * @param event the event that was rescheduled
+     * @param reservations the list of reservations made by the user for the event
+     * @param oldStartTime the previous start time
+     * @param oldEndTime the previous end time
+     * @param oldLocationName the previous location name
+     * @param oldBookingDeadline the previous booking deadline
+     * @param additionalMailAddress optional additional email address
+     */
+    public void sendEventRescheduledNotification(
+            User user,
+            Event event,
+            List<Reservation> reservations,
+            Instant oldStartTime,
+            Instant oldEndTime,
+            String oldLocationName,
+            Instant oldBookingDeadline,
+            String additionalMailAddress) {
+        if (user == null || !EmailSender.isValidAddress(user.getEmail())) {
+            LOG.warn("No valid email addresses provided for event reschedule notification.");
+            return;
+        }
+        reservationEmailContent.sendEventRescheduledNotification(
+                user,
+                event,
+                reservations,
+                oldStartTime,
+                oldEndTime,
+                oldLocationName,
+                oldBookingDeadline,
+                additionalMailAddress);
+    }
+
+    /**
      * Sends an email to the event manager with a CSV export of all reservations for a given event.
      *
      * @param manager the manager of the event
