@@ -510,6 +510,12 @@ export const EventLocationResponseDTOSchema = {
         areaCount: {
             type: 'integer',
             format: 'int32'
+        },
+        hasEventsWithActiveBooking: {
+            type: 'boolean'
+        },
+        hasLinkedEvents: {
+            type: 'boolean'
         }
     }
 } as const;

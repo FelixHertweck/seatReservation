@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
+import de.felixhertweck.seatreservation.common.events.EventRescheduledEvent;
 import de.felixhertweck.seatreservation.common.events.EventUpdatedEvent;
 import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.ValidationException;
@@ -68,6 +70,7 @@ public class EventLocationService {
     @Inject UserRepository userRepository;
     @Inject EventLocationAccessService eventLocationAccessService;
     @Inject jakarta.enterprise.event.Event<EventUpdatedEvent> eventUpdatedBus;
+    @Inject jakarta.enterprise.event.Event<EventRescheduledEvent> eventRescheduledBus;
     @Inject SeatmapCacheService seatmapCacheService;
 
     /**
@@ -100,6 +103,10 @@ public class EventLocationService {
         Map<UUID, Integer> seatCounts = eventLocationRepository.getSeatCountsByLocationIds(ids);
         Map<UUID, Integer> markerCounts = eventLocationRepository.getMarkerCountsByLocationIds(ids);
         Map<UUID, Integer> areaCounts = eventLocationRepository.getAreaCountsByLocationIds(ids);
+        Map<UUID, Boolean> activeBookingMap =
+                eventRepository.getHasActiveBookingEventsByLocationIds(
+                        ids, java.time.Instant.now());
+        Map<UUID, Boolean> linkedEventsMap = eventRepository.getHasLinkedEventsByLocationIds(ids);
 
         return eventLocations.stream()
                 .map(
@@ -108,7 +115,9 @@ public class EventLocationService {
                                         loc,
                                         seatCounts.getOrDefault(loc.getId(), 0),
                                         markerCounts.getOrDefault(loc.getId(), 0),
-                                        areaCounts.getOrDefault(loc.getId(), 0)))
+                                        areaCounts.getOrDefault(loc.getId(), 0),
+                                        activeBookingMap.getOrDefault(loc.getId(), false),
+                                        linkedEventsMap.getOrDefault(loc.getId(), false)))
                 .collect(Collectors.toList());
     }
 
@@ -212,6 +221,11 @@ public class EventLocationService {
 
         eventLocationAccessService.requireAccess(location, manager);
 
+        String oldName = location.getName();
+        // Only the location name is carried by EventRescheduledEvent, so an address-only edit
+        // must not trigger a "schedule changed" notification with no visible diff.
+        boolean nameChanged = !Objects.equals(location.getName(), dto.getName());
+
         LOG.debugf(
                 "Updating event location ID %s: name='%s' -> '%s', address='%s' -> '%s'",
                 id, location.getName(), dto.getName(), location.getAddress(), dto.getAddress());
@@ -249,6 +263,23 @@ public class EventLocationService {
                             ev.getStartTime(),
                             ev.getEndTime(),
                             ev.getReminderSendDate()));
+        }
+
+        if (nameChanged) {
+            for (Event ev : associatedEvents) {
+                eventRescheduledBus.fireAsync(
+                        new EventRescheduledEvent(
+                                ev.getId(),
+                                ev.getName(),
+                                ev.getStartTime(),
+                                ev.getStartTime(),
+                                ev.getEndTime(),
+                                ev.getEndTime(),
+                                oldName,
+                                location.getName(),
+                                ev.getBookingDeadline(),
+                                ev.getBookingDeadline()));
+            }
         }
 
         return new EventLocationResponseDTO(location);
@@ -420,6 +451,17 @@ public class EventLocationService {
             }
 
             eventLocationAccessService.requireAccess(location, manager);
+
+            List<Event> linkedEvents = eventRepository.findByEventLocation(location);
+            if (!linkedEvents.isEmpty()) {
+                String names =
+                        linkedEvents.stream().map(Event::getName).collect(Collectors.joining(", "));
+                throw new ValidationException(
+                        "Diese Location wird noch von "
+                                + linkedEvents.size()
+                                + " Event(s) verwendet und kann nicht gelöscht werden: "
+                                + names);
+            }
 
             locationsToDelete.add(location);
         }

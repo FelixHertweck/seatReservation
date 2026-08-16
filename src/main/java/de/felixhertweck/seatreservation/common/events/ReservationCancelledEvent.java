@@ -30,4 +30,15 @@ import de.felixhertweck.seatreservation.model.entity.User;
  * reservations for the same event, so observers can build an accurate "what's left" confirmation.
  */
 public record ReservationCancelledEvent(
-        User user, List<Reservation> deletedReservations, List<Reservation> activeReservations) {}
+        User user,
+        List<Reservation> deletedReservations,
+        List<Reservation> activeReservations,
+        String noticeMessage) {
+
+    public ReservationCancelledEvent(
+            User user,
+            List<Reservation> deletedReservations,
+            List<Reservation> activeReservations) {
+        this(user, deletedReservations, activeReservations, null);
+    }
+}

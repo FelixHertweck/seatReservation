@@ -270,8 +270,19 @@ public class EmailService {
      * @param event the reservation-cancelled notification
      */
     public void onReservationCancelled(@Observes ReservationCancelledEvent event) {
-        sendUpdateReservationConfirmation(
-                event.user(), event.deletedReservations(), event.activeReservations());
+        if (event.noticeMessage() != null) {
+            sendUpdateReservationConfirmation(
+                    event.user(),
+                    event.deletedReservations(),
+                    event.activeReservations(),
+                    null,
+                    null,
+                    null,
+                    event.noticeMessage());
+        } else {
+            sendUpdateReservationConfirmation(
+                    event.user(), event.deletedReservations(), event.activeReservations());
+        }
     }
 
     /**
@@ -395,6 +406,36 @@ public class EmailService {
             String additionalMailAddress) {
         reservationEmailContent.sendUpdateReservationConfirmation(
                 user, deletedReservations, activeReservations, additionalMailAddress);
+    }
+
+    /**
+     * Sends a modular update reservation confirmation email to the user with custom header and
+     * notice.
+     *
+     * @param user The user to whom the email will be sent.
+     * @param deletedReservations The list of deleted reservations.
+     * @param activeReservations The list of active reservations.
+     * @param additionalMailAddress An optional email address to override the user's email.
+     * @param customSubject Optional custom email subject.
+     * @param customHeader Optional custom header banner text.
+     * @param noticeMessage Optional message/reason explaining why the update happened.
+     */
+    public void sendUpdateReservationConfirmation(
+            User user,
+            List<Reservation> deletedReservations,
+            List<Reservation> activeReservations,
+            String additionalMailAddress,
+            String customSubject,
+            String customHeader,
+            String noticeMessage) {
+        reservationEmailContent.sendUpdateReservationConfirmation(
+                user,
+                deletedReservations,
+                activeReservations,
+                additionalMailAddress,
+                customSubject,
+                customHeader,
+                noticeMessage);
     }
 
     /**

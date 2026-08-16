@@ -34,6 +34,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type {
   EventResponseDto,
   EventLocationResponseDto,
@@ -90,6 +96,13 @@ export function EventFormModal({
 
   const hasExistingReservations =
     !isCreating && (event?.reservedCount ?? 0) > 0;
+
+  const isBookingStarted =
+    !isCreating &&
+    !!event?.bookingStartTime &&
+    new Date(event.bookingStartTime) <= new Date();
+
+  const isLocationLocked = isBookingStarted || hasExistingReservations;
 
   const doSubmit = async () => {
     setIsLoading(true);
@@ -240,33 +253,81 @@ export function EventFormModal({
                 <Label htmlFor="location">
                   {t("eventFormModal.locationLabel")}
                 </Label>
-                <Select
-                  value={formData.eventLocationId}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      eventLocationId: value,
-                    }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={t(
-                        "eventFormModal.selectLocationPlaceholder",
-                      )}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allLocations.map((location) => (
-                      <SelectItem
-                        key={location.id?.toString()}
-                        value={location.id?.toString() ?? ""}
-                      >
-                        {location.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {isLocationLocked ? (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="cursor-not-allowed">
+                          <Select
+                            disabled
+                            value={formData.eventLocationId}
+                            onValueChange={(value) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                eventLocationId: value,
+                              }))
+                            }
+                          >
+                            <SelectTrigger className="opacity-75 cursor-not-allowed">
+                              <SelectValue
+                                placeholder={t(
+                                  "eventFormModal.selectLocationPlaceholder",
+                                )}
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allLocations.map((location) => (
+                                <SelectItem
+                                  key={location.id?.toString()}
+                                  value={location.id?.toString() ?? ""}
+                                >
+                                  {location.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          {t(
+                            isBookingStarted
+                              ? "management.events.locationDisabledTooltip"
+                              : "management.events.locationDisabledReservationsTooltip",
+                          )}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ) : (
+                  <Select
+                    value={formData.eventLocationId}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        eventLocationId: value,
+                      }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={t(
+                          "eventFormModal.selectLocationPlaceholder",
+                        )}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allLocations.map((location) => (
+                        <SelectItem
+                          key={location.id?.toString()}
+                          value={location.id?.toString() ?? ""}
+                        >
+                          {location.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             </div>
 

@@ -454,6 +454,12 @@
           "areaCount" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "hasEventsWithActiveBooking" : {
+            "type" : "boolean"
+          },
+          "hasLinkedEvents" : {
+            "type" : "boolean"
           }
         }
       },

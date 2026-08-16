@@ -340,4 +340,36 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
         }
         return find("id in (?1) and user.id = ?2 and event.id = ?3", ids, userId, eventId).list();
     }
+
+    /**
+     * Counts active (non-BLOCKED) reservations for a given event.
+     *
+     * @param event the event to count reservations for
+     * @return the count of active reservations
+     */
+    public long countActiveByEvent(Event event) {
+        return count("event = ?1 and status != ?2", event, ReservationStatus.BLOCKED);
+    }
+
+    /**
+     * Finds all reservations for the specified seat IDs, eagerly fetching user, event, and event
+     * location.
+     *
+     * @param seatIds the collection of seat IDs
+     * @return list of reservations with user and event pre-fetched
+     */
+    public List<Reservation> findBySeatIdsWithUserAndEvent(Collection<UUID> seatIds) {
+        if (seatIds == null || seatIds.isEmpty()) {
+            return List.of();
+        }
+        return find(
+                        "select r from Reservation r"
+                                + " left join fetch r.user"
+                                + " left join fetch r.seat"
+                                + " left join fetch r.event e"
+                                + " left join fetch e.event_location"
+                                + " where r.seat.id in ?1",
+                        seatIds)
+                .list();
+    }
 }

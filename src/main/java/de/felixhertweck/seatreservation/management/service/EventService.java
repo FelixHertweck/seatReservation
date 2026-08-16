@@ -192,6 +192,28 @@ public class EventService {
                                                     + " not found");
                                 });
 
+        boolean locationChanged =
+                event.getEventLocation() == null
+                        || !Objects.equals(
+                                event.getEventLocation().getId(), dto.getEventLocationId());
+        if (locationChanged) {
+            boolean bookingHasStarted =
+                    event.getBookingStartTime() != null
+                            && event.getBookingStartTime().isBefore(Instant.now());
+            if (bookingHasStarted) {
+                throw new ValidationException(
+                        "Die Event-Location kann nicht geändert werden: Die Buchungsphase hat"
+                                + " bereits begonnen.");
+            }
+            long activeReservations = reservationRepository.countActiveByEvent(event);
+            if (activeReservations > 0) {
+                throw new ValidationException(
+                        "Die Event-Location kann nicht geändert werden: Es existieren bereits "
+                                + activeReservations
+                                + " aktive Reservierungen.");
+            }
+        }
+
         validateEventTiming(dto);
 
         Set<User> supervisors = getSupervisorsFromIds(dto.getSupervisorIds());
@@ -491,6 +513,16 @@ public class EventService {
             }
 
             eventAccessService.requireAccess(event, AuthenticatedUser.of(currentUser));
+
+            long activeReservations = reservationRepository.countActiveByEvent(event);
+            if (activeReservations > 0) {
+                throw new ValidationException(
+                        "Das Event \""
+                                + event.getName()
+                                + "\" hat "
+                                + activeReservations
+                                + " aktive Reservierungen und kann nicht gelöscht werden.");
+            }
 
             eventsToDelete.add(event);
         }

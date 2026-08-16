@@ -35,9 +35,16 @@ public record EventLocationResponseDTO(
         List<UUID> managerIds,
         int seatCount,
         int markerCount,
-        int areaCount) {
+        int areaCount,
+        boolean hasEventsWithActiveBooking,
+        boolean hasLinkedEvents) {
     public EventLocationResponseDTO(
-            EventLocation eventLocation, int seatCount, int markerCount, int areaCount) {
+            EventLocation eventLocation,
+            int seatCount,
+            int markerCount,
+            int areaCount,
+            boolean hasEventsWithActiveBooking,
+            boolean hasLinkedEvents) {
         this(
                 eventLocation.getId(),
                 eventLocation.getName(),
@@ -50,7 +57,14 @@ public record EventLocationResponseDTO(
                         : List.of()),
                 seatCount,
                 markerCount,
-                areaCount);
+                areaCount,
+                hasEventsWithActiveBooking,
+                hasLinkedEvents);
+    }
+
+    public EventLocationResponseDTO(
+            EventLocation eventLocation, int seatCount, int markerCount, int areaCount) {
+        this(eventLocation, seatCount, markerCount, areaCount, false, false);
     }
 
     public EventLocationResponseDTO(EventLocation eventLocation) {
@@ -58,6 +72,8 @@ public record EventLocationResponseDTO(
                 eventLocation,
                 (eventLocation.getSeats() != null ? eventLocation.getSeats().size() : 0),
                 (eventLocation.getMarkers() != null ? eventLocation.getMarkers().size() : 0),
-                (eventLocation.getAreas() != null ? eventLocation.getAreas().size() : 0));
+                (eventLocation.getAreas() != null ? eventLocation.getAreas().size() : 0),
+                false,
+                false);
     }
 }
