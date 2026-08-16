@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.StreamSupport;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -336,10 +337,14 @@ class BoxOfficeServiceTest {
     void reserveForGuest_persistsGuestNameLinkedToEachReservation() {
         boxOfficeService.reserveForGuest(guestRequest(null, false), supervisorAuth());
 
-        ArgumentCaptor<BoxOfficeGuestInfo> captor =
-                ArgumentCaptor.forClass(BoxOfficeGuestInfo.class);
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Iterable<BoxOfficeGuestInfo>> captor =
+                ArgumentCaptor.forClass(Iterable.class);
         verify(boxOfficeGuestInfoRepository, times(1)).persist(captor.capture());
-        assertEquals("Jane Doe", captor.getValue().getGuestName());
+        List<BoxOfficeGuestInfo> list =
+                StreamSupport.stream(captor.getValue().spliterator(), false).toList();
+        assertEquals(1, list.size());
+        assertEquals("Jane Doe", list.getFirst().getGuestName());
     }
 
     @Test
