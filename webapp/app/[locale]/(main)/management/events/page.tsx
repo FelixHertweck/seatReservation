@@ -192,7 +192,10 @@ export default function ManagementEventsPage() {
                     );
 
                     return (
-                      <Card key={event.id}>
+                      <Card
+                        key={event.id}
+                        className="flex h-full min-h-[26rem] flex-col"
+                      >
                         <CardHeader>
                           <CardTitle className="flex items-center gap-2 truncate">
                             <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -204,7 +207,7 @@ export default function ManagementEventsPage() {
                             </p>
                           )}
                         </CardHeader>
-                        <CardContent className="space-y-2">
+                        <CardContent className="flex flex-1 flex-col space-y-2">
                           <div className="flex flex-wrap gap-2">
                             {capacity > 0 && (
                               <Badge variant="secondary">
@@ -247,7 +250,7 @@ export default function ManagementEventsPage() {
                               })}
                             </p>
                           )}
-                          <div className="flex flex-wrap gap-2 pt-1">
+                          <div className="mt-auto flex flex-wrap gap-2 pt-1">
                             <Button variant="outline" size="sm" asChild>
                               <Link
                                 href={`/management/reservations?eventId=${event.id}`}
