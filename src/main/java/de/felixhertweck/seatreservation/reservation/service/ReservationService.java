@@ -63,7 +63,6 @@ import org.jboss.logging.Logger;
 public class ReservationService {
 
     private static final Logger LOG = Logger.getLogger(ReservationService.class);
-    private static final String ID_IN_QUERY = "id in ?1";
 
     @Inject ReservationRepository reservationRepository;
     @Inject EventRepository eventRepository;
@@ -145,7 +144,7 @@ public class ReservationService {
             throws NoSeatsAvailableException, EventBookingClosedException {
         LOG.debugf(
                 "Attempting to create reservation for user ID: %s for event ID %s with %d seats.",
-                currentUser.id, dto.getEventId(), (Integer) dto.getSeatIds().size());
+                currentUser.id, dto.getEventId(), dto.getSeatIds().size());
         LOG.debugf("ReservationsRequestDTO: %s", dto.toString());
 
         if (currentUser.getEmail() == null
@@ -417,7 +416,7 @@ public class ReservationService {
 
             // Delete reservations for the current event in a single batch query
             List<UUID> reservationIdsToDelete = entry.getValue().stream().map(r -> r.id).toList();
-            reservationRepository.delete(ID_IN_QUERY, reservationIdsToDelete);
+            reservationRepository.deleteByIds(reservationIdsToDelete);
             LOG.infof(
                     "Deleted reservations with IDs %s for user ID: %s.",
                     reservationIdsToDelete, currentUser.id);
