@@ -181,10 +181,11 @@ public class BoxOfficeService {
 
         reservationRepository.persistAll(newReservations);
 
-        for (Reservation reservation : newReservations) {
-            boxOfficeGuestInfoRepository.persist(
-                    new BoxOfficeGuestInfo(reservation, dto.getGuestName()));
-        }
+        List<BoxOfficeGuestInfo> guestInfos =
+                newReservations.stream()
+                        .map(r -> new BoxOfficeGuestInfo(r, dto.getGuestName()))
+                        .toList();
+        boxOfficeGuestInfoRepository.persist(guestInfos);
 
         String additionalMailAddress =
                 dto.getGuestEmail() != null && !dto.getGuestEmail().isBlank()
