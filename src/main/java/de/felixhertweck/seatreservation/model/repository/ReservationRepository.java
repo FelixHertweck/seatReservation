@@ -75,6 +75,19 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
     }
 
     /**
+     * Deletes all reservations matching the given IDs in a single batch operation.
+     *
+     * @param ids the reservation IDs to delete
+     * @return the number of reservations deleted
+     */
+    public long deleteByIds(List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        return delete("id in ?1", ids);
+    }
+
+    /**
      * Finds all reservations for a collection of event IDs, eagerly fetching each reservation's
      * seat.
      *

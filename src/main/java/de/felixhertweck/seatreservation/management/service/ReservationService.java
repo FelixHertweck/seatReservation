@@ -67,7 +67,6 @@ import org.jboss.logging.Logger;
 public class ReservationService {
 
     private static final Logger LOG = Logger.getLogger(ReservationService.class);
-    private static final String ID_IN_QUERY = "id in ?1";
 
     @ConfigProperty(name = "exporter.pdf.minutesBeforeEventStart", defaultValue = "10")
     Integer EXPORTER_PDF_MINUTES_BEFORE_EVENT_START;
@@ -368,8 +367,6 @@ public class ReservationService {
                 throw new AccessDeniedException("You are not allowed to delete this reservation.");
             }
 
-            reservationRepository.delete(reservation);
-
             if (reservation.getStatus() == ReservationStatus.RESERVED) {
                 LOG.debugf(
                         "Adding reservation ID %s to deleted reservations for email notification.",
@@ -377,6 +374,8 @@ public class ReservationService {
                 deletedReservations.add(reservation);
             }
         }
+
+        reservationRepository.deleteByIds(ids);
 
         // Restore allowance counts, grouped by event so each event needs only one allowance
         // lookup regardless of how many of its reservations were deleted.
