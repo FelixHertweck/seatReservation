@@ -47,12 +47,10 @@ export const useWebSocket = (
           console.error(`[WebSocket] Error calling onConnecting:`, err);
         }
       }
-      console.log(`[WebSocket] Connecting to ${url}`);
 
       const ws = new WebSocket(url);
 
       ws.onopen = () => {
-        console.log(`[WebSocket] Connected to ${url}`);
         reconnectAttemptsRef.current = 0;
         setIsConnected(true);
         if (onConnectingRef.current) {
@@ -85,16 +83,12 @@ export const useWebSocket = (
       };
 
       ws.onclose = () => {
-        console.log(`[WebSocket] Connection closed`);
         wsRef.current = null;
         setIsConnected(false);
 
         // Attempt to reconnect
         if (enabled && reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current += 1;
-          console.log(
-            `[WebSocket] Attempting to reconnect (${reconnectAttemptsRef.current}/${maxReconnectAttempts}) in ${reconnectDelay}ms`,
-          );
 
           reconnectTimeoutRef.current = setTimeout(() => {
             // call via ref to avoid accessing `connect` before declaration in some lint paths
@@ -134,7 +128,6 @@ export const useWebSocket = (
         );
       }
     }
-    console.log(`[WebSocket] Disconnected`);
   }, []);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
