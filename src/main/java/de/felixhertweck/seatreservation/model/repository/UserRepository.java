@@ -125,6 +125,22 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
     }
 
     /**
+     * Deletes users by their IDs in a single batch query.
+     *
+     * @param ids the IDs of the users to delete
+     * @return the number of users deleted
+     */
+    public long deleteByIds(List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        LOG.debugf("Batch deleting users with IDs: %s.", ids);
+        long deletedCount = delete("id in ?1", ids);
+        LOG.infof("Batch deleted %d users.", deletedCount);
+        return deletedCount;
+    }
+
+    /**
      * Finds which of the given usernames already exist, used to batch-check duplicates for a bulk
      * user import instead of querying once per username.
      *

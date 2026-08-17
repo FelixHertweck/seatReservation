@@ -54,8 +54,7 @@ public class EmailSecondFactor implements SecondFactor {
                 || code.isBlank()) {
             return false;
         }
-        List<TwoFactorChallenge> challenges =
-                challengeRepository.list("user = ?1 and used = false", user);
+        List<TwoFactorChallenge> challenges = challengeRepository.findUnusedByUser(user);
         for (TwoFactorChallenge ch : challenges) {
             if (ch.getEmailCode() != null
                     && SecurityUtils.constantTimeEquals(ch.getEmailCode(), code.trim())

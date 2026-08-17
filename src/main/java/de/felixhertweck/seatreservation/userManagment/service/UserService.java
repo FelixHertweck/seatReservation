@@ -534,7 +534,7 @@ public class UserService {
             }
         }
 
-        userRepository.delete("id in ?1", ids);
+        userRepository.deleteByIds(ids);
 
         LOG.infof("Users with IDs %s deleted successfully.", ids);
     }

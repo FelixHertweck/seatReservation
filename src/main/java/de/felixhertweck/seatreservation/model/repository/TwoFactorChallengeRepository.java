@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.model.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -27,10 +28,13 @@ import jakarta.transaction.Transactional;
 import de.felixhertweck.seatreservation.model.entity.TwoFactorChallenge;
 import de.felixhertweck.seatreservation.model.entity.User;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class TwoFactorChallengeRepository
         implements PanacheRepositoryBase<TwoFactorChallenge, UUID> {
+
+    private static final Logger LOG = Logger.getLogger(TwoFactorChallengeRepository.class);
 
     public Optional<TwoFactorChallenge> findByChallengeToken(String challengeToken) {
         return find("challengeToken", challengeToken).firstResultOptional();
@@ -39,5 +43,16 @@ public class TwoFactorChallengeRepository
     @Transactional
     public void deleteByUser(User user) {
         delete("user", user);
+    }
+
+    /**
+     * Returns all unused 2FA challenges for the given user.
+     *
+     * @param user the user whose unused challenges to retrieve
+     * @return a list of unused {@link TwoFactorChallenge} entities for {@code user}
+     */
+    public List<TwoFactorChallenge> findUnusedByUser(User user) {
+        LOG.debugf("Finding unused 2FA challenges for user ID: %s", user.id);
+        return list("user = ?1 and used = false", user);
     }
 }
