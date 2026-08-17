@@ -2,6 +2,10 @@
   "openapi" : "3.1.0",
   "components" : {
     "schemas" : {
+      "ActionType" : {
+        "type" : "string",
+        "enum" : [ "NAVIGATE", "MODAL", "NONE" ]
+      },
       "AdminUserCreationDto" : {
         "type" : "object",
         "required" : [ "username", "password", "firstname", "lastname", "sendEmailVerification", "emailVerified", "roles", "tags" ],
@@ -921,6 +925,41 @@
           }
         }
       },
+      "NotificationCategory" : {
+        "type" : "string",
+        "enum" : [ "BOOKING", "EVENT_REMINDER" ]
+      },
+      "NotificationPageDTO" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/UserNotificationDTO"
+            }
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "unreadCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "NotificationPriority" : {
+        "type" : "string",
+        "enum" : [ "LOW", "NORMAL", "HIGH", "URGENT" ]
+      },
       "PasswordResetConfirmDTO" : {
         "description" : "Request DTO for confirming a password reset",
         "type" : "object",
@@ -957,6 +996,27 @@
           "altchaPayload" : {
             "type" : "string",
             "description" : "ALTCHA proof-of-work verification payload"
+          }
+        }
+      },
+      "PushSubscriptionRequestDTO" : {
+        "type" : "object",
+        "required" : [ "endpoint", "p256dh", "auth" ],
+        "properties" : {
+          "endpoint" : {
+            "type" : "string",
+            "pattern" : "\\S",
+            "maxLength" : 2048
+          },
+          "p256dh" : {
+            "type" : "string",
+            "pattern" : "\\S",
+            "maxLength" : 255
+          },
+          "auth" : {
+            "type" : "string",
+            "pattern" : "\\S",
+            "maxLength" : 255
           }
         }
       },
@@ -1445,6 +1505,15 @@
         "format" : "uuid",
         "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
       },
+      "UnreadCountDTO" : {
+        "type" : "object",
+        "properties" : {
+          "unreadCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
       "UpcomingEventDTO" : {
         "type" : "object",
         "description" : "Summary of an upcoming event for the manager dashboard overview",
@@ -1616,6 +1685,44 @@
           }
         }
       },
+      "UserNotificationDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "category" : {
+            "$ref" : "#/components/schemas/NotificationCategory"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "priority" : {
+            "$ref" : "#/components/schemas/NotificationPriority"
+          },
+          "isRead" : {
+            "type" : "boolean"
+          },
+          "actionType" : {
+            "$ref" : "#/components/schemas/ActionType"
+          },
+          "actionUrl" : {
+            "type" : "string"
+          },
+          "actionLabel" : {
+            "type" : "string"
+          },
+          "metadata" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "$ref" : "#/components/schemas/Instant"
+          }
+        }
+      },
       "UserProfileUpdateDTO" : {
         "type" : "object",
         "required" : [ "email", "firstname", "lastname", "tags" ],
@@ -1700,6 +1807,17 @@
           "altchaPayload" : {
             "type" : "string",
             "description" : "ALTCHA proof-of-work verification payload"
+          }
+        }
+      },
+      "VapidPublicKeyDTO" : {
+        "description" : "VAPID Public Key for browser push registration",
+        "type" : "object",
+        "required" : [ "publicKey" ],
+        "properties" : {
+          "publicKey" : {
+            "type" : "string",
+            "description" : "Base64URL encoded VAPID public key"
           }
         }
       },
@@ -4562,6 +4680,259 @@
         "tags" : [ "Seat Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/notifications" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "category",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/NotificationCategory"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "unreadOnly",
+          "in" : "query",
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Paginated list of user notifications retrieved successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NotificationPageDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get Notifications",
+        "tags" : [ "Notification Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
+      }
+    },
+    "/api/notifications/read-all" : {
+      "patch" : {
+        "responses" : {
+          "200" : {
+            "description" : "All notifications marked as read successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Mark All As Read",
+        "tags" : [ "Notification Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
+      }
+    },
+    "/api/notifications/unread-count" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "Unread notification count retrieved successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UnreadCountDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get Unread Count",
+        "tags" : [ "Notification Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
+      }
+    },
+    "/api/notifications/{id}" : {
+      "delete" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Notification deleted successfully"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "404" : {
+            "description" : "Notification not found"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Delete Notification",
+        "tags" : [ "Notification Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
+      }
+    },
+    "/api/notifications/{id}/read" : {
+      "patch" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Notification marked as read successfully"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "404" : {
+            "description" : "Notification not found"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Mark As Read",
+        "tags" : [ "Notification Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
+      }
+    },
+    "/api/push/subscriptions" : {
+      "delete" : {
+        "parameters" : [ {
+          "name" : "endpoint",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Push subscription unregistered successfully"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Unregister Subscription",
+        "tags" : [ "Push Subscription Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
+      },
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PushSubscriptionRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Push subscription registered successfully"
+          },
+          "400" : {
+            "description" : "Bad Request: Invalid subscription data"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Register Subscription",
+        "tags" : [ "Push Subscription Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
+      }
+    },
+    "/api/push/subscriptions/vapid-public-key" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "Returns VAPID Public Key",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get Vapid Public Key",
+        "tags" : [ "Push Subscription Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
         } ]
       }
     },

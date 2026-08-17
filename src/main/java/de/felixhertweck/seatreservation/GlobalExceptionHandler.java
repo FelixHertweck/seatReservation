@@ -43,6 +43,7 @@ import de.felixhertweck.seatreservation.management.exception.EntranceNotFoundExc
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.management.exception.MarkerNotFoundException;
 import de.felixhertweck.seatreservation.management.exception.SeatNotFoundException;
+import de.felixhertweck.seatreservation.notification.exception.NotificationNotFoundException;
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
@@ -96,6 +97,7 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
         List<NewCookie> cookies = new ArrayList<>();
 
         switch (exception) {
+            case NotificationNotFoundException ignored -> status = Response.Status.NOT_FOUND;
             case EventBookingClosedException ignored -> status = Response.Status.BAD_REQUEST;
             case EventNotFoundException ignored -> status = Response.Status.NOT_FOUND;
             case EventLocationNotFoundException ignored -> status = Response.Status.NOT_FOUND;

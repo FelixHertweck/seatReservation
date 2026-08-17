@@ -1,4 +1,47 @@
 {
+  "notifications": {
+    "title": "Notifications",
+    "description": "Your in-app notifications and status updates",
+    "unreadCountBadge": "{{count}} unread",
+    "markAllAsRead": "Mark all as read",
+    "markAsRead": "Mark as read",
+    "delete": "Delete",
+    "viewAll": "View all notifications",
+    "emptyTitle": "No notifications",
+    "emptyDescription": "You currently have no notifications.",
+    "tabs": {
+      "all": "All",
+      "unread": "Unread"
+    },
+    "newBadge": "New",
+    "priority": {
+      "LOW": "Low",
+      "NORMAL": "Normal",
+      "HIGH": "High",
+      "URGENT": "Urgent"
+    },
+    "category": {
+      "BOOKING": "Booking",
+      "EVENT_REMINDER": "Reminder",
+      "SYSTEM": "System"
+    },
+    "relativeTime": {
+      "justNow": "Just now",
+      "minutesAgo": "{{count}}m ago",
+      "hoursAgo": "{{count}}h ago",
+      "daysAgo": "{{count}}d ago"
+    },
+    "pushBanner": {
+      "label": "Push Notifications",
+      "title": "Receive instant browser updates for seat reservations, event reminders, and status changes.",
+      "enableButton": "Enable",
+      "disableButton": "Disable",
+      "disabledNotice": "Push notifications are blocked in your browser settings.",
+      "blockedBadge": "Blocked",
+      "enabledBadge": "Browser Push Active",
+      "disabledToast": "Push notifications disabled."
+    }
+  },
   "seatStatus": {
     "available": "Available",
     "reserved": "Reserved",
@@ -759,6 +802,9 @@
     "yourReservedSeatsSectionTitle": "Your Reserved Seats",
     "seatNumberButton": "Seat {{seatNumber}}",
     "noSeatsReserved": "No seats reserved",
+    "seatMapUnavailable": "The seat map could not be loaded for this event.",
+    "seatMapError": "Failed to load the seat map. Please check your connection and try again.",
+    "retryButton": "Retry",
     "areaLabel": "Area",
     "entranceLabel": "Entrance"
   },
@@ -1025,6 +1071,7 @@
     "events": "Events",
     "eventsBrowse": "Browse",
     "reservations": "Reservations",
+    "notifications": "Notifications",
     "viewProfile": "View profile",
     "settings": "Settings",
     "manager": "Manager",

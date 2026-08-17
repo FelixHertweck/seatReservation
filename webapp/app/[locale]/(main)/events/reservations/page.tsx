@@ -2,14 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { useReservations } from "@/hooks/use-reservations";
 import { useT } from "@/lib/i18n/hooks";
-import {
-  UserEventLocationResponseDto,
-  UserEventResponseDto,
-  UserReservationResponseDto,
-} from "@/api";
+import { UserEventResponseDto, UserReservationResponseDto } from "@/api";
 import { useEvents } from "@/hooks/use-events";
+import { getApiUserLocationsByIdOptions } from "@/api/@tanstack/react-query.gen";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { ReservationCardSkeleton } from "@/components/reservations/reservation-card-skeleton";
 import { SeatMapModal } from "@/components/reservations/reservation-modal";
@@ -25,7 +23,6 @@ import { CalendarDays } from "lucide-react";
 interface SelectedReservation {
   reservation: UserReservationResponseDto;
   event: UserEventResponseDto | null;
-  location: UserEventLocationResponseDto | null;
   eventReservations?: UserReservationResponseDto[] | null;
 }
 
@@ -66,10 +63,22 @@ export default function MyReservationsPage() {
     return events.find((e) => e.id === qrModalEventId);
   }, [qrModalEventId, events]);
 
+  // The events/locations list endpoints only return lightweight summaries
+  // (no seats/markers/areas) - the full structural data has to be fetched
+  // separately per location via /api/user/locations/{id}.
+  const { data: qrLocationDetail } = useQuery({
+    ...getApiUserLocationsByIdOptions({
+      path: { id: qrEvent?.locationId ?? "" },
+    }),
+    enabled: !!qrEvent?.locationId,
+  });
+
   const qrLocation = useMemo(() => {
     if (!qrEvent?.locationId) return null;
-    return locations.find((l) => l.id === qrEvent.locationId);
-  }, [qrEvent, locations]);
+    return (
+      qrLocationDetail ?? locations.find((l) => l.id === qrEvent.locationId)
+    );
+  }, [qrEvent, locations, qrLocationDetail]);
 
   const handleCloseQrModal = () => {
     setQrModalEventId(null);
@@ -162,7 +171,6 @@ export default function MyReservationsPage() {
     reservation: UserReservationResponseDto,
   ) => {
     const event = events?.find((e) => e.id === reservation.eventId) ?? null;
-    const location = locations?.find((l) => l.id === event?.locationId) ?? null;
     const eventReservations = reservations.filter(
       (reservation) => reservation.eventId === event?.id,
     );
@@ -170,10 +178,30 @@ export default function MyReservationsPage() {
     setSelectedReservation({
       reservation,
       event,
-      location,
       eventReservations,
     });
   };
+
+  const {
+    data: selectedLocationDetail,
+    isLoading: isSelectedLocationLoading,
+    isError: isSelectedLocationError,
+    refetch: refetchSelectedLocation,
+  } = useQuery({
+    ...getApiUserLocationsByIdOptions({
+      path: { id: selectedReservation?.event?.locationId ?? "" },
+    }),
+    enabled: !!selectedReservation?.event?.locationId,
+  });
+
+  const selectedLocation = useMemo(() => {
+    if (!selectedReservation?.event?.locationId) return null;
+    return (
+      selectedLocationDetail ??
+      locations.find((l) => l.id === selectedReservation.event?.locationId) ??
+      null
+    );
+  }, [selectedReservation, locations, selectedLocationDetail]);
 
   useEffect(() => {
     if (!eventIdFromUrl || eventsLoading || !isLoggedIn) return;
@@ -273,15 +301,20 @@ export default function MyReservationsPage() {
 
       {selectedReservation && (
         <SeatMapModal
-          seats={selectedReservation.location?.seats || []}
+          seats={selectedLocation?.seats || []}
           seatStatuses={selectedReservation.event?.seatStatuses || []}
-          markers={selectedReservation.location?.markers || []}
-          areas={selectedReservation.location?.areas || []}
+          markers={selectedLocation?.markers || []}
+          areas={selectedLocation?.areas || []}
           reservation={selectedReservation.reservation}
           eventReservations={selectedReservation.eventReservations || []}
           onClose={() => setSelectedReservation(null)}
           onDelete={handleDeleteReservation}
-          isLoading={false}
+          isLoading={
+            eventsLoading ||
+            (isSelectedLocationLoading && !selectedLocationDetail)
+          }
+          hasError={isSelectedLocationError}
+          onRetry={() => void refetchSelectedLocation()}
         />
       )}
 

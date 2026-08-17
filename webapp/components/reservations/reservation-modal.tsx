@@ -43,6 +43,8 @@ interface SeatMapModalProps {
   onClose: () => void;
   onDelete: (reservationIds: string[]) => void | Promise<void>;
   isLoading: boolean;
+  hasError?: boolean;
+  onRetry?: () => void;
 }
 
 export function SeatMapModal({
@@ -55,6 +57,8 @@ export function SeatMapModal({
   onClose,
   onDelete,
   isLoading,
+  hasError = false,
+  onRetry,
 }: SeatMapModalProps) {
   const t = useT();
   const isMobile = useIsMobile();
@@ -191,6 +195,23 @@ export function SeatMapModal({
           {isLoading ? (
             <div className="flex justify-center items-center h-48">
               <p>{t("seatMapModal.loadingText")}</p>
+            </div>
+          ) : hasError ? (
+            <div className="flex flex-col gap-3 justify-center items-center h-48">
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                {t("seatMapModal.seatMapError")}
+              </p>
+              {onRetry && (
+                <Button variant="outline" size="sm" onClick={onRetry}>
+                  {t("seatMapModal.retryButton")}
+                </Button>
+              )}
+            </div>
+          ) : seats.length === 0 ? (
+            <div className="flex justify-center items-center h-48">
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                {t("seatMapModal.seatMapUnavailable")}
+              </p>
             </div>
           ) : (
             <div className="flex-1 flex flex-col min-h-0 min-w-0 max-w-full overflow-hidden">

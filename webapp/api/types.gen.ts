@@ -4,6 +4,14 @@ export type ClientOptions = {
     baseUrl: 'http://localhost:8080' | 'http://0.0.0.0:8080' | (string & {});
 };
 
+export const ActionType = {
+    NAVIGATE: 'NAVIGATE',
+    MODAL: 'MODAL',
+    NONE: 'NONE'
+} as const;
+
+export type ActionType = typeof ActionType[keyof typeof ActionType];
+
 export type AdminUserCreationDto = {
     username: string;
     email?: string;
@@ -357,6 +365,27 @@ export type ManagementOverviewStatsDto = {
     contingentGranted?: bigint;
 };
 
+export const NotificationCategory = { BOOKING: 'BOOKING', EVENT_REMINDER: 'EVENT_REMINDER' } as const;
+
+export type NotificationCategory = typeof NotificationCategory[keyof typeof NotificationCategory];
+
+export type NotificationPageDto = {
+    items?: Array<UserNotificationDto>;
+    totalItems?: bigint;
+    page?: number;
+    pageSize?: number;
+    unreadCount?: bigint;
+};
+
+export const NotificationPriority = {
+    LOW: 'LOW',
+    NORMAL: 'NORMAL',
+    HIGH: 'HIGH',
+    URGENT: 'URGENT'
+} as const;
+
+export type NotificationPriority = typeof NotificationPriority[keyof typeof NotificationPriority];
+
 /**
  * Request DTO for confirming a password reset
  */
@@ -387,6 +416,12 @@ export type PasswordResetRequestDto = {
      * ALTCHA proof-of-work verification payload
      */
     altchaPayload: string;
+};
+
+export type PushSubscriptionRequestDto = {
+    endpoint: string;
+    p256dh: string;
+    auth: string;
 };
 
 export type RegisterRequestDto = {
@@ -629,6 +664,10 @@ export type TwoFactorVerifyRequestDto = {
 
 export type Uuid = string;
 
+export type UnreadCountDto = {
+    unreadCount?: bigint;
+};
+
 /**
  * Summary of an upcoming event for the manager dashboard overview
  */
@@ -705,6 +744,20 @@ export type UserEventResponseDto = {
     cancellationReason?: string;
 };
 
+export type UserNotificationDto = {
+    id?: Uuid;
+    category?: NotificationCategory;
+    title?: string;
+    message?: string;
+    priority?: NotificationPriority;
+    isRead?: boolean;
+    actionType?: ActionType;
+    actionUrl?: string;
+    actionLabel?: string;
+    metadata?: string;
+    createdAt?: Instant;
+};
+
 export type UserProfileUpdateDto = {
     email: string;
     firstname: string;
@@ -740,6 +793,16 @@ export type UsernameRecoveryRequestDto = {
      * ALTCHA proof-of-work verification payload
      */
     altchaPayload: string;
+};
+
+/**
+ * VAPID Public Key for browser push registration
+ */
+export type VapidPublicKeyDto = {
+    /**
+     * Base64URL encoded VAPID public key
+     */
+    publicKey: string;
 };
 
 export type VerifyEmailCodeRequestDto = {
@@ -3125,6 +3188,239 @@ export type PutApiManagerSeatsByIdResponses = {
 };
 
 export type PutApiManagerSeatsByIdResponse = PutApiManagerSeatsByIdResponses[keyof PutApiManagerSeatsByIdResponses];
+
+export type GetApiNotificationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        category?: NotificationCategory;
+        page?: number;
+        size?: number;
+        unreadOnly?: boolean;
+    };
+    url: '/api/notifications';
+};
+
+export type GetApiNotificationsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiNotificationsResponses = {
+    /**
+     * Paginated list of user notifications retrieved successfully
+     */
+    200: NotificationPageDto;
+};
+
+export type GetApiNotificationsResponse = GetApiNotificationsResponses[keyof GetApiNotificationsResponses];
+
+export type PatchApiNotificationsReadAllData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/notifications/read-all';
+};
+
+export type PatchApiNotificationsReadAllErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PatchApiNotificationsReadAllResponses = {
+    /**
+     * All notifications marked as read successfully
+     */
+    200: unknown;
+};
+
+export type GetApiNotificationsUnreadCountData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/notifications/unread-count';
+};
+
+export type GetApiNotificationsUnreadCountErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiNotificationsUnreadCountResponses = {
+    /**
+     * Unread notification count retrieved successfully
+     */
+    200: UnreadCountDto;
+};
+
+export type GetApiNotificationsUnreadCountResponse = GetApiNotificationsUnreadCountResponses[keyof GetApiNotificationsUnreadCountResponses];
+
+export type DeleteApiNotificationsByIdData = {
+    body?: never;
+    path: {
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/notifications/{id}';
+};
+
+export type DeleteApiNotificationsByIdErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+    /**
+     * Notification not found
+     */
+    404: unknown;
+};
+
+export type DeleteApiNotificationsByIdResponses = {
+    /**
+     * Notification deleted successfully
+     */
+    204: void;
+};
+
+export type DeleteApiNotificationsByIdResponse = DeleteApiNotificationsByIdResponses[keyof DeleteApiNotificationsByIdResponses];
+
+export type PatchApiNotificationsByIdReadData = {
+    body?: never;
+    path: {
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/notifications/{id}/read';
+};
+
+export type PatchApiNotificationsByIdReadErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+    /**
+     * Notification not found
+     */
+    404: unknown;
+};
+
+export type PatchApiNotificationsByIdReadResponses = {
+    /**
+     * Notification marked as read successfully
+     */
+    204: void;
+};
+
+export type PatchApiNotificationsByIdReadResponse = PatchApiNotificationsByIdReadResponses[keyof PatchApiNotificationsByIdReadResponses];
+
+export type DeleteApiPushSubscriptionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        endpoint?: string;
+    };
+    url: '/api/push/subscriptions';
+};
+
+export type DeleteApiPushSubscriptionsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type DeleteApiPushSubscriptionsResponses = {
+    /**
+     * Push subscription unregistered successfully
+     */
+    204: void;
+};
+
+export type DeleteApiPushSubscriptionsResponse = DeleteApiPushSubscriptionsResponses[keyof DeleteApiPushSubscriptionsResponses];
+
+export type PostApiPushSubscriptionsData = {
+    body: PushSubscriptionRequestDto;
+    path?: never;
+    query?: never;
+    url: '/api/push/subscriptions';
+};
+
+export type PostApiPushSubscriptionsErrors = {
+    /**
+     * Bad Request: Invalid subscription data
+     */
+    400: unknown;
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PostApiPushSubscriptionsResponses = {
+    /**
+     * Push subscription registered successfully
+     */
+    201: unknown;
+};
+
+export type GetApiPushSubscriptionsVapidPublicKeyData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/push/subscriptions/vapid-public-key';
+};
+
+export type GetApiPushSubscriptionsVapidPublicKeyErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiPushSubscriptionsVapidPublicKeyResponses = {
+    /**
+     * Returns VAPID Public Key
+     */
+    200: unknown;
+};
 
 export type PostApiSupervisorBoxofficeReservationsData = {
     body: BoxOfficeReservationRequestDto;

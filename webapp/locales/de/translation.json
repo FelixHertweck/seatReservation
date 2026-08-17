@@ -1,4 +1,47 @@
 {
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "description": "Ihre In-App Benachrichtigungen und Status-Updates",
+    "unreadCountBadge": "{{count}} ungelesen",
+    "markAllAsRead": "Alle als gelesen markieren",
+    "markAsRead": "Als gelesen markieren",
+    "delete": "Löschen",
+    "viewAll": "Alle Benachrichtigungen anzeigen",
+    "emptyTitle": "Keine Benachrichtigungen",
+    "emptyDescription": "Sie haben zurzeit keine Benachrichtigungen.",
+    "tabs": {
+      "all": "Alle",
+      "unread": "Ungelesen"
+    },
+    "newBadge": "Neu",
+    "priority": {
+      "LOW": "Niedrig",
+      "NORMAL": "Normal",
+      "HIGH": "Hoch",
+      "URGENT": "Dringend"
+    },
+    "category": {
+      "BOOKING": "Buchung",
+      "EVENT_REMINDER": "Erinnerung",
+      "SYSTEM": "System"
+    },
+    "relativeTime": {
+      "justNow": "Gerade eben",
+      "minutesAgo": "vor {{count}}m",
+      "hoursAgo": "vor {{count}}h",
+      "daysAgo": "vor {{count}}T"
+    },
+    "pushBanner": {
+      "label": "Push-Benachrichtigungen",
+      "title": "Erhalten Sie sofortige Updates zu Ihren Sitzplatzreservierungen und Event-Erinnerungen direkt im Browser.",
+      "enableButton": "Aktivieren",
+      "disableButton": "Deaktivieren",
+      "disabledNotice": "Push-Benachrichtigungen sind in Ihren Browser-Einstellungen blockiert.",
+      "blockedBadge": "Blockiert",
+      "enabledBadge": "Browser-Push aktiv",
+      "disabledToast": "Push-Benachrichtigungen deaktiviert."
+    }
+  },
   "seatStatus": {
     "available": "Verfügbar",
     "reserved": "Reserviert",
@@ -595,6 +638,9 @@
     "yourReservedSeatsSectionTitle": "Ihre reservierten Plätze",
     "seatNumberButton": "Platz {{seatNumber}}",
     "noSeatsReserved": "Keine Plätze reserviert",
+    "seatMapUnavailable": "Der Sitzplan konnte für diese Veranstaltung nicht geladen werden.",
+    "seatMapError": "Der Sitzplan konnte nicht geladen werden. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "retryButton": "Erneut versuchen",
     "areaLabel": "Bereich",
     "entranceLabel": "Eingang"
   },
@@ -861,6 +907,7 @@
     "events": "Veranstaltungen",
     "eventsBrowse": "Entdecken",
     "reservations": "Reservierungen",
+    "notifications": "Benachrichtigungen",
     "viewProfile": "Profil ansehen",
     "settings": "Einstellungen",
     "manager": "Manager",
