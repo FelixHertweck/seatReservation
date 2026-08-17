@@ -21,7 +21,7 @@ jobs:
 
     env:
       # default fallback in case .nvmrc is missing
-      NODE_VERSION: '24.x.x'
+      NODE_VERSION: '26.x.x'
 
     steps:
       - name: Checkout Repo
