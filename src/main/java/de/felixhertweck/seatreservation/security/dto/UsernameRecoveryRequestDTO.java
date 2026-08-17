@@ -36,11 +36,23 @@ public class UsernameRecoveryRequestDTO {
     @Schema(description = "The email address associated with the account(s)", required = true)
     private String email;
 
+    @NoHtmlSanitize
+    @Schema(description = "ALTCHA proof-of-work verification payload", required = true)
+    private String altchaPayload;
+
     public String getEmail() {
         return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getAltchaPayload() {
+        return altchaPayload;
+    }
+
+    public void setAltchaPayload(String altchaPayload) {
+        this.altchaPayload = altchaPayload;
     }
 }

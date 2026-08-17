@@ -25,6 +25,7 @@ import { redirectUser } from "@/lib/redirect-User";
 import { KeyRound, ShieldCheck, ArrowLeft } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Altcha } from "@/components/common/altcha";
 
 export default function LoginPage() {
   const params = useParams();
@@ -36,6 +37,8 @@ export default function LoginPage() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [altchaPayload, setAltchaPayload] = useState("");
+  const [altchaResetKey, setAltchaResetKey] = useState(0);
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
@@ -131,7 +134,12 @@ export default function LoginPage() {
       setCurrentlyLoggingIn(true);
       const returnToUrl = searchParams.get("returnTo");
 
-      const res = await login(username.trim(), password, returnToUrl);
+      const res = await login(
+        username.trim(),
+        password,
+        returnToUrl,
+        altchaPayload,
+      );
       if (res?.twoFactorRequired && res?.challengeToken) {
         setTwoFactorChallenge({
           challengeToken: res.challengeToken,
@@ -145,6 +153,7 @@ export default function LoginPage() {
       if ((error as ErrorWithResponse).response?.status === 401) {
         setLoginError(t("login.error.invalidCredentials"));
       }
+      setAltchaResetKey((key) => key + 1);
       setCurrentlyLoggingIn(false);
     } finally {
       setIsLoadingForm(false);
@@ -321,7 +330,8 @@ export default function LoginPage() {
           <CardDescription>{t("login.enterCredentials")}</CardDescription>
         </CardHeader>
         <CardContent className="p-0 md:p-6 md:pt-0">
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <Altcha onVerified={setAltchaPayload} resetKey={altchaResetKey} />
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label htmlFor="username">{t("login.username")}</Label>
@@ -389,7 +399,8 @@ export default function LoginPage() {
                 isLoadingForm ||
                 isRetryAfterActive ||
                 !!loginError ||
-                isEmailUsername
+                isEmailUsername ||
+                !altchaPayload
               }
             >
               {loginError ||

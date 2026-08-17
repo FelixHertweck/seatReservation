@@ -29,9 +29,12 @@ export function useLogin() {
     username: string,
     password: string,
     returnToUrl?: string | null,
+    altchaPayload?: string,
   ) => {
     try {
-      const res = await loginMutation({ body: { username, password } });
+      const res = await loginMutation({
+        body: { username, password, altchaPayload: altchaPayload ?? "" },
+      });
       if (res?.twoFactorRequired) {
         return res;
       }

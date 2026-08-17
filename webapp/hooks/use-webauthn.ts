@@ -1,5 +1,6 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -32,6 +33,8 @@ import {
   PasskeyCeremonyCancelledError,
 } from "@/lib/webauthn";
 
+const emptySubscribe = () => () => {};
+
 /**
  * Passkey (WebAuthn) flows: passwordless login, passkey-only account creation,
  * and credential management for the signed-in user. Mirrors the conventions in
@@ -47,7 +50,11 @@ export function useWebAuthn() {
 
   const { data: user, refetch: refetchUser } = useQuery(getApiUsersMeOptions());
 
-  const isSupported = isPasskeySupported();
+  const isSupported = useSyncExternalStore(
+    emptySubscribe,
+    () => isPasskeySupported(),
+    () => false,
+  );
 
   // Maps ceremony/backend failures to a user-facing message. Returns null when
   // the user simply cancelled the native prompt (no toast needed).

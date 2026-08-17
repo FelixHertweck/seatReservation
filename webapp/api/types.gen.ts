@@ -82,6 +82,14 @@ export type BoxOfficeSeatDto = {
     liveStatus?: ReservationLiveStatus;
 };
 
+export type Challenge = {
+    algorithm?: string;
+    challenge?: string;
+    maxnumber?: bigint;
+    salt?: string;
+    signature?: string;
+};
+
 export type CheckInInfoRequestDto = {
     userId: Uuid;
     eventId: Uuid;
@@ -249,9 +257,22 @@ export type LoginLockedDto = {
     retryAfter?: Instant;
 };
 
+/**
+ * Request DTO for user login
+ */
 export type LoginRequestDto = {
+    /**
+     * The username of the account
+     */
     username: string;
+    /**
+     * The password of the account
+     */
     password: string;
+    /**
+     * ALTCHA proof-of-work verification payload
+     */
+    altchaPayload: string;
 };
 
 export type MakerRequestDto = {
@@ -362,14 +383,60 @@ export type PasswordResetRequestDto = {
      * The email address associated with the account
      */
     email: string;
+    /**
+     * ALTCHA proof-of-work verification payload
+     */
+    altchaPayload: string;
 };
 
 export type RegisterRequestDto = {
+    /**
+     * The username of the account
+     */
     username: string;
+    /**
+     * The first name of the user
+     */
     firstname: string;
+    /**
+     * The last name of the user
+     */
     lastname: string;
+    /**
+     * The email address associated with the account
+     */
     email: string;
+    /**
+     * ALTCHA proof-of-work verification payload
+     */
+    altchaPayload: string;
     password: string;
+};
+
+/**
+ * Account registration details
+ */
+export type RegistrationDetailsDto = {
+    /**
+     * The username of the account
+     */
+    username: string;
+    /**
+     * The first name of the user
+     */
+    firstname: string;
+    /**
+     * The last name of the user
+     */
+    lastname: string;
+    /**
+     * The email address associated with the account
+     */
+    email: string;
+    /**
+     * ALTCHA proof-of-work verification payload
+     */
+    altchaPayload: string;
 };
 
 export type RegistrationStatusDto = {
@@ -669,6 +736,10 @@ export type UsernameRecoveryRequestDto = {
      * The email address associated with the account(s)
      */
     email: string;
+    /**
+     * ALTCHA proof-of-work verification payload
+     */
+    altchaPayload: string;
 };
 
 export type VerifyEmailCodeRequestDto = {
@@ -709,16 +780,48 @@ export type WebAuthnCredentialUpdateDto = {
 };
 
 export type WebAuthnRegistrationStartDto = {
+    /**
+     * The username of the account
+     */
     username: string;
+    /**
+     * The first name of the user
+     */
     firstname: string;
+    /**
+     * The last name of the user
+     */
     lastname: string;
+    /**
+     * The email address associated with the account
+     */
     email: string;
+    /**
+     * ALTCHA proof-of-work verification payload
+     */
+    altchaPayload: string;
 };
 
 export type WebAuthnStatusDto = {
     hasPasskey?: boolean;
     hasPassword?: boolean;
 };
+
+export type GetApiAltchaChallengeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/altcha/challenge';
+};
+
+export type GetApiAltchaChallengeResponses = {
+    /**
+     * Challenge generated successfully
+     */
+    200: Challenge;
+};
+
+export type GetApiAltchaChallengeResponse = GetApiAltchaChallengeResponses[keyof GetApiAltchaChallengeResponses];
 
 export type PostApiAuth2FaResendEmailData = {
     body: TwoFactorResendEmailRequestDto;

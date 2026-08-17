@@ -255,6 +255,27 @@
           }
         }
       },
+      "Challenge" : {
+        "type" : "object",
+        "properties" : {
+          "algorithm" : {
+            "type" : "string"
+          },
+          "challenge" : {
+            "type" : "string"
+          },
+          "maxnumber" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "salt" : {
+            "type" : "string"
+          },
+          "signature" : {
+            "type" : "string"
+          }
+        }
+      },
       "CheckInInfoRequestDTO" : {
         "type" : "object",
         "required" : [ "userId", "eventId" ],
@@ -768,16 +789,23 @@
         }
       },
       "LoginRequestDTO" : {
+        "description" : "Request DTO for user login",
         "type" : "object",
-        "required" : [ "username", "password" ],
+        "required" : [ "username", "password", "altchaPayload" ],
         "properties" : {
           "username" : {
             "type" : "string",
+            "description" : "The username of the account",
             "pattern" : "\\S"
           },
           "password" : {
             "type" : "string",
+            "description" : "The password of the account",
             "pattern" : "\\S"
+          },
+          "altchaPayload" : {
+            "type" : "string",
+            "description" : "ALTCHA proof-of-work verification payload"
           }
         }
       },
@@ -914,7 +942,7 @@
       "PasswordResetRequestDTO" : {
         "description" : "Request DTO for initiating a password reset",
         "type" : "object",
-        "required" : [ "username", "email" ],
+        "required" : [ "username", "email", "altchaPayload" ],
         "properties" : {
           "username" : {
             "type" : "string",
@@ -925,33 +953,76 @@
             "type" : "string",
             "description" : "The email address associated with the account",
             "pattern" : "\\S"
+          },
+          "altchaPayload" : {
+            "type" : "string",
+            "description" : "ALTCHA proof-of-work verification payload"
           }
         }
       },
       "RegisterRequestDTO" : {
         "type" : "object",
-        "required" : [ "username", "firstname", "lastname", "email", "password" ],
+        "required" : [ "username", "firstname", "lastname", "email", "altchaPayload", "password" ],
         "properties" : {
           "username" : {
             "type" : "string",
+            "description" : "The username of the account",
             "pattern" : "^[a-zA-Z0-9._-]{3,64}$"
           },
           "firstname" : {
             "type" : "string",
+            "description" : "The first name of the user",
             "pattern" : "\\S"
           },
           "lastname" : {
             "type" : "string",
+            "description" : "The last name of the user",
             "pattern" : "\\S"
           },
           "email" : {
             "type" : "string",
+            "description" : "The email address associated with the account",
             "pattern" : "\\S"
+          },
+          "altchaPayload" : {
+            "type" : "string",
+            "description" : "ALTCHA proof-of-work verification payload"
           },
           "password" : {
             "type" : "string",
             "pattern" : "\\S",
             "minLength" : 8
+          }
+        }
+      },
+      "RegistrationDetailsDTO" : {
+        "description" : "Account registration details",
+        "type" : "object",
+        "required" : [ "username", "firstname", "lastname", "email", "altchaPayload" ],
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "description" : "The username of the account",
+            "pattern" : "^[a-zA-Z0-9._-]{3,64}$"
+          },
+          "firstname" : {
+            "type" : "string",
+            "description" : "The first name of the user",
+            "pattern" : "\\S"
+          },
+          "lastname" : {
+            "type" : "string",
+            "description" : "The last name of the user",
+            "pattern" : "\\S"
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "The email address associated with the account",
+            "pattern" : "\\S"
+          },
+          "altchaPayload" : {
+            "type" : "string",
+            "description" : "ALTCHA proof-of-work verification payload"
           }
         }
       },
@@ -1619,12 +1690,16 @@
       "UsernameRecoveryRequestDTO" : {
         "description" : "Request DTO for initiating a username recovery",
         "type" : "object",
-        "required" : [ "email" ],
+        "required" : [ "email", "altchaPayload" ],
         "properties" : {
           "email" : {
             "type" : "string",
             "description" : "The email address associated with the account(s)",
             "pattern" : "\\S"
+          },
+          "altchaPayload" : {
+            "type" : "string",
+            "description" : "ALTCHA proof-of-work verification payload"
           }
         }
       },
@@ -1707,23 +1782,31 @@
       },
       "WebAuthnRegistrationStartDTO" : {
         "type" : "object",
-        "required" : [ "username", "firstname", "lastname", "email" ],
+        "required" : [ "username", "firstname", "lastname", "email", "altchaPayload" ],
         "properties" : {
           "username" : {
             "type" : "string",
+            "description" : "The username of the account",
             "pattern" : "^[a-zA-Z0-9._-]{3,64}$"
           },
           "firstname" : {
             "type" : "string",
+            "description" : "The first name of the user",
             "pattern" : "\\S"
           },
           "lastname" : {
             "type" : "string",
+            "description" : "The last name of the user",
             "pattern" : "\\S"
           },
           "email" : {
             "type" : "string",
+            "description" : "The email address associated with the account",
             "pattern" : "\\S"
+          },
+          "altchaPayload" : {
+            "type" : "string",
+            "description" : "ALTCHA proof-of-work verification payload"
           }
         }
       },
@@ -1749,6 +1832,25 @@
     }
   },
   "paths" : {
+    "/api/altcha/challenge" : {
+      "get" : {
+        "summary" : "Generate ALTCHA Challenge",
+        "description" : "Generates a fresh Proof-of-Work challenge for form protection.",
+        "responses" : {
+          "200" : {
+            "description" : "Challenge generated successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Challenge"
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Altcha Resource" ]
+      }
+    },
     "/api/auth/2fa/resend-email" : {
       "post" : {
         "requestBody" : {

@@ -25,6 +25,7 @@ import { useWebAuthn } from "@/hooks/use-webauthn";
 import type { RegisterRequestDto, WebAuthnRegistrationStartDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { InputWithLoading } from "@/components/common/input-with-loading";
+import { Altcha } from "@/components/common/altcha";
 import { TFunction } from "i18next";
 
 export default function RegisterPage() {
@@ -37,6 +38,8 @@ export default function RegisterPage() {
     firstname: "",
     lastname: "",
   });
+  const [altchaPayload, setAltchaPayload] = useState("");
+  const [altchaResetKey, setAltchaResetKey] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const { register, registrationStatus } = useAuth();
   const { isSupported: isPasskeySupported, registerNewWithPasskey } =
@@ -59,6 +62,7 @@ export default function RegisterPage() {
           email: formData.email,
           firstname: formData.firstname,
           lastname: formData.lastname,
+          altchaPayload,
         };
         await registerNewWithPasskey(registration);
       } else {
@@ -68,11 +72,12 @@ export default function RegisterPage() {
           password: formData.password,
           firstname: formData.firstname,
           lastname: formData.lastname,
+          altchaPayload,
         };
         await register(userData);
       }
     } catch {
-      // Passkey ceremony errors are surfaced via toast inside the hook.
+      setAltchaResetKey((key) => key + 1);
     } finally {
       setIsLoading(false);
     }
@@ -94,7 +99,8 @@ export default function RegisterPage() {
           <CardDescription>{t("register.enterInfo")}</CardDescription>
         </CardHeader>
         <CardContent className="p-0 md:p-6 md:pt-0">
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <Altcha onVerified={setAltchaPayload} resetKey={altchaResetKey} />
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstname">{t("register.firstName")}</Label>
@@ -131,7 +137,13 @@ export default function RegisterPage() {
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                      <button
+                        type="button"
+                        className="inline-flex items-center text-muted-foreground hover:text-foreground focus:outline-none"
+                        aria-label={t("validation.usernameHint")}
+                      >
+                        <Info className="h-4 w-4 cursor-help" />
+                      </button>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>{t("validation.usernameHint")}</p>
@@ -199,7 +211,9 @@ export default function RegisterPage() {
               type="submit"
               className="w-full"
               isLoading={isLoading}
-              disabled={isLoading || isDisabled || isPasswordTooShort}
+              disabled={
+                isLoading || isDisabled || isPasswordTooShort || !altchaPayload
+              }
             >
               {ButtonLabel(t, isDisabled, usePasskey && isPasskeySupported)}
             </Button>

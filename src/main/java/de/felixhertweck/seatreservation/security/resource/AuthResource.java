@@ -45,6 +45,7 @@ import de.felixhertweck.seatreservation.security.dto.TwoFactorResendEmailRequest
 import de.felixhertweck.seatreservation.security.dto.TwoFactorVerifyRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.UsernameRecoveryRequestDTO;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
+import de.felixhertweck.seatreservation.security.service.AltchaService;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
 import de.felixhertweck.seatreservation.security.service.TwoFactorService;
@@ -70,6 +71,7 @@ public class AuthResource {
     @Inject TokenService tokenService;
     @Inject UserSecurityContext userSecurityContext;
     @Inject TwoFactorService twoFactorService;
+    @Inject AltchaService altchaService;
 
     /**
      * Gets the current registration status.
@@ -113,6 +115,7 @@ public class AuthResource {
     public Response login(@Valid LoginRequestDTO loginRequest) throws JwtInvalidException {
         LOG.debug("Received login request.");
         LOG.debugf("LoginRequestDTO: %s", loginRequest.toString());
+        altchaService.verifyAndConsume(loginRequest.getAltchaPayload());
         User user =
                 authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
 
@@ -146,6 +149,8 @@ public class AuthResource {
     public Response register(@Valid RegisterRequestDTO registerRequest) {
         LOG.debug("Received registration request.");
         LOG.debugf("RegisterRequestDTO: %s", registerRequest.toString());
+
+        altchaService.verifyAndConsume(registerRequest.getAltchaPayload());
 
         User user = authService.register(registerRequest);
 
@@ -294,6 +299,8 @@ public class AuthResource {
     public Response requestPasswordReset(@Valid PasswordResetRequestDTO requestDTO) {
         LOG.debug("Received password reset request.");
 
+        altchaService.verifyAndConsume(requestDTO.getAltchaPayload());
+
         authService.requestPasswordReset(requestDTO);
 
         return Response.ok().build();
@@ -336,6 +343,8 @@ public class AuthResource {
                             + " been sent. Generic response to prevent enumeration.")
     public Response requestUsernameRecovery(@Valid UsernameRecoveryRequestDTO requestDTO) {
         LOG.debug("Received username recovery request.");
+
+        altchaService.verifyAndConsume(requestDTO.getAltchaPayload());
 
         authService.requestUsernameRecovery(requestDTO);
 
