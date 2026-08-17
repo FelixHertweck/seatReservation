@@ -41,6 +41,10 @@ public class PasswordResetRequestDTO {
     @Schema(description = "The email address associated with the account", required = true)
     private String email;
 
+    @NoHtmlSanitize
+    @Schema(description = "ALTCHA proof-of-work verification payload", required = true)
+    private String altchaPayload;
+
     public String getUsername() {
         return username;
     }
@@ -55,5 +59,13 @@ public class PasswordResetRequestDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getAltchaPayload() {
+        return altchaPayload;
+    }
+
+    public void setAltchaPayload(String altchaPayload) {
+        this.altchaPayload = altchaPayload;
     }
 }

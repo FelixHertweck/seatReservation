@@ -17,11 +17,14 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useT } from "@/lib/i18n/hooks";
+import { Altcha } from "@/components/common/altcha";
 
 export default function ForgotUsernamePage() {
   const t = useT();
   const { requestUsernameRecovery } = useAuth();
   const [email, setEmail] = useState("");
+  const [altchaPayload, setAltchaPayload] = useState("");
+  const [altchaResetKey, setAltchaResetKey] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -29,10 +32,10 @@ export default function ForgotUsernamePage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await requestUsernameRecovery({ email: email.trim() });
+      await requestUsernameRecovery({ email: email.trim(), altchaPayload });
       setIsSuccess(true);
     } catch {
-      // Errors are surfaced via toast inside the hook; keep the form usable.
+      setAltchaResetKey((key) => key + 1);
     } finally {
       setIsLoading(false);
     }
@@ -48,6 +51,7 @@ export default function ForgotUsernamePage() {
           <CardDescription>{t("forgotUsername.description")}</CardDescription>
         </CardHeader>
         <CardContent className="p-0 md:p-6 md:pt-0">
+          <Altcha onVerified={setAltchaPayload} resetKey={altchaResetKey} />
           {isSuccess ? (
             <Alert className="mb-4 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
               <AlertDescription>
@@ -71,7 +75,7 @@ export default function ForgotUsernamePage() {
                 type="submit"
                 className="w-full"
                 isLoading={isLoading}
-                disabled={isLoading}
+                disabled={isLoading || !altchaPayload}
               >
                 {t("forgotUsername.sendLink")}
               </Button>

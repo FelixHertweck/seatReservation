@@ -23,16 +23,24 @@ import jakarta.validation.constraints.NotBlank;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @RegisterForReflection
+@Schema(description = "Request DTO for user login")
 public class LoginRequestDTO {
     @NotBlank(message = "Username must not be blank")
     @NoHtmlSanitize
+    @Schema(description = "The username of the account", required = true)
     private String username;
 
     @NotBlank(message = "Password must not be blank")
     @NoHtmlSanitize
+    @Schema(description = "The password of the account", required = true)
     private String password;
+
+    @NoHtmlSanitize
+    @Schema(description = "ALTCHA proof-of-work verification payload", required = true)
+    private String altchaPayload;
 
     public String getUsername() {
         return username;
@@ -42,11 +50,19 @@ public class LoginRequestDTO {
         return password;
     }
 
+    public String getAltchaPayload() {
+        return altchaPayload;
+    }
+
     public void setUsername(String username) {
         this.username = username;
     }
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void setAltchaPayload(String altchaPayload) {
+        this.altchaPayload = altchaPayload;
     }
 }

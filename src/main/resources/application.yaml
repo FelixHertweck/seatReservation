@@ -119,3 +119,14 @@ wallet:
     enabled: "${GENERIC_WALLET_ENABLED:true}"
     pass-type-identifier: "${GENERIC_WALLET_PASS_TYPE_ID:pass.de.felixhertweck.seatreservation}"
     team-id: "${GENERIC_WALLET_TEAM_ID:FelixHertweck}"
+
+altcha:
+  enabled: "${ALTCHA_ENABLED:true}"
+  hmac-key: "${ALTCHA_SECRET}"
+  max-number: "${ALTCHA_MAX_NUMBER:100000}"
+  expires-seconds: "${ALTCHA_EXPIRES_SECONDS:300}"
+
+"%test":
+  altcha:
+    hmac-key: test-only-altcha-secret-not-for-production
+

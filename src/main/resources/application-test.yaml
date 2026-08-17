@@ -22,3 +22,6 @@ email:
     immediate-trigger: false
     retry-backoff-seconds: 0
     sending-timeout-seconds: 1
+
+altcha:
+  enabled: false

@@ -26,12 +26,14 @@ import jakarta.validation.constraints.Pattern;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  * Account details shared by both registration flows (password-based and passkey-based): the profile
  * is mandatory either way, only the credential itself (password vs. passkey) differs.
  */
 @RegisterForReflection
+@Schema(description = "Account registration details")
 public abstract class RegistrationDetailsDTO {
 
     @NotBlank(message = "Username must not be blank")
@@ -40,18 +42,34 @@ public abstract class RegistrationDetailsDTO {
             message =
                     "Username must be 3-64 characters long and contain only letters, numbers, dots,"
                             + " underscores and hyphens")
+    @Schema(description = "The username of the account", required = true)
     private String username;
 
     @NotBlank(message = "Firstname must not be blank")
+    @Schema(description = "The first name of the user", required = true)
     private String firstname;
 
     @NotBlank(message = "Lastname must not be blank")
+    @Schema(description = "The last name of the user", required = true)
     private String lastname;
 
     @NotBlank(message = "Email must not be blank")
     @NoHtmlSanitize
     @Email(message = "Invalid email format")
+    @Schema(description = "The email address associated with the account", required = true)
     private String email;
+
+    @NoHtmlSanitize
+    @Schema(description = "ALTCHA proof-of-work verification payload", required = true)
+    private String altchaPayload;
+
+    public String getAltchaPayload() {
+        return altchaPayload;
+    }
+
+    public void setAltchaPayload(String altchaPayload) {
+        this.altchaPayload = altchaPayload;
+    }
 
     public String getUsername() {
         return username;

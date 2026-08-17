@@ -52,6 +52,7 @@ import de.felixhertweck.seatreservation.reservation.exception.SeatPendingExcepti
 import de.felixhertweck.seatreservation.security.dto.EmailCooldownDTO;
 import de.felixhertweck.seatreservation.security.dto.LoginLockedDTO;
 import de.felixhertweck.seatreservation.security.exceptions.AccountLockedException;
+import de.felixhertweck.seatreservation.security.exceptions.AltchaVerificationException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.EmailCooldownException;
 import de.felixhertweck.seatreservation.security.exceptions.EmailNotVerifiedException;
@@ -139,6 +140,7 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             case PasswordResetTokenExpiredException ignored -> status = Response.Status.GONE;
             case UserNotFoundException ignored -> status = Response.Status.NOT_FOUND;
             case ValidationException ignored -> status = Response.Status.BAD_REQUEST;
+            case AltchaVerificationException ignored -> status = Response.Status.BAD_REQUEST;
             case AccessDeniedException ignored -> status = Response.Status.FORBIDDEN;
             case IllegalArgumentException ignored -> {
                 status = Response.Status.BAD_REQUEST;

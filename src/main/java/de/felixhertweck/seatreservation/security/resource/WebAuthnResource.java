@@ -54,6 +54,7 @@ import de.felixhertweck.seatreservation.security.dto.WebAuthnRegistrationStartDT
 import de.felixhertweck.seatreservation.security.dto.WebAuthnStatusDTO;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
+import de.felixhertweck.seatreservation.security.service.AltchaService;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
 import de.felixhertweck.seatreservation.security.service.TwoFactorService;
@@ -104,6 +105,7 @@ public class WebAuthnResource {
     @Inject CurrentVertxRequest currentVertxRequest;
     @Inject Validator validator;
     @Inject ObjectMapper objectMapper;
+    @Inject AltchaService altchaService;
 
     /**
      * Returns creation options for adding a passkey to the currently authenticated account.
@@ -159,6 +161,7 @@ public class WebAuthnResource {
     @APIResponse(responseCode = "403", description = "Registration is disabled")
     @APIResponse(responseCode = "409", description = "Username already exists")
     public String registerNewOptions(@Valid WebAuthnRegistrationStartDTO registration) {
+        altchaService.verify(registration.getAltchaPayload());
         if (!authService.isRegistrationEnabled()) {
             throw new RegistrationDisabledException("User registration is currently disabled");
         }
@@ -215,6 +218,8 @@ public class WebAuthnResource {
         if (!violations.isEmpty()) {
             throw new ValidationException(violations.iterator().next().getMessage());
         }
+
+        altchaService.verifyAndConsume(registration.getAltchaPayload());
 
         RoutingContext ctx = currentVertxRequest.getCurrent();
         WebAuthnCredentialRecord record =

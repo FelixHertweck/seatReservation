@@ -17,12 +17,15 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useT } from "@/lib/i18n/hooks";
+import { Altcha } from "@/components/common/altcha";
 
 export default function ForgotPasswordPage() {
   const t = useT();
   const { requestPasswordReset } = useAuth();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [altchaPayload, setAltchaPayload] = useState("");
+  const [altchaResetKey, setAltchaResetKey] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -33,10 +36,11 @@ export default function ForgotPasswordPage() {
       await requestPasswordReset({
         username: username.trim(),
         email: email.trim(),
+        altchaPayload,
       });
       setIsSuccess(true);
     } catch {
-      // Errors are surfaced via toast inside the hook; keep the form usable.
+      setAltchaResetKey((key) => key + 1);
     } finally {
       setIsLoading(false);
     }
@@ -52,6 +56,7 @@ export default function ForgotPasswordPage() {
           <CardDescription>{t("forgotPassword.description")}</CardDescription>
         </CardHeader>
         <CardContent className="p-0 md:p-6 md:pt-0">
+          <Altcha onVerified={setAltchaPayload} resetKey={altchaResetKey} />
           {isSuccess ? (
             <Alert className="mb-4 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
               <AlertDescription>
@@ -59,7 +64,7 @@ export default function ForgotPasswordPage() {
               </AlertDescription>
             </Alert>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               <div className="space-y-2">
                 <Label htmlFor="username">{t("login.username")}</Label>
                 <Input
@@ -88,7 +93,7 @@ export default function ForgotPasswordPage() {
                 type="submit"
                 className="w-full"
                 isLoading={isLoading}
-                disabled={isLoading}
+                disabled={isLoading || !altchaPayload}
               >
                 {t("forgotPassword.sendLink")}
               </Button>

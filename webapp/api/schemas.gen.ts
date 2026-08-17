@@ -290,6 +290,28 @@ export const BoxOfficeSeatDTOSchema = {
     }
 } as const;
 
+export const ChallengeSchema = {
+    type: 'object',
+    properties: {
+        algorithm: {
+            type: 'string'
+        },
+        challenge: {
+            type: 'string'
+        },
+        maxnumber: {
+            type: 'integer',
+            format: 'int64'
+        },
+        salt: {
+            type: 'string'
+        },
+        signature: {
+            type: 'string'
+        }
+    }
+} as const;
+
 export const CheckInInfoRequestDTOSchema = {
     type: 'object',
     required: [
@@ -874,19 +896,27 @@ export const LoginLockedDTOSchema = {
 } as const;
 
 export const LoginRequestDTOSchema = {
+    description: 'Request DTO for user login',
     type: 'object',
     required: [
         'username',
-        'password'
+        'password',
+        'altchaPayload'
     ],
     properties: {
         username: {
             type: 'string',
+            description: 'The username of the account',
             pattern: '\\S'
         },
         password: {
             type: 'string',
+            description: 'The password of the account',
             pattern: '\\S'
+        },
+        altchaPayload: {
+            type: 'string',
+            description: 'ALTCHA proof-of-work verification payload'
         }
     }
 } as const;
@@ -1041,7 +1071,8 @@ export const PasswordResetRequestDTOSchema = {
     type: 'object',
     required: [
         'username',
-        'email'
+        'email',
+        'altchaPayload'
     ],
     properties: {
         username: {
@@ -1053,6 +1084,10 @@ export const PasswordResetRequestDTOSchema = {
             type: 'string',
             description: 'The email address associated with the account',
             pattern: '\\S'
+        },
+        altchaPayload: {
+            type: 'string',
+            description: 'ALTCHA proof-of-work verification payload'
         }
     }
 } as const;
@@ -1064,29 +1099,76 @@ export const RegisterRequestDTOSchema = {
         'firstname',
         'lastname',
         'email',
+        'altchaPayload',
         'password'
     ],
     properties: {
         username: {
             type: 'string',
+            description: 'The username of the account',
             pattern: '^[a-zA-Z0-9._-]{3,64}$'
         },
         firstname: {
             type: 'string',
+            description: 'The first name of the user',
             pattern: '\\S'
         },
         lastname: {
             type: 'string',
+            description: 'The last name of the user',
             pattern: '\\S'
         },
         email: {
             type: 'string',
+            description: 'The email address associated with the account',
             pattern: '\\S'
+        },
+        altchaPayload: {
+            type: 'string',
+            description: 'ALTCHA proof-of-work verification payload'
         },
         password: {
             type: 'string',
             pattern: '\\S',
             minLength: 8
+        }
+    }
+} as const;
+
+export const RegistrationDetailsDTOSchema = {
+    description: 'Account registration details',
+    type: 'object',
+    required: [
+        'username',
+        'firstname',
+        'lastname',
+        'email',
+        'altchaPayload'
+    ],
+    properties: {
+        username: {
+            type: 'string',
+            description: 'The username of the account',
+            pattern: '^[a-zA-Z0-9._-]{3,64}$'
+        },
+        firstname: {
+            type: 'string',
+            description: 'The first name of the user',
+            pattern: '\\S'
+        },
+        lastname: {
+            type: 'string',
+            description: 'The last name of the user',
+            pattern: '\\S'
+        },
+        email: {
+            type: 'string',
+            description: 'The email address associated with the account',
+            pattern: '\\S'
+        },
+        altchaPayload: {
+            type: 'string',
+            description: 'ALTCHA proof-of-work verification payload'
         }
     }
 } as const;
@@ -1836,13 +1918,18 @@ export const UsernameRecoveryRequestDTOSchema = {
     description: 'Request DTO for initiating a username recovery',
     type: 'object',
     required: [
-        'email'
+        'email',
+        'altchaPayload'
     ],
     properties: {
         email: {
             type: 'string',
             description: 'The email address associated with the account(s)',
             pattern: '\\S'
+        },
+        altchaPayload: {
+            type: 'string',
+            description: 'ALTCHA proof-of-work verification payload'
         }
     }
 } as const;
@@ -1944,24 +2031,33 @@ export const WebAuthnRegistrationStartDTOSchema = {
         'username',
         'firstname',
         'lastname',
-        'email'
+        'email',
+        'altchaPayload'
     ],
     properties: {
         username: {
             type: 'string',
+            description: 'The username of the account',
             pattern: '^[a-zA-Z0-9._-]{3,64}$'
         },
         firstname: {
             type: 'string',
+            description: 'The first name of the user',
             pattern: '\\S'
         },
         lastname: {
             type: 'string',
+            description: 'The last name of the user',
             pattern: '\\S'
         },
         email: {
             type: 'string',
+            description: 'The email address associated with the account',
             pattern: '\\S'
+        },
+        altchaPayload: {
+            type: 'string',
+            description: 'ALTCHA proof-of-work verification payload'
         }
     }
 } as const;
