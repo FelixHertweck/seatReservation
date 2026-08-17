@@ -103,7 +103,7 @@ public class DatabaseCleanup {
             Instant now = Instant.now();
 
             // Delete all expired email verification entries
-            long deletedCount = emailVerificationRepository.delete("expirationTime < ?1", now);
+            long deletedCount = emailVerificationRepository.deleteExpired(now);
 
             if (deletedCount > 0) {
                 LOG.infof(
@@ -131,7 +131,7 @@ public class DatabaseCleanup {
             // Delete tokens that expired more than 1 day ago
             Instant oneDayAgo = Instant.now().minus(1, ChronoUnit.DAYS);
 
-            long deletedCount = refreshTokenRepository.delete("expiresAt < ?1", oneDayAgo);
+            long deletedCount = refreshTokenRepository.deleteExpired(oneDayAgo);
 
             if (deletedCount > 0) {
                 LOG.infof(
@@ -154,7 +154,7 @@ public class DatabaseCleanup {
     public int manualCleanupExpiredEmailVerifications() {
         LOG.info("Manual cleanup of expired email verifications triggered.");
         Instant now = Instant.now();
-        long deletedCount = emailVerificationRepository.delete("expirationTime < ?1", now);
+        long deletedCount = emailVerificationRepository.deleteExpired(now);
         LOG.infof("Manually cleaned up %d expired email verification entries.", deletedCount);
         return (int) deletedCount;
     }
@@ -168,7 +168,7 @@ public class DatabaseCleanup {
     public int manualCleanupExpiredRefreshTokens() {
         LOG.info("Manual cleanup of expired refresh tokens triggered.");
         Instant oneDayAgo = Instant.now().minus(1, ChronoUnit.DAYS);
-        long deletedCount = refreshTokenRepository.delete("expiresAt < ?1", oneDayAgo);
+        long deletedCount = refreshTokenRepository.deleteExpired(oneDayAgo);
         LOG.infof("Manually cleaned up %d expired refresh tokens.", deletedCount);
         return (int) deletedCount;
     }

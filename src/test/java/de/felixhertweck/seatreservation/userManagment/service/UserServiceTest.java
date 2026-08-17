@@ -902,14 +902,14 @@ public class UserServiceTest {
         existingUser.id = id(1);
 
         when(userRepository.findByIds(List.of(id(1)))).thenReturn(List.of(existingUser));
-        when(userRepository.delete("id in ?1", List.of(id(1)))).thenReturn(1L);
+        when(userRepository.deleteByIds(List.of(id(1)))).thenReturn(1L);
 
         // the caller has a different id
         AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
 
         userService.deleteUser(List.of(id(1)), caller);
 
-        verify(userRepository, times(1)).delete("id in ?1", List.of(id(1)));
+        verify(userRepository, times(1)).deleteByIds(List.of(id(1)));
     }
 
     @Test

@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.model.repository;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -95,5 +96,18 @@ public class EmailVerificationRepository implements PanacheRepositoryBase<EmailV
             LOG.debug("No EmailVerification found for token.");
         }
         return result;
+    }
+
+    /**
+     * Deletes all email verification entries whose expiration time is before {@code now}.
+     *
+     * @param now the reference instant; all entries with {@code expirationTime < now} are deleted
+     * @return the number of deleted entries
+     */
+    public long deleteExpired(Instant now) {
+        LOG.debugf("Deleting expired email verification entries (before %s).", now);
+        long deletedCount = delete("expirationTime < ?1", now);
+        LOG.debugf("Deleted %d expired email verification entries.", deletedCount);
+        return deletedCount;
     }
 }

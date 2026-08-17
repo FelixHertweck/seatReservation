@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.model.repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -59,5 +60,15 @@ public class RefreshTokenRepository implements PanacheRepositoryBase<RefreshToke
      */
     public boolean deleteWithIdAndUser(UUID id, User user) {
         return delete("id = ?1 and user = ?2", id, user) > 0;
+    }
+
+    /**
+     * Deletes all refresh tokens that expired before {@code cutoff}.
+     *
+     * @param cutoff the reference instant; all tokens with {@code expiresAt < cutoff} are deleted
+     * @return the number of deleted tokens
+     */
+    public long deleteExpired(Instant cutoff) {
+        return delete("expiresAt < ?1", cutoff);
     }
 }
