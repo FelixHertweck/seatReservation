@@ -11,6 +11,8 @@ import {
   MapPinned,
   Users,
   Edit,
+  Copy,
+  Loader2,
 } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
@@ -25,6 +27,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/custom-ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/custom-ui/label";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import { useSortableData } from "@/lib/table-sorting";
@@ -43,7 +47,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/custom-ui/alert-dialog";
-import type { EventLocationResponseDto } from "@/api";
+import { toast } from "sonner";
+import type { EventLocationResponseDto, EventLocationRequestDto } from "@/api";
+import {
+  getApiManagerSeats,
+  getApiManagerMarkers,
+  getApiManagerAreas,
+} from "@/api/sdk.gen";
 
 export default function ManagementLocationsPage() {
   const t = useT();
@@ -69,6 +79,9 @@ export default function ManagementLocationsPage() {
     name?: string;
     hasLinkedEvents?: boolean;
   } | null>(null);
+  const [copyingLocationId, setCopyingLocationId] = useState<string | null>(
+    null,
+  );
 
   const handleCreate = () => {
     setSelectedLocationForEdit(null);
@@ -141,6 +154,65 @@ export default function ManagementLocationsPage() {
     const location = await createLocation(data);
     router.push(`/management/locations/${location.id}`);
     return location;
+  };
+
+  const [copyLocationTarget, setCopyLocationTarget] =
+    useState<EventLocationResponseDto | null>(null);
+  const [copyName, setCopyName] = useState("");
+
+  const handleCopyClick = (location: EventLocationResponseDto) => {
+    setCopyLocationTarget(location);
+    setCopyName(
+      `${location.name ?? ""}${t("management.locations.copySuffix")}`,
+    );
+  };
+
+  const confirmCopy = async () => {
+    const location = copyLocationTarget;
+    const name = copyName.trim();
+    if (!location?.id || !name) return;
+    setCopyLocationTarget(null);
+    setCopyingLocationId(location.id);
+    try {
+      const [seatsRes, markersRes, areasRes] = await Promise.all([
+        getApiManagerSeats({ query: { eventLocationId: location.id } }),
+        getApiManagerMarkers({ query: { eventLocationId: location.id } }),
+        getApiManagerAreas({ query: { eventLocationId: location.id } }),
+      ]);
+
+      const seats = seatsRes.data ?? [];
+      const markers = markersRes.data ?? [];
+      const areas = areasRes.data ?? [];
+
+      const copyPayload: EventLocationRequestDto = {
+        name,
+        address: location.address ?? "",
+        managerIds: location.managerIds ?? [],
+        markers: markers.map((m) => ({
+          label: m.label ?? "",
+          coordinate: m.coordinate ?? {},
+        })),
+        areas: areas.map((a) => ({
+          name: a.name ?? "",
+          boundary: a.boundary,
+        })),
+        seats: seats.map((s) => ({
+          seatNumber: s.seatNumber ?? "",
+          coordinate: s.coordinate ?? {},
+          seatRow: s.seatRow,
+          entrance: s.entrance,
+          area: s.area,
+        })),
+      };
+
+      const newLocation = await createLocation(copyPayload);
+      router.push(`/management/locations/${newLocation.id}`);
+    } catch (e) {
+      toast.error(t("management.locations.copyError"));
+      console.error("Copy location error:", e);
+    } finally {
+      setCopyingLocationId(null);
+    }
   };
 
   return (
@@ -299,6 +371,19 @@ export default function ManagementLocationsPage() {
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleCopyClick(location)}
+                        disabled={copyingLocationId === location.id}
+                        title={t("management.locations.copy")}
+                      >
+                        {copyingLocationId === location.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <Button
                         variant="destructive"
                         size="icon"
                         onClick={() =>
@@ -390,6 +475,47 @@ export default function ManagementLocationsPage() {
                 </AlertDialogAction>
               </>
             )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={!!copyLocationTarget}
+        onOpenChange={(open) => {
+          if (!open) setCopyLocationTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("management.locations.copyConfirmTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("management.locations.copyConfirmDescription", {
+                name: copyLocationTarget?.name ?? "",
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 pt-2 pb-6">
+            <Label htmlFor="copy-location-name">
+              {t("management.locations.form.nameLabel")}
+            </Label>
+            <Input
+              id="copy-location-name"
+              value={copyName}
+              onChange={(e) => setCopyName(e.target.value)}
+              placeholder={t("management.locations.form.namePlaceholder")}
+              required
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmCopy}
+              disabled={!copyName.trim()}
+            >
+              {t("management.locations.copy")}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
