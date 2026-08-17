@@ -58,20 +58,20 @@ export default function RegisterPage() {
     try {
       if (usePasskey) {
         const registration: WebAuthnRegistrationStartDto = {
-          username: formData.username,
-          email: formData.email,
-          firstname: formData.firstname,
-          lastname: formData.lastname,
+          username: formData.username.trim(),
+          email: formData.email.trim(),
+          firstname: formData.firstname.trim(),
+          lastname: formData.lastname.trim(),
           altchaPayload,
         };
         await registerNewWithPasskey(registration);
       } else {
         const userData: RegisterRequestDto = {
-          username: formData.username,
-          email: formData.email,
+          username: formData.username.trim(),
+          email: formData.email.trim(),
           password: formData.password,
-          firstname: formData.firstname,
-          lastname: formData.lastname,
+          firstname: formData.firstname.trim(),
+          lastname: formData.lastname.trim(),
           altchaPayload,
         };
         await register(userData);
@@ -100,7 +100,7 @@ export default function RegisterPage() {
         </CardHeader>
         <CardContent className="p-0 md:p-6 md:pt-0">
           <Altcha onVerified={setAltchaPayload} resetKey={altchaResetKey} />
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstname">{t("register.firstName")}</Label>
@@ -113,6 +113,7 @@ export default function RegisterPage() {
                   }
                   disabled={registrationStatus.isLoading || isDisabled}
                   loading={registrationStatus.isLoading}
+                  maxLength={100}
                   required
                 />
               </div>
@@ -127,6 +128,7 @@ export default function RegisterPage() {
                   }
                   disabled={registrationStatus.isLoading || isDisabled}
                   loading={registrationStatus.isLoading}
+                  maxLength={100}
                   required
                 />
               </div>
@@ -158,6 +160,10 @@ export default function RegisterPage() {
                 onChange={(e) => handleInputChange("username", e.target.value)}
                 autoCapitalize="none"
                 autoComplete="username"
+                pattern="^[a-zA-Z0-9._-]{3,64}$"
+                minLength={3}
+                maxLength={64}
+                title={t("validation.usernameHint")}
                 disabled={registrationStatus.isLoading || isDisabled}
                 loading={registrationStatus.isLoading}
                 required
@@ -192,6 +198,7 @@ export default function RegisterPage() {
                 onChange={(e) => handleInputChange("password", e.target.value)}
                 disabled={registrationStatus.isLoading || isDisabled}
                 loading={registrationStatus.isLoading}
+                minLength={8}
                 required={!isPasskeySupported}
                 autoComplete="new-password"
               />
