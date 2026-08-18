@@ -4,7 +4,10 @@ import { detectLanguageFromHeader } from "./lib/i18n/language-detector";
 import { fallbackLng, languages, cookieName } from "./lib/i18n/config";
 
 export function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith("/api/")) {
+  if (
+    request.nextUrl.pathname.startsWith("/api/") ||
+    request.nextUrl.pathname === "/sw.js"
+  ) {
     return NextResponse.next();
   }
 
@@ -53,8 +56,8 @@ function getLocale(request: NextRequest): string {
 }
 
 export const config = {
-  // Matcher ignoring `/_next/`, `/api/`, and all static assets
+  // Matcher ignoring `/_next/`, `/api/`, `/sw.js`, and all static assets
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|webmanifest|xml|txt)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api|sw\\.js|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|webmanifest|xml|txt)$).*)",
   ],
 };

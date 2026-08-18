@@ -3,6 +3,7 @@
 import {
   CalendarDays,
   BookmarkCheck,
+  Bell,
   Settings,
   Users,
   LogOut,
@@ -122,6 +123,11 @@ export function AppSidebar() {
             title: t("sidebar.reservations"),
             url: "/events/reservations",
             icon: BookmarkCheck,
+          },
+          {
+            title: t("sidebar.notifications"),
+            url: "/notifications",
+            icon: Bell,
           },
         ],
       });
