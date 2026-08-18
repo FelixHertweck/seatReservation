@@ -203,6 +203,15 @@
     "lastNamePlaceholder": "Doe",
     "username": "Username",
     "usernamePlaceholder": "johndoe",
+    "generateUsernameButton": "Suggest",
+    "generateUsernameHint": "Generate a free username from first and last name",
+    "generateUsernameError": {
+      "missingName": "Please enter a first and last name to generate a username.",
+      "title": "Could not find an available username."
+    },
+    "usernameChecking": "Checking availability…",
+    "usernameAvailable": "Username is available",
+    "usernameTaken": "Username is already taken",
     "email": "Email",
     "emailPlaceholder": "john@example.com",
     "password": "Password",

@@ -203,6 +203,15 @@
     "lastNamePlaceholder": "Mustermann",
     "username": "Benutzername",
     "usernamePlaceholder": "maxmustermann",
+    "generateUsernameButton": "Vorschlagen",
+    "generateUsernameHint": "Einen freien Benutzernamen aus Vor- und Nachname generieren",
+    "generateUsernameError": {
+      "missingName": "Bitte Vor- und Nachname eingeben, um einen Benutzernamen zu generieren.",
+      "title": "Es konnte kein freier Benutzername gefunden werden."
+    },
+    "usernameChecking": "Verfügbarkeit wird geprüft…",
+    "usernameAvailable": "Benutzername ist verfügbar",
+    "usernameTaken": "Benutzername ist bereits vergeben",
     "email": "E-Mail",
     "emailPlaceholder": "max@example.com",
     "password": "Passwort",

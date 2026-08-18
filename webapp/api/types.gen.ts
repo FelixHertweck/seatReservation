@@ -781,6 +781,10 @@ export type UserReservationsRequestDto = {
     seatIds: Array<string>;
 };
 
+export type UsernameAvailabilityDto = {
+    available?: boolean;
+};
+
 /**
  * Request DTO for initiating a username recovery
  */
@@ -793,6 +797,10 @@ export type UsernameRecoveryRequestDto = {
      * ALTCHA proof-of-work verification payload
      */
     altchaPayload: string;
+};
+
+export type UsernameSuggestionDto = {
+    username?: string;
 };
 
 /**
@@ -1127,6 +1135,24 @@ export type GetApiAuthRegistrationStatusResponses = {
 
 export type GetApiAuthRegistrationStatusResponse = GetApiAuthRegistrationStatusResponses[keyof GetApiAuthRegistrationStatusResponses];
 
+export type GetApiAuthUsernameAvailabilityData = {
+    body?: never;
+    path?: never;
+    query?: {
+        username?: string;
+    };
+    url: '/api/auth/username-availability';
+};
+
+export type GetApiAuthUsernameAvailabilityResponses = {
+    /**
+     * Username availability checked successfully
+     */
+    200: UsernameAvailabilityDto;
+};
+
+export type GetApiAuthUsernameAvailabilityResponse = GetApiAuthUsernameAvailabilityResponses[keyof GetApiAuthUsernameAvailabilityResponses];
+
 export type PostApiAuthUsernameRecoveryData = {
     body: UsernameRecoveryRequestDto;
     path?: never;
@@ -1147,6 +1173,25 @@ export type PostApiAuthUsernameRecoveryResponses = {
      */
     200: unknown;
 };
+
+export type GetApiAuthUsernameSuggestionData = {
+    body?: never;
+    path?: never;
+    query?: {
+        firstname?: string;
+        lastname?: string;
+    };
+    url: '/api/auth/username-suggestion';
+};
+
+export type GetApiAuthUsernameSuggestionResponses = {
+    /**
+     * Username suggestion generated
+     */
+    200: UsernameSuggestionDto;
+};
+
+export type GetApiAuthUsernameSuggestionResponse = GetApiAuthUsernameSuggestionResponses[keyof GetApiAuthUsernameSuggestionResponses];
 
 export type GetApiAuthWebauthnCredentialsData = {
     body?: never;

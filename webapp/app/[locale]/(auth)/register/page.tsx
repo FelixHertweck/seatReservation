@@ -19,13 +19,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Info, KeyRound } from "lucide-react";
+import { CheckCircle2, Info, KeyRound, Wand2, XCircle } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useWebAuthn } from "@/hooks/use-webauthn";
+import { useUsernameAvailability } from "@/hooks/auth/use-username-availability";
+import { useGenerateUsername } from "@/hooks/auth/use-generate-username";
 import type { RegisterRequestDto, WebAuthnRegistrationStartDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { InputWithLoading } from "@/components/common/input-with-loading";
 import { Altcha } from "@/components/common/altcha";
+import { Separator } from "@/components/ui/separator";
 import { TFunction } from "i18next";
 
 export default function RegisterPage() {
@@ -44,6 +48,10 @@ export default function RegisterPage() {
   const { register, registrationStatus } = useAuth();
   const { isSupported: isPasskeySupported, registerNewWithPasskey } =
     useWebAuthn();
+  const { available: usernameAvailable, isChecking: isCheckingUsername } =
+    useUsernameAvailability(formData.username);
+  const { generate: generateUsername, isGenerating: isGeneratingUsername } =
+    useGenerateUsername();
 
   const isPasswordTooShort =
     formData.password.length > 0 && formData.password.length < 8;
@@ -85,6 +93,22 @@ export default function RegisterPage() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleGenerateUsername = async () => {
+    if (!formData.firstname.trim() || !formData.lastname.trim()) {
+      toast.error(t("register.generateUsernameError.missingName"));
+      return;
+    }
+    const generated = await generateUsername(
+      formData.firstname,
+      formData.lastname,
+    );
+    if (generated) {
+      handleInputChange("username", generated);
+    } else {
+      toast.error(t("register.generateUsernameError.title"));
+    }
   };
 
   const isDisabled = registrationStatus.data?.enabled === false;
@@ -134,21 +158,49 @@ export default function RegisterPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label htmlFor="username">{t("register.username")}</Label>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="username">{t("register.username")}</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          className="inline-flex items-center text-muted-foreground hover:text-foreground focus:outline-none"
+                          aria-label={t("validation.usernameHint")}
+                        >
+                          <Info className="h-4 w-4 cursor-help" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t("validation.usernameHint")}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button
+                      <Button
                         type="button"
-                        className="inline-flex items-center text-muted-foreground hover:text-foreground focus:outline-none"
-                        aria-label={t("validation.usernameHint")}
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto gap-1.5 px-2 py-1 text-xs text-muted-foreground"
+                        onClick={handleGenerateUsername}
+                        isLoading={isGeneratingUsername}
+                        disabled={
+                          registrationStatus.isLoading ||
+                          isDisabled ||
+                          !formData.firstname.trim() ||
+                          !formData.lastname.trim()
+                        }
                       >
-                        <Info className="h-4 w-4 cursor-help" />
-                      </button>
+                        <Wand2 className="h-3.5 w-3.5" />
+                        {t("register.generateUsernameButton")}
+                      </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{t("validation.usernameHint")}</p>
+                      <p>{t("register.generateUsernameHint")}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -168,7 +220,27 @@ export default function RegisterPage() {
                 loading={registrationStatus.isLoading}
                 required
               />
+              <div className="flex min-h-5 items-center gap-1.5 text-sm">
+                {isCheckingUsername && (
+                  <span className="text-muted-foreground">
+                    {t("register.usernameChecking")}
+                  </span>
+                )}
+                {!isCheckingUsername && usernameAvailable === true && (
+                  <span className="flex items-center gap-1.5 text-green-600 dark:text-green-500">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    {t("register.usernameAvailable")}
+                  </span>
+                )}
+                {!isCheckingUsername && usernameAvailable === false && (
+                  <span className="flex items-center gap-1.5 text-destructive">
+                    <XCircle className="h-3.5 w-3.5" />
+                    {t("register.usernameTaken")}
+                  </span>
+                )}
+              </div>
             </div>
+            <Separator />
             <div className="space-y-2">
               <Label htmlFor="email">{t("register.email")}</Label>
               <InputWithLoading

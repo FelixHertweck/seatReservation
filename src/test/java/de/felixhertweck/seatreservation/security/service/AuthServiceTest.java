@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -236,6 +237,58 @@ public class AuthServiceTest {
     void testIsRegistrationEnabled_WhenDisabled() {
         authService.registrationEnabled = false;
         assertFalse(authService.isRegistrationEnabled(), "Registration should be disabled");
+    }
+
+    @Test
+    void testIsUsernameAvailable_FreeUsername_ReturnsTrue() {
+        when(userRepository.existsByUsername("freeuser")).thenReturn(false);
+
+        assertTrue(authService.isUsernameAvailable("freeuser"));
+    }
+
+    @Test
+    void testIsUsernameAvailable_TakenUsername_ReturnsFalse() {
+        when(userRepository.existsByUsername("takenuser")).thenReturn(true);
+
+        assertFalse(authService.isUsernameAvailable("takenuser"));
+    }
+
+    @Test
+    void testIsUsernameAvailable_InvalidFormat_ReturnsFalseWithoutQueryingRepository() {
+        assertFalse(authService.isUsernameAvailable("a"));
+        assertFalse(authService.isUsernameAvailable("invalid username"));
+        assertFalse(authService.isUsernameAvailable(null));
+
+        verify(userRepository, never()).existsByUsername(any());
+    }
+
+    @Test
+    void testSuggestUsername_BaseAvailable_ReturnsBase() {
+        when(userRepository.existsByUsername("max.mustermann")).thenReturn(false);
+
+        assertEquals("max.mustermann", authService.suggestUsername("Max", "Mustermann"));
+    }
+
+    @Test
+    void testSuggestUsername_BaseTaken_ReturnsSuffixedCandidate() {
+        when(userRepository.existsByUsername("max.mustermann")).thenReturn(true);
+        when(userRepository.existsByUsername("max.mustermann2")).thenReturn(false);
+
+        assertEquals("max.mustermann2", authService.suggestUsername("Max", "Mustermann"));
+    }
+
+    @Test
+    void testSuggestUsername_NormalizesUmlautsAndCase() {
+        when(userRepository.existsByUsername("juergen.mueller")).thenReturn(false);
+
+        assertEquals("juergen.mueller", authService.suggestUsername("Jürgen", "Müller"));
+    }
+
+    @Test
+    void testSuggestUsername_AllCandidatesTaken_ReturnsNull() {
+        when(userRepository.existsByUsername(anyString())).thenReturn(true);
+
+        assertNull(authService.suggestUsername("Max", "Mustermann"));
     }
 
     @Test
