@@ -69,6 +69,17 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
     }
 
     /**
+     * Checks whether a user with the given username already exists. Uses the unique index on {@code
+     * username} via a {@code count} query, so it never scans the full table.
+     *
+     * @param username the username to check
+     * @return true if a user with this username exists, false otherwise
+     */
+    public boolean existsByUsername(String username) {
+        return count("username", username) > 0;
+    }
+
+    /**
      * Finds a user by email address.
      *
      * @param email the email address to search for

@@ -2044,6 +2044,15 @@ export const UserReservationsRequestDTOSchema = {
     }
 } as const;
 
+export const UsernameAvailabilityDTOSchema = {
+    type: 'object',
+    properties: {
+        available: {
+            type: 'boolean'
+        }
+    }
+} as const;
+
 export const UsernameRecoveryRequestDTOSchema = {
     description: 'Request DTO for initiating a username recovery',
     type: 'object',
@@ -2060,6 +2069,15 @@ export const UsernameRecoveryRequestDTOSchema = {
         altchaPayload: {
             type: 'string',
             description: 'ALTCHA proof-of-work verification payload'
+        }
+    }
+} as const;
+
+export const UsernameSuggestionDTOSchema = {
+    type: 'object',
+    properties: {
+        username: {
+            type: 'string'
         }
     }
 } as const;

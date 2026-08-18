@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.security.service;
 
+import java.text.Normalizer;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -26,6 +27,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Pattern;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -64,6 +66,8 @@ public class AuthService {
     private static final Logger LOG = Logger.getLogger(AuthService.class);
 
     private record LockoutTier(int attempts, Duration window, Duration lockoutDuration) {}
+
+    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9._-]{3,64}$");
 
     private static final List<LockoutTier> LOGIN_LOCKOUT_TIERS =
             List.of(
@@ -107,6 +111,97 @@ public class AuthService {
      */
     public boolean isRegistrationEnabled() {
         return registrationEnabled;
+    }
+
+    /**
+     * Checks whether a username is well-formed and not yet taken by any account. Backed by {@link
+     * UserRepository#existsByUsername(String)}, which looks the username up via its unique index
+     * instead of scanning the users table.
+     *
+     * @param username the username to check
+     * @return true if the username is valid and free to register, false otherwise
+     */
+    public boolean isUsernameAvailable(String username) {
+        if (username == null || !USERNAME_PATTERN.matcher(username).matches()) {
+            return false;
+        }
+        return !userRepository.existsByUsername(username);
+    }
+
+    private static final Pattern COMBINING_DIACRITICS_PATTERN =
+            Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+    private static final int MAX_USERNAME_BASE_LENGTH = 60;
+    private static final int MAX_USERNAME_SUGGESTION_ATTEMPTS = 25;
+
+    /**
+     * Suggests a free username derived from a first/last name pair, trying the plain {@code
+     * firstname.lastname} form before numeric suffixes. The whole search runs server-side against
+     * the indexed {@code username} column so the frontend's "suggest a username" action is a single
+     * request instead of one per candidate.
+     *
+     * @param firstname the first name to derive the username from
+     * @param lastname the last name to derive the username from
+     * @return a free, valid username, or null if none of the candidates were free
+     */
+    public String suggestUsername(String firstname, String lastname) {
+        String base = buildUsernameBase(firstname, lastname);
+        if (!USERNAME_PATTERN.matcher(base).matches()) {
+            return null;
+        }
+        if (!userRepository.existsByUsername(base)) {
+            return base;
+        }
+        for (int suffix = 2; suffix <= MAX_USERNAME_SUGGESTION_ATTEMPTS; suffix++) {
+            String candidate = base + suffix;
+            if (!userRepository.existsByUsername(candidate)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private String buildUsernameBase(String firstname, String lastname) {
+        String first = normalizeNamePart(firstname);
+        String last = normalizeNamePart(lastname);
+
+        StringBuilder base = new StringBuilder();
+        if (!first.isEmpty()) {
+            base.append(first);
+        }
+        if (!last.isEmpty()) {
+            if (base.length() > 0) {
+                base.append('.');
+            }
+            base.append(last);
+        }
+
+        String result =
+                base.length() > MAX_USERNAME_BASE_LENGTH
+                        ? base.substring(0, MAX_USERNAME_BASE_LENGTH)
+                        : base.toString();
+        if (result.length() < 3) {
+            result = result + "user";
+            if (result.length() > MAX_USERNAME_BASE_LENGTH) {
+                result = result.substring(0, MAX_USERNAME_BASE_LENGTH);
+            }
+        }
+        return result;
+    }
+
+    private String normalizeNamePart(String value) {
+        if (value == null) {
+            return "";
+        }
+        String normalized =
+                value.trim()
+                        .toLowerCase(Locale.ROOT)
+                        .replace("ä", "ae")
+                        .replace("ö", "oe")
+                        .replace("ü", "ue")
+                        .replace("ß", "ss");
+        normalized = Normalizer.normalize(normalized, Normalizer.Form.NFD);
+        normalized = COMBINING_DIACRITICS_PATTERN.matcher(normalized).replaceAll("");
+        return normalized.replaceAll("[^a-z0-9]", "");
     }
 
     /**

@@ -713,6 +713,73 @@ public class AuthResourceTest {
     }
 
     @Test
+    void testCheckUsernameAvailability_Available_ReturnsTrue() {
+        Mockito.when(authService.isUsernameAvailable("freeuser")).thenReturn(true);
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .queryParam("username", "freeuser")
+                .when()
+                .get("/api/auth/username-availability")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .body("available", equalTo(true));
+    }
+
+    @Test
+    void testCheckUsernameAvailability_Taken_ReturnsFalse() {
+        Mockito.when(authService.isUsernameAvailable("takenuser")).thenReturn(false);
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .queryParam("username", "takenuser")
+                .when()
+                .get("/api/auth/username-availability")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .body("available", equalTo(false));
+    }
+
+    @Test
+    void testCheckUsernameAvailability_IsPublicEndpoint() {
+        Mockito.when(authService.isUsernameAvailable(Mockito.anyString())).thenReturn(true);
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .queryParam("username", "anyuser")
+                .when()
+                .get("/api/auth/username-availability")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode());
+    }
+
+    @Test
+    void testSuggestUsername_ReturnsSuggestedUsername() {
+        Mockito.when(authService.suggestUsername("Max", "Mustermann")).thenReturn("max.mustermann");
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .queryParam("firstname", "Max")
+                .queryParam("lastname", "Mustermann")
+                .when()
+                .get("/api/auth/username-suggestion")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .body("username", equalTo("max.mustermann"));
+    }
+
+    @Test
+    void testSuggestUsername_NoneAvailable_ReturnsNullUsername() {
+        Mockito.when(authService.suggestUsername(Mockito.anyString(), Mockito.anyString()))
+                .thenReturn(null);
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .queryParam("firstname", "Max")
+                .queryParam("lastname", "Mustermann")
+                .when()
+                .get("/api/auth/username-suggestion")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .body("username", equalTo(null));
+    }
+
+    @Test
     void testRegisterWhenDisabled_Returns403Forbidden() {
         RegisterRequestDTO request = new RegisterRequestDTO();
         request.setUsername("newuser");

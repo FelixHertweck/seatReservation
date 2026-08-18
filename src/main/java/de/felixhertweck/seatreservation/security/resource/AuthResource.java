@@ -29,6 +29,7 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
@@ -43,7 +44,9 @@ import de.felixhertweck.seatreservation.security.dto.RegistrationStatusDTO;
 import de.felixhertweck.seatreservation.security.dto.TwoFactorRequiredDTO;
 import de.felixhertweck.seatreservation.security.dto.TwoFactorResendEmailRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.TwoFactorVerifyRequestDTO;
+import de.felixhertweck.seatreservation.security.dto.UsernameAvailabilityDTO;
 import de.felixhertweck.seatreservation.security.dto.UsernameRecoveryRequestDTO;
+import de.felixhertweck.seatreservation.security.dto.UsernameSuggestionDTO;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AltchaService;
 import de.felixhertweck.seatreservation.security.service.AuthService;
@@ -85,6 +88,40 @@ public class AuthResource {
     public RegistrationStatusDTO getRegistrationStatus() {
         LOG.debugf("Received request to check registration status");
         return new RegistrationStatusDTO(authService.isRegistrationEnabled());
+    }
+
+    /**
+     * Checks whether a username is still available for registration.
+     *
+     * @param username the username to check
+     * @return UsernameAvailabilityDTO indicating whether the username is free
+     */
+    @GET
+    @Path("/username-availability")
+    @PermitAll
+    @APIResponse(responseCode = "200", description = "Username availability checked successfully")
+    public UsernameAvailabilityDTO checkUsernameAvailability(
+            @QueryParam("username") String username) {
+        LOG.debugf("Received request to check username availability");
+        return new UsernameAvailabilityDTO(authService.isUsernameAvailable(username));
+    }
+
+    /**
+     * Suggests a free username derived from a first/last name pair. Runs the whole candidate search
+     * server-side so the frontend's "suggest a username" action is a single request.
+     *
+     * @param firstname the first name to derive the username from
+     * @param lastname the last name to derive the username from
+     * @return UsernameSuggestionDTO with a free username, or a null username if none was found
+     */
+    @GET
+    @Path("/username-suggestion")
+    @PermitAll
+    @APIResponse(responseCode = "200", description = "Username suggestion generated")
+    public UsernameSuggestionDTO suggestUsername(
+            @QueryParam("firstname") String firstname, @QueryParam("lastname") String lastname) {
+        LOG.debugf("Received request to suggest a username");
+        return new UsernameSuggestionDTO(authService.suggestUsername(firstname, lastname));
     }
 
     /**

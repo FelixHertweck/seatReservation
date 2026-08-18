@@ -1794,6 +1794,14 @@
           }
         }
       },
+      "UsernameAvailabilityDTO" : {
+        "type" : "object",
+        "properties" : {
+          "available" : {
+            "type" : "boolean"
+          }
+        }
+      },
       "UsernameRecoveryRequestDTO" : {
         "description" : "Request DTO for initiating a username recovery",
         "type" : "object",
@@ -1807,6 +1815,14 @@
           "altchaPayload" : {
             "type" : "string",
             "description" : "ALTCHA proof-of-work verification payload"
+          }
+        }
+      },
+      "UsernameSuggestionDTO" : {
+        "type" : "object",
+        "properties" : {
+          "username" : {
+            "type" : "string"
           }
         }
       },
@@ -2271,6 +2287,31 @@
         "tags" : [ "Auth Resource" ]
       }
     },
+    "/api/auth/username-availability" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "username",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Username availability checked successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UsernameAvailabilityDTO"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Check Username Availability",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
     "/api/auth/username-recovery" : {
       "post" : {
         "requestBody" : {
@@ -2297,6 +2338,37 @@
           }
         },
         "summary" : "Request Username Recovery",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
+    "/api/auth/username-suggestion" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "firstname",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "lastname",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Username suggestion generated",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UsernameSuggestionDTO"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Suggest Username",
         "tags" : [ "Auth Resource" ]
       }
     },
