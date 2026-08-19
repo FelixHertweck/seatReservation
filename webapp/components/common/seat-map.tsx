@@ -133,28 +133,22 @@ const MarkerComponent = React.memo(
         const textEl = textRef.current;
         const containerEl = containerRef.current;
 
-        // Reset styles for accurate measurement
         textEl.style.transform = "scale(1)";
 
         const textWidth = textEl.scrollWidth;
-        const HORIZONTAL_PADDING = 8; // 4px padding left & right
+        const HORIZONTAL_PADDING = 8;
 
         let finalWidth = textWidth + HORIZONTAL_PADDING;
         let textScale = 1;
 
-        // If the marker would become wider than a seat, cap its width and scale the text
         if (finalWidth > SEAT_SIZE) {
           finalWidth = SEAT_SIZE;
           textScale = (SEAT_SIZE - HORIZONTAL_PADDING) / textWidth;
         }
 
-        // --- Centering Logic ---
-        // Calculate the original starting position of the grid cell
         const cellLeft = cellToPx(marker.coordinate?.xCoordinate ?? 1);
-        // Adjust the left position to center the new, smaller width within the cell
         const newLeft = cellLeft + (SEAT_SIZE - finalWidth) / 2;
 
-        // Apply all the new styles
         containerEl.style.width = `${finalWidth}px`;
         containerEl.style.left = `${newLeft}px`;
         textEl.style.transform = `scale(${textScale})`;
@@ -166,13 +160,12 @@ const MarkerComponent = React.memo(
         ref={containerRef}
         className="absolute z-0 flex items-center justify-center font-bold text-gray-800 dark:text-gray-200 rounded-md overflow-hidden fade-in"
         style={{
-          // Initial position and size before dynamic adjustment
           left: `${cellToPx(marker.coordinate?.xCoordinate ?? 1)}px`,
           top: `${cellToPx(marker.coordinate?.yCoordinate ?? 1)}px`,
           width: `${SEAT_SIZE}px`,
           height: `${SEAT_SIZE}px`,
           fontSize: "14px",
-          transition: "width 0.2s ease, left 0.2s ease", // Optional: smooth transition
+          transition: "width 0.2s ease, left 0.2s ease",
         }}
         title={marker.label || ""}
       >
@@ -210,10 +203,7 @@ interface AreaPolygonZone {
   top: number;
   width: number;
   height: number;
-  // Points relative to (left, top), as an SVG `points` attribute value.
   pointsAttr: string;
-  // Where to place the name label - the polygon's own topmost vertex, not
-  // the bounding box's corner (see boundaryToPixelPolygon).
   labelAnchor: { x: number; y: number };
   colorIndex: number;
 }
@@ -261,8 +251,6 @@ const AreaZoneComponent = React.memo(({ zone }: { zone: AreaRectZone }) => {
 
 AreaZoneComponent.displayName = "AreaZoneComponent";
 
-// Renders a custom area boundary polygon, used instead of AreaZoneComponent
-// when the API supplies explicit boundary points for an area.
 const AreaPolygonZoneComponent = React.memo(
   ({ zone }: { zone: AreaPolygonZone }) => {
     const color = getAreaColor(zone.colorIndex);
@@ -330,6 +318,19 @@ const SeatMapLoadingSpinner = () => {
   );
 };
 
+const SeatMapEmptyState = () => {
+  const t = useT();
+
+  return (
+    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3">
+      <Armchair className="h-10 w-10 text-muted-foreground/50" />
+      <span className="text-sm font-medium text-muted-foreground">
+        {t("seatMap.empty")}
+      </span>
+    </div>
+  );
+};
+
 export function SeatMap({
   seats,
   seatStatuses,
@@ -341,8 +342,11 @@ export function SeatMap({
   onSeatSelect,
   readonly = false,
   isLoading = false,
-}: SeatMapProps): ReactElement {
+}: Readonly<SeatMapProps>): ReactElement {
   const t = useT();
+
+  const isMapEmpty =
+    seats.length === 0 && markers.length === 0 && areas.length === 0;
 
   const {
     maxX,
@@ -353,7 +357,7 @@ export function SeatMap({
     renderedMarkers,
     areaZones,
   } = useMemo(() => {
-    if (isLoading) {
+    if (isLoading || isMapEmpty) {
       return {
         maxX: 14,
         maxY: 12,
@@ -376,9 +380,6 @@ export function SeatMap({
     const markerMaxY = Math.max(
       ...markers.map((m) => m.coordinate?.yCoordinate || 0),
     );
-    // A custom area boundary polygon (see below) may intentionally extend past the
-    // outermost seats (e.g. a rounded balcony edge) - include it so the grid container
-    // is sized to fit it instead of clipping it via the map's `overflow-hidden` wrapper.
     const areaBoundaryPoints = areas.flatMap((area) => area.boundary ?? []);
     const areaMaxX = Math.max(
       0,
@@ -392,7 +393,6 @@ export function SeatMap({
     const maxX = Math.max(seatMaxX, markerMaxX, areaMaxX);
     const maxY = Math.max(seatMaxY, markerMaxY, areaMaxY);
 
-    // Create a map for O(1) seat lookup
     const seatPositionMap = new Map<string, SeatDto>();
     const seatById = new Map<string, SeatDto>();
     seats.forEach((seat) => {
@@ -410,25 +410,16 @@ export function SeatMap({
       }
     });
 
-    // Create a Set for O(1) selected seat lookup
     const selectedSeatIds = new Set(selectedSeats.map((s) => s.id));
-
     const userReservedSeatIds = new Set(userReservedSeats.map((s) => s.id));
 
-    // Filter markers with valid coordinates
     const renderedMarkers = markers.filter(
       (marker) =>
         marker.coordinate?.xCoordinate != null &&
         marker.coordinate?.yCoordinate != null,
     );
 
-    // Each area is rendered either from custom boundary points (when the API
-    // supplies at least 3 - a valid polygon) or, failing that, as a
-    // bounding-box derived from its member seats' coordinates. Areas are
-    // usually contiguous blocks (e.g. "Parkett", "Balkon"), so a rectangle is
-    // a good enough default shape without needing a more elaborate one.
     const areaZones: AreaZone[] = areas.flatMap((area, index): AreaZone[] => {
-      // Prefer the id: area names are not guaranteed to be unique within a location.
       const key =
         area.id != null ? `area-${area.id}` : (area.name ?? `area-${index}`);
 
@@ -438,9 +429,6 @@ export function SeatMap({
       );
 
       if (validBoundaryPoints.length >= 3) {
-        // Anchor each boundary point to the center of the referenced grid
-        // cell, then push it outward from the polygon's centroid so the
-        // outline doesn't just clip through the seats it encloses.
         const { left, top, width, height, pointsAttr, labelAnchor } =
           boundaryToPixelPolygon(validBoundaryPoints);
 
@@ -500,7 +488,15 @@ export function SeatMap({
       renderedMarkers,
       areaZones,
     };
-  }, [seats, selectedSeats, userReservedSeats, markers, areas, isLoading]);
+  }, [
+    seats,
+    selectedSeats,
+    userReservedSeats,
+    markers,
+    areas,
+    isLoading,
+    isMapEmpty,
+  ]);
 
   const {
     zoom,
@@ -523,9 +519,7 @@ export function SeatMap({
       const isUserReserved = userReservedSeatIds.has(seat.id);
       if (isUserReserved) return SEAT_STATUS_BG.USER_RESERVED;
 
-      // Check if we're working with SupervisorSeatStatusDto (has liveStatus)
       if (seatStatuses.length > 0 && isSupervisorSeatStatus(seatStatuses[0])) {
-        // Handle SupervisorSeatStatusDto
         const supervisorStatus = (
           seatStatuses as SupervisorSeatStatusDto[]
         ).find((s) => s.seatId === seat.id);
@@ -537,7 +531,6 @@ export function SeatMap({
           )
         ];
       } else {
-        // Handle regular SeatStatusDto
         const seatStatus = findSeatStatus(
           seat.id,
           seatStatuses as SeatStatusDto[],
@@ -553,30 +546,22 @@ export function SeatMap({
     (seat: SeatDto | undefined) => {
       if (!seat || readonly) return false;
 
-      // Own selection stays clickable (to deselect), even if refetched as e.g. PENDING -
-      // mirrors getSeatColor's isSelected priority.
       if (selectedSeatIds.has(seat.id)) return true;
 
-      const isUserReserved = userReservedSeatIds.has(seat.id);
-      if (isUserReserved) return true;
-
-      // Check if we're working with SupervisorSeatStatusDto
       if (seatStatuses.length > 0 && isSupervisorSeatStatus(seatStatuses[0])) {
-        // Handle SupervisorSeatStatusDto - can only select seats without status
-        const supervisorStatus = (
+        const hasSupervisorStatus = (
           seatStatuses as SupervisorSeatStatusDto[]
-        ).find((s) => s.seatId === seat.id);
-        return !supervisorStatus; // Can only select seats without status (available)
+        ).some((s) => s.seatId === seat.id);
+        return !hasSupervisorStatus;
       } else {
-        // Handle regular SeatStatusDto
         const seatStatus = findSeatStatus(
           seat.id,
           seatStatuses as SeatStatusDto[],
         );
-        return !seatStatus; // Can only select seats without status (available)
+        return !seatStatus;
       }
     },
-    [readonly, selectedSeatIds, userReservedSeatIds, seatStatuses],
+    [readonly, selectedSeatIds, seatStatuses],
   );
 
   const gridStructure = useMemo(() => {
@@ -595,8 +580,6 @@ export function SeatMap({
           clickable,
           highlighted,
           selected,
-          // Staggered wave from the stage outward, capped so large maps
-          // still finish revealing themselves quickly.
           popDelayMs: Math.min(x * 18 + y * 26, 480),
         };
       }),
@@ -648,18 +631,21 @@ export function SeatMap({
     <div className="relative w-full h-full rounded-lg overflow-hidden">
       <div className="absolute top-2 right-2 z-10 flex gap-2">
         <button
+          type="button"
           onClick={zoomIn}
           className="px-2 py-1 bg-seatmap border rounded shadow-xs hover:bg-secondary text-sm dark:text-white"
         >
           +
         </button>
         <button
+          type="button"
           onClick={zoomOut}
           className="px-2 py-1 bg-seatmap border rounded shadow-xs hover:bg-secondary text-sm dark:text-white"
         >
           -
         </button>
         <button
+          type="button"
           onClick={resetView}
           className="px-2 py-1 bg-seatmap border rounded shadow-xs hover:bg-secondary text-sm dark:text-white"
         >
@@ -712,8 +698,8 @@ export function SeatMap({
             }}
           >
             {isLoading && <SeatMapLoadingSpinner />}
+            {!isLoading && isMapEmpty && <SeatMapEmptyState />}
 
-            {/* Area Zone Layer - ganz im Hintergrund */}
             {areaZones.map((zone) =>
               zone.shape === "polygon" ? (
                 <AreaPolygonZoneComponent key={zone.key} zone={zone} />
@@ -722,16 +708,14 @@ export function SeatMap({
               ),
             )}
 
-            {/* Marker Layer - Hintergrund */}
             {renderedMarkers.map((marker, index) => (
               <MarkerComponent
-                key={`marker-${index}`}
+                key={marker.id ? `marker-${marker.id}` : `marker-${index}`}
                 marker={marker}
                 showLabel={true}
               />
             ))}
 
-            {/* Sitzplatz Layer - Vordergrund */}
             <div
               className="grid gap-1 relative z-10"
               style={{
