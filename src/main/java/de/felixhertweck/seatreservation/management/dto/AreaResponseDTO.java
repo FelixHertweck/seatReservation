@@ -32,14 +32,27 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
  * AreaRequestDTO}, which is sanitized). {@code name} is marked {@code @NoHtmlSanitize} since this
  * DTO is also deserialized on every Redis cache hit ({@code SeatmapCacheService}), where
  * re-sanitizing already-clean data would be pure overhead on the hottest read path.
+ *
+ * <p>{@code seatIds} lets a renderer fall back to a bounding box derived from the area's member
+ * seats when no custom {@code boundary} is set (mirrors {@code AreaDTO}, used for the same purpose
+ * on event-location-nested area responses).
  */
 @RegisterForReflection
 public record AreaResponseDTO(
-        UUID id, @NoHtmlSanitize String name, List<CoordinateDTO> boundary, UUID eventLocationId) {
+        UUID id,
+        @NoHtmlSanitize String name,
+        List<UUID> seatIds,
+        List<CoordinateDTO> boundary,
+        UUID eventLocationId) {
     public AreaResponseDTO(EventLocationArea area) {
+        this(area, List.of());
+    }
+
+    public AreaResponseDTO(EventLocationArea area, List<UUID> seatIds) {
         this(
                 area.id,
                 area.getName(),
+                seatIds,
                 area.getBoundary() == null
                         ? List.of()
                         : area.getBoundary().stream().map(CoordinateDTO::new).toList(),

@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.management.service;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +32,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
+import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.dto.AreaRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.AreaResponseDTO;
@@ -57,16 +59,43 @@ public class AreaService {
     @Inject SeatmapCacheService seatmapCacheService;
 
     /**
-     * Finds all areas of an event location, verifying the manager owns that location.
+     * Finds all areas of an event location, verifying the manager owns that location, with each
+     * area's member seat ids attached.
+     *
+     * <p>{@code seatIds} lets a renderer fall back to a bounding box derived from an area's member
+     * seats when it has no custom boundary polygon. The assignment is taken from the (separately
+     * cached) seats rather than queried again here, so that this stays a cache hit whenever the
+     * seats were already loaded for the same location.
      *
      * @param eventLocationId the event location to list areas for
      * @param manager the manager attempting to access the areas
-     * @return the areas of the event location
+     * @return the areas of the event location, with member seat ids attached
      */
     public List<AreaResponseDTO> findAreasByLocation(
             UUID eventLocationId, AuthenticatedUser manager) {
         eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
-        return seatmapCacheService.getAreasByLocation(eventLocationId);
+
+        List<AreaResponseDTO> areas = seatmapCacheService.getAreasByLocation(eventLocationId);
+        List<SeatDTO> seats = seatmapCacheService.getSeatsByLocation(eventLocationId);
+
+        Map<UUID, List<UUID>> seatIdsByAreaId = new LinkedHashMap<>();
+        for (SeatDTO seat : seats) {
+            if (seat.areaId() == null) {
+                continue;
+            }
+            seatIdsByAreaId.computeIfAbsent(seat.areaId(), key -> new ArrayList<>()).add(seat.id());
+        }
+
+        return areas.stream()
+                .map(
+                        area ->
+                                new AreaResponseDTO(
+                                        area.id(),
+                                        area.name(),
+                                        seatIdsByAreaId.getOrDefault(area.id(), List.of()),
+                                        area.boundary(),
+                                        area.eventLocationId()))
+                .toList();
     }
 
     /**
