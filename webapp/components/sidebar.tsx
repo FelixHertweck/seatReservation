@@ -196,8 +196,9 @@ export function AppSidebar() {
       });
     }
 
+    const adminItems: MenuItem[] = [];
     if (user?.roles?.includes("ADMIN")) {
-      managementItems.push({
+      adminItems.push({
         title: t("sidebar.userManagement"),
         url: "/admin",
         icon: Users,
@@ -209,6 +210,7 @@ export function AppSidebar() {
       { label: t("sidebar.groupGeneral"), items: generalItems },
       { label: t("sidebar.groupSupervision"), items: supervisionItems },
       { label: t("sidebar.groupManagement"), items: managementItems },
+      { label: t("sidebar.groupAdmin"), items: adminItems },
     ].filter((group) => group.items.length > 0);
   };
 
