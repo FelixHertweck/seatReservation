@@ -166,6 +166,14 @@ export const AreaResponseDTOSchema = {
         name: {
             type: 'string'
         },
+        seatIds: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        },
         boundary: {
             type: 'array',
             items: {

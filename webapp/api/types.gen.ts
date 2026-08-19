@@ -51,6 +51,7 @@ export type AreaRequestDto = {
 export type AreaResponseDto = {
     id?: Uuid;
     name?: string;
+    seatIds?: Array<string>;
     boundary?: Array<CoordinateDto>;
     eventLocationId?: Uuid;
 };
