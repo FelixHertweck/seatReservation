@@ -1,14 +1,14 @@
 "use client";
 
-import type React from "react";
+import { useLayoutEffect, useState, type ReactNode } from "react";
 import {
   QueryCache,
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
+import i18next from "i18next";
 import { client } from "@/api/client.gen";
-import { useT } from "@/lib/i18n/hooks";
 import { useLoginRequiredPopup } from "@/hooks/use-login-popup";
 import { getRefreshTokenExpiration } from "@/lib/refreshTokenExpirationCookie";
 
@@ -20,6 +20,21 @@ export interface ErrorWithResponse extends Error {
     description: string;
   };
 }
+
+let onAuthRequiredCallback: (() => void) | null = null;
+let onAuthSuccessCallback: (() => void) | null = null;
+
+const notifyAuthRequired = () => {
+  if (onAuthRequiredCallback) {
+    onAuthRequiredCallback();
+  }
+};
+
+const notifyAuthSuccess = () => {
+  if (onAuthSuccessCallback) {
+    onAuthSuccessCallback();
+  }
+};
 
 let refreshPromise: Promise<Response> | null = null;
 
@@ -38,69 +53,59 @@ const refreshToken = async (): Promise<Response> => {
   return refreshPromise;
 };
 
-export default function InitQueryClient({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const t = useT();
-  const { triggerLoginRequired, setIsOpen, isOpen } = useLoginRequiredPopup();
+// Configure client once at module level so baseUrl is always '/' everywhere
+client.setConfig({
+  baseUrl: `/`,
+  throwOnError: true,
+  fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+    let clonedRequest: Request | undefined;
+    if (input instanceof Request) {
+      clonedRequest = input.clone();
+    }
 
-  const scheduleTriggerLoginRequired = () => {
-    queueMicrotask(() => triggerLoginRequired());
-  };
-
-  client.setConfig({
-    baseUrl: `/`,
-    throwOnError: true,
-    fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
-      let clonedRequest: Request | undefined;
-      if (input instanceof Request) {
-        clonedRequest = input.clone();
-      }
-
-      let response = await fetch(input, init);
-      const refreshTokenExpiration = getRefreshTokenExpiration();
-      if (
-        !response.ok &&
-        response.status === 401 &&
-        refreshTokenExpiration !== null &&
-        refreshTokenExpiration.getTime() > new Date().getTime()
-      ) {
-        const refreshResponse = await refreshToken();
-        if (refreshResponse.ok) {
-          if (clonedRequest) {
-            response = await fetch(clonedRequest);
-          } else {
-            response = await fetch(input, init);
-          }
+    let response = await fetch(input, init);
+    const refreshTokenExpiration = getRefreshTokenExpiration();
+    if (
+      !response.ok &&
+      response.status === 401 &&
+      refreshTokenExpiration !== null &&
+      refreshTokenExpiration.getTime() > Date.now()
+    ) {
+      const refreshResponse = await refreshToken();
+      if (refreshResponse.ok) {
+        if (clonedRequest) {
+          response = await fetch(clonedRequest);
         } else {
-          console.warn(
-            "Failed to refresh token:",
-            refreshResponse.status,
-            refreshResponse.statusText,
-          );
-          scheduleTriggerLoginRequired();
+          response = await fetch(input, init);
         }
+      } else {
+        console.warn(
+          "Failed to refresh token:",
+          refreshResponse.status,
+          refreshResponse.statusText,
+        );
+        notifyAuthRequired();
       }
-      if (!response.ok) {
-        const error = new Error() as ErrorWithResponse;
-        const body = await response.text();
-        error.response = {
-          status: response.status,
-          rawData: body,
-          description: errorDescriptionConverter(body),
-        };
-        throw error;
-      }
-      if (isOpen) {
-        setIsOpen(false);
-      }
-      return response;
-    },
-  });
+    }
+    if (!response.ok) {
+      const body = await response.text();
+      const error = new Error(
+        `Request failed with status ${response.status}`,
+      ) as ErrorWithResponse;
+      error.response = {
+        status: response.status,
+        rawData: body,
+        description: errorDescriptionConverter(body) ?? "",
+      };
+      throw error;
+    }
+    notifyAuthSuccess();
+    return response;
+  },
+});
 
-  const queryClient = new QueryClient({
+function makeQueryClient() {
+  return new QueryClient({
     queryCache: new QueryCache({
       onError: (error) => {
         const status = (error as ErrorWithResponse)?.response?.status;
@@ -109,8 +114,8 @@ export default function InitQueryClient({
         const message =
           description ||
           (status === 403
-            ? t("common.error.forbidden")
-            : t("common.error.default"));
+            ? i18next.t("common.error.forbidden")
+            : i18next.t("common.error.default"));
         toast.error(message, { id: `query-error-${status}-${message}` });
       },
     }),
@@ -120,33 +125,52 @@ export default function InitQueryClient({
         refetchOnMount: true,
         refetchOnWindowFocus: true,
         retryDelay: 1000,
-        throwOnError(error) {
-          const status = (error as ErrorWithResponse)?.response?.status;
-          if (status !== 401) {
-            return false;
-          }
-          return true;
-        },
+        throwOnError: false,
         retry: (failureCount, error) => {
           if ((error as ErrorWithResponse)?.response?.status === 401) {
-            scheduleTriggerLoginRequired();
+            notifyAuthRequired();
             return false;
           }
           return failureCount < 2;
         },
       },
-
       mutations: {
         retryDelay: 1000,
         retry: (_failureCount, error) => {
           if ((error as ErrorWithResponse)?.response?.status === 401) {
-            scheduleTriggerLoginRequired();
+            notifyAuthRequired();
           }
           return false;
         },
       },
     },
   });
+}
+
+export default function InitQueryClient({
+  children,
+}: Readonly<{
+  children: ReactNode;
+}>) {
+  const { triggerLoginRequired, setIsOpen } = useLoginRequiredPopup();
+
+  // useLayoutEffect (not useEffect) so this registers before any child's
+  // passive effect can fire a request and hit a 401 - all layout effects in
+  // the tree run before any passive effect, regardless of child/parent order.
+  useLayoutEffect(() => {
+    onAuthRequiredCallback = () => {
+      queueMicrotask(() => triggerLoginRequired());
+    };
+    onAuthSuccessCallback = () => {
+      queueMicrotask(() => setIsOpen(false));
+    };
+    return () => {
+      onAuthRequiredCallback = null;
+      onAuthSuccessCallback = null;
+    };
+  }, [triggerLoginRequired, setIsOpen]);
+
+  const [queryClient] = useState(makeQueryClient);
 
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -155,7 +179,7 @@ export default function InitQueryClient({
 
 const errorDescriptionConverter = (response: string) => {
   // response is the raw response.text()
-  if (!response) return response;
+  if (!response) return undefined;
 
   try {
     const parsed = JSON.parse(response);
@@ -180,10 +204,8 @@ const errorDescriptionConverter = (response: string) => {
       if (messages.length > 0) return messages.join(", ");
     }
 
-    // Fallback
-    return "Unknown error. Please try again.";
+    return undefined;
   } catch {
-    // Not JSON, just return raw body
-    return "Unknown error. Please try again.";
+    return undefined;
   }
 };

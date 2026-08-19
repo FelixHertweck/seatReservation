@@ -4,8 +4,13 @@ import { useState, useEffect } from "react";
 
 export const EMAIL_RESEND_COOLDOWN_SECONDS = 60;
 
-export function useCooldown() {
-  const [retryAt, setRetryAt] = useState<number | null>(null);
+export function useCooldown(initialSeconds?: number) {
+  const [retryAt, setRetryAt] = useState<number | null>(() => {
+    if (initialSeconds && initialSeconds > 0) {
+      return Date.now() + initialSeconds * 1000;
+    }
+    return null;
+  });
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
