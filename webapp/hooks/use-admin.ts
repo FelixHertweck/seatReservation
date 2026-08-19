@@ -44,57 +44,63 @@ export function useAdmin(): UserManagementProps {
   });
 
   const createUser = async (userData: AdminUserCreationDto): Promise<void> => {
-    const request = createMutation({ body: userData });
+    const request = createMutation({ body: userData }).then((data) => {
+      queryClient.setQueriesData(
+        { queryKey: getApiUsersAdminQueryKey() },
+        (oldData: UserDto[] | undefined) => {
+          return oldData ? [...oldData, data] : [data];
+        },
+      );
+      queryClient.invalidateQueries({
+        queryKey: getApiUsersAdminQueryKey(),
+      });
+      return data;
+    });
     toast.promise(request, {
       loading: t("common.loading"),
-      success: (data) => {
-        queryClient.setQueriesData(
-          { queryKey: getApiUsersAdminQueryKey() },
-          (oldData: UserDto[] | undefined) => {
-            return oldData ? [...oldData, data] : [data];
-          },
-        );
-        return t("admin.user.create.success.title");
-      },
+      success: () => t("admin.user.create.success.title"),
       error: (error: ErrorWithResponse) => ({
         message: t("admin.user.create.error.title"),
         description:
           error.response?.description ?? t("admin.user.create.error.default"),
       }),
     });
+    await request;
   };
 
   const importUsers = async (
     userData: AdminUserCreationDto[],
   ): Promise<void> => {
-    const request = importMutation({ body: userData });
+    const request = importMutation({ body: userData }).then((data) => {
+      queryClient.setQueriesData(
+        { queryKey: getApiUsersAdminQueryKey() },
+        (oldData: UserDto[] | undefined) => {
+          return oldData ? [...oldData, ...data] : [...data];
+        },
+      );
+      queryClient.invalidateQueries({
+        queryKey: getApiUsersAdminQueryKey(),
+      });
+      return data;
+    });
     toast.promise(request, {
       loading: t("common.loading"),
-      success: (data) => {
-        queryClient.setQueriesData(
-          { queryKey: getApiUsersAdminQueryKey() },
-          (oldData: UserDto[] | undefined) => {
-            return oldData ? [...oldData, ...data] : [...data];
-          },
-        );
-        return t("admin.user.import.success.title");
-      },
+      success: () => t("admin.user.import.success.title"),
       error: (error: ErrorWithResponse) => ({
         message: t("admin.user.import.error.title"),
         description:
           error.response?.description ?? t("admin.user.import.error.default"),
       }),
     });
+    await request;
   };
 
   const updateUser = async (
     id: string,
     userData: AdminUserUpdateDto,
   ): Promise<void> => {
-    const request = updateMutation({ body: userData, path: { id } });
-    toast.promise(request, {
-      loading: t("common.loading"),
-      success: (data) => {
+    const request = updateMutation({ body: userData, path: { id } }).then(
+      (data) => {
         queryClient.setQueriesData(
           { queryKey: getApiUsersAdminQueryKey() },
           (oldData: UserDto[] | undefined) => {
@@ -103,37 +109,49 @@ export function useAdmin(): UserManagementProps {
               : [data];
           },
         );
-        return t("admin.user.update.success.title");
+        queryClient.invalidateQueries({
+          queryKey: getApiUsersAdminQueryKey(),
+        });
+        return data;
       },
+    );
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: () => t("admin.user.update.success.title"),
       error: (error: ErrorWithResponse) => ({
         message: t("admin.user.update.error.title"),
         description:
           error.response?.description ?? t("admin.user.update.error.default"),
       }),
     });
+    await request;
   };
 
   const deleteUser = async (ids: string[]): Promise<void> => {
-    const request = deleteMutation({ query: { ids } });
+    const request = deleteMutation({ query: { ids } }).then((data) => {
+      queryClient.setQueriesData(
+        { queryKey: getApiUsersAdminQueryKey() },
+        (oldData: UserDto[] | undefined) => {
+          return oldData
+            ? oldData.filter((user) => !ids.includes(user.id ?? ""))
+            : [];
+        },
+      );
+      queryClient.invalidateQueries({
+        queryKey: getApiUsersAdminQueryKey(),
+      });
+      return data;
+    });
     toast.promise(request, {
       loading: t("common.loading"),
-      success: () => {
-        queryClient.setQueriesData(
-          { queryKey: getApiUsersAdminQueryKey() },
-          (oldData: UserDto[] | undefined) => {
-            return oldData
-              ? oldData.filter((user) => !ids.includes(user.id ?? ""))
-              : [];
-          },
-        );
-        return t("admin.user.delete.success.title");
-      },
+      success: () => t("admin.user.delete.success.title"),
       error: (error: ErrorWithResponse) => ({
         message: t("admin.user.delete.error.title"),
         description:
           error.response?.description ?? t("admin.user.delete.error.default"),
       }),
     });
+    await request;
   };
 
   return {

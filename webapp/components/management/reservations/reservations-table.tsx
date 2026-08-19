@@ -1,7 +1,14 @@
 "use client";
 
 import { Fragment, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Mail, Trash2 } from "lucide-react";
+import {
+  Ban,
+  ChevronDown,
+  ChevronRight,
+  Mail,
+  Trash2,
+  User,
+} from "lucide-react";
 import { useT } from "@/lib/i18n/hooks";
 import { cn, formatDateTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -58,7 +65,7 @@ export function ReservationsTable({
   highlightedSeatId = null,
   onSeatClick,
   onViewConfirmation,
-}: ReservationsTableProps) {
+}: Readonly<ReservationsTableProps>) {
   const t = useT();
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
     new Set(),
@@ -120,10 +127,10 @@ export function ReservationsTable({
   );
 
   return (
-    <Table className="table-fixed">
+    <Table className="min-w-[500px]">
       <TableHeader>
         <TableRow>
-          <TableHead className="w-10">
+          <TableHead className="w-10 pl-3 pr-1">
             <Checkbox
               checked={
                 reservations.length > 0 &&
@@ -132,16 +139,11 @@ export function ReservationsTable({
               onCheckedChange={onToggleAll}
             />
           </TableHead>
-          <TableHead className="w-[28%]">
-            {t("management.reservations.tableUser")}
-          </TableHead>
-          <TableHead className="w-[20%]">
-            {t("management.reservations.tableSeat")}
-          </TableHead>
-          <TableHead className="w-[18%]">
+          <TableHead>{t("management.reservations.tableSeat")}</TableHead>
+          <TableHead className="w-28">
             {t("management.reservations.tableStatus")}
           </TableHead>
-          <TableHead className="w-[24%]">
+          <TableHead className="w-36">
             {t("management.reservations.tableDate")}
           </TableHead>
           <TableHead className="w-20 py-2 pl-2 pr-4 text-right" />
@@ -158,17 +160,23 @@ export function ReservationsTable({
           const isBlockedGroup =
             groupReservations[0]?.status === ReservationStatus.BLOCKED;
           const groupUser = groupReservations.find((r) => r.user?.id)?.user;
+          let groupChecked: boolean | "indeterminate" = false;
+          if (allSelected) {
+            groupChecked = true;
+          } else if (someSelected) {
+            groupChecked = "indeterminate";
+          }
 
           return (
             <Fragment key={groupKey}>
-              <TableRow className="bg-muted/30 hover:bg-muted/30">
-                <TableCell colSpan={5} className="py-2">
+              <TableRow className="bg-muted/40 hover:bg-muted/50 transition-colors border-b">
+                <TableCell colSpan={4} className="py-2.5 pl-3 pr-2">
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => toggleGroupCollapsed(groupKey)}
                       aria-label={groupKey}
-                      className="shrink-0 rounded p-0.5 hover:bg-muted"
+                      className="shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                     >
                       {isCollapsed ? (
                         <ChevronRight className="h-4 w-4" />
@@ -177,25 +185,29 @@ export function ReservationsTable({
                       )}
                     </button>
                     <Checkbox
-                      checked={
-                        allSelected
-                          ? true
-                          : someSelected
-                            ? "indeterminate"
-                            : false
-                      }
+                      checked={groupChecked}
                       onCheckedChange={() =>
                         toggleGroupSelected(groupIds, allSelected)
                       }
                     />
-                    <span className="text-sm font-medium">{groupKey}</span>
-                    <Badge variant="secondary">
+                    <div className="flex items-center gap-1.5 font-medium text-sm">
+                      {isBlockedGroup ? (
+                        <Ban className="h-3.5 w-3.5 text-muted-foreground" />
+                      ) : (
+                        <User className="h-3.5 w-3.5 text-muted-foreground" />
+                      )}
+                      <span>{groupKey}</span>
+                    </div>
+                    <Badge
+                      variant="secondary"
+                      className="px-1.5 py-0 text-xs font-normal"
+                    >
                       {groupReservations.length}
                     </Badge>
                   </div>
                 </TableCell>
-                <TableCell className="py-2 pl-2 pr-4 text-right">
-                  <div className="flex items-center justify-end gap-2">
+                <TableCell className="py-2.5 pl-2 pr-4 text-right">
+                  <div className="flex items-center justify-end gap-1.5">
                     {!isBlockedGroup && groupUser?.id && onViewConfirmation && (
                       <Button
                         variant="outline"
@@ -242,21 +254,28 @@ export function ReservationsTable({
                       className={cn(
                         seatId && "cursor-pointer",
                         isHighlighted && "bg-primary/10 hover:bg-primary/15",
+                        "hover:bg-muted/30 transition-colors",
                       )}
                     >
-                      <TableCell>
+                      <TableCell className="py-2 pl-9 pr-1">
                         <Checkbox
                           checked={selectedIds.has(id)}
                           onCheckedChange={() => toggleOne(id)}
                         />
                       </TableCell>
-                      <TableCell className="truncate">
-                        {reservation.user?.username ?? "—"}
+                      <TableCell className="py-2 px-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium text-sm">
+                            {seat?.seatNumber ?? "—"}
+                          </span>
+                          {seat?.seatRow && (
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              ({seat.seatRow})
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
-                      <TableCell>
-                        {seat ? `${seat.seatNumber} (${seat.seatRow})` : "—"}
-                      </TableCell>
-                      <TableCell>
+                      <TableCell className="py-2 px-3">
                         {(() => {
                           const visualStatus = getSeatVisualStatus(
                             reservation.status,
@@ -265,6 +284,7 @@ export function ReservationsTable({
                           return (
                             <Badge
                               className={cn(
+                                "whitespace-nowrap px-2 py-0.5 text-xs font-medium",
                                 SEAT_STATUS_BG[visualStatus],
                                 SEAT_STATUS_TEXT[visualStatus],
                               )}
@@ -274,7 +294,7 @@ export function ReservationsTable({
                           );
                         })()}
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
+                      <TableCell className="py-2 px-3 text-xs text-muted-foreground whitespace-nowrap tabular-nums">
                         {date ? `${date.date} ${date.time}` : "—"}
                       </TableCell>
                       <TableCell className="py-2 pl-2 pr-4 text-right">

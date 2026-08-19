@@ -20,6 +20,7 @@ export type OverflowAction = {
   onClick: () => void;
   variant?: VariantProps<typeof buttonVariants>["variant"];
   isLoading?: boolean;
+  disabled?: boolean;
 };
 
 // Secondary page actions (e.g. export, block, delete-selected) rendered
@@ -39,6 +40,7 @@ export function OverflowActionBar({ actions }: { actions: OverflowAction[] }) {
             variant={action.variant ?? "outline"}
             onClick={action.onClick}
             isLoading={action.isLoading}
+            disabled={action.disabled}
           >
             {action.icon}
             {action.label}
@@ -62,7 +64,7 @@ export function OverflowActionBar({ actions }: { actions: OverflowAction[] }) {
             <DropdownMenuItem
               key={action.key}
               onClick={action.onClick}
-              disabled={action.isLoading}
+              disabled={action.isLoading || action.disabled}
               className={
                 action.variant === "destructive"
                   ? "text-destructive focus:text-destructive"
