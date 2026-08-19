@@ -56,7 +56,7 @@ export default function VerifyEmailPage() {
       setVerificationError(null);
 
       try {
-        await verifyEmail(code);
+        await verifyEmail(code, searchParams.get("returnTo"));
       } catch (error) {
         if ((error as ErrorWithResponse)?.response?.status === 400) {
           setVerificationError(t("emailVerification.invalidCode"));
@@ -67,16 +67,12 @@ export default function VerifyEmailPage() {
         setIsLoadingForm(false);
       }
     },
-    [t, verifyEmail],
+    [t, verifyEmail, searchParams],
   );
 
   useEffect(() => {
     const codeFromUrl = searchParams.get("code");
-    if (
-      codeFromUrl &&
-      codeFromUrl.length === 6 &&
-      /^\d{6}$/.test(codeFromUrl)
-    ) {
+    if (codeFromUrl?.length === 6 && /^\d{6}$/.test(codeFromUrl)) {
       setVerificationCode(codeFromUrl);
     }
   }, [setVerificationCode, searchParams]);
@@ -156,11 +152,6 @@ export default function VerifyEmailPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0 md:p-6 md:pt-0">
-          {isLoggedIn && user?.emailVerified && (
-            <div className="mb-4 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-3">
-              {t("emailVerification.alreadyVerified")}
-            </div>
-          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-4">
               <div className="flex justify-center">
@@ -168,6 +159,7 @@ export default function VerifyEmailPage() {
                   maxLength={6}
                   value={verificationCode}
                   onChange={handleCodeChange}
+                  disabled={alreadyVerified || isLoadingForm || isRedirecting}
                 >
                   <InputOTPGroup>
                     <InputOTPSlot index={0} />
@@ -183,37 +175,50 @@ export default function VerifyEmailPage() {
                 {t("emailVerification.codeHint")}
               </p>
             </div>
-            {verificationError && (
+
+            {alreadyVerified && (
+              <div className="text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-3">
+                {t("emailVerification.success.description")}
+              </div>
+            )}
+
+            {verificationError && !alreadyVerified && (
               <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3">
                 {verificationError}
               </div>
             )}
-            <Button
-              type="submit"
-              className="w-full"
-              variant={alreadyVerified ? "outline" : "default"}
-              isLoading={isLoadingForm}
-              disabled={isLoadingForm || verificationCode.length !== 6}
-            >
-              {t("emailVerification.verifyButton")}
-            </Button>
-            {alreadyVerified && (
-              <div className="space-y-2">
-                <Button
-                  onClick={handleContinue}
-                  className="w-full"
-                  isLoading={isContinuing || isRedirecting}
-                  disabled={isContinuing || isRedirecting}
-                >
-                  {t("emailVerification.continueButton")}
-                </Button>
-              </div>
+
+            {alreadyVerified ? (
+              <Button
+                type="button"
+                onClick={handleContinue}
+                className="w-full"
+                isLoading={isContinuing || isRedirecting}
+                disabled={isContinuing || isRedirecting}
+              >
+                {t("emailVerification.continueButton")}
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                className="w-full"
+                isLoading={isLoadingForm || isRedirecting}
+                disabled={
+                  isLoadingForm ||
+                  isRedirecting ||
+                  verificationCode.length !== 6
+                }
+              >
+                {t("emailVerification.verifyButton")}
+              </Button>
             )}
           </form>
+
           {!alreadyVerified && (
             <>
               <div className="mt-4 text-center text-sm space-y-2">
                 <button
+                  type="button"
                   onClick={handleResendCode}
                   disabled={cooldown.isActive}
                   className="text-primary hover:underline bg-transparent border-none cursor-pointer text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:no-underline"

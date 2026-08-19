@@ -30,9 +30,14 @@ export function Altcha({ onVerified, onError, resetKey }: AltchaProps) {
   const [isMounted, setIsMounted] = useState(false);
   const isFirstResetKey = useRef(true);
 
+  const onVerifiedRef = useRef(onVerified);
+  onVerifiedRef.current = onVerified;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
+
   const fetchChallenge = useCallback(() => {
     // Any previously-verified payload is no longer trustworthy once we ask for a new challenge.
-    onVerified("");
+    onVerifiedRef.current("");
     getApiAltchaChallenge()
       .then(({ data }) => {
         if (data) {
@@ -44,15 +49,15 @@ export function Altcha({ onVerified, onError, resetKey }: AltchaProps) {
       })
       .catch((err: unknown) => {
         console.error("Failed to fetch ALTCHA challenge:", err);
-        onError?.(err);
+        onErrorRef.current?.(err);
       });
-  }, [onVerified, onError]);
+  }, []);
 
   // Fetch challenge on mount using generated API client
   useEffect(() => {
     setIsMounted(true);
     fetchChallenge();
-  }, []);
+  }, [fetchChallenge]);
 
   // Caller-driven refetch
   useEffect(() => {
@@ -61,8 +66,7 @@ export function Altcha({ onVerified, onError, resetKey }: AltchaProps) {
       return;
     }
     fetchChallenge();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resetKey]);
+  }, [resetKey, fetchChallenge]);
 
   useEffect(() => {
     if (!isMounted || !challengeJson) return;
@@ -83,13 +87,13 @@ export function Altcha({ onVerified, onError, resetKey }: AltchaProps) {
         customEvent.detail?.state === "verified" &&
         customEvent.detail?.payload
       ) {
-        onVerified(customEvent.detail.payload);
+        onVerifiedRef.current(customEvent.detail.payload);
       } else if (customEvent.detail?.state === "expired") {
         // The solved payload is now stale
         fetchChallenge();
       } else if (customEvent.detail?.state === "error") {
-        onVerified("");
-        onError?.(customEvent.detail?.error);
+        onVerifiedRef.current("");
+        onErrorRef.current?.(customEvent.detail?.error);
       }
     };
 
@@ -98,7 +102,7 @@ export function Altcha({ onVerified, onError, resetKey }: AltchaProps) {
         payload?: string;
       }>;
       if (customEvent.detail?.payload) {
-        onVerified(customEvent.detail.payload);
+        onVerifiedRef.current(customEvent.detail.payload);
       }
     };
 
@@ -109,7 +113,7 @@ export function Altcha({ onVerified, onError, resetKey }: AltchaProps) {
       widget.removeEventListener("statechange", handleStateChange);
       widget.removeEventListener("verified", handleVerified);
     };
-  }, [isMounted, challengeJson, onVerified, onError, fetchChallenge]);
+  }, [isMounted, challengeJson, fetchChallenge]);
 
   if (!isMounted || !challengeJson) return null;
 

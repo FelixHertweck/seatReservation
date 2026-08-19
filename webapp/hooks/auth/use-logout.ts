@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n/hooks";
 import {
@@ -15,24 +15,38 @@ export function useLogout() {
   const params = useParams();
   const locale = params.locale as string;
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const { mutateAsync: logoutMutation } = useMutation({
     ...postApiAuthLogoutMutation(),
   });
 
   const logout = async () => {
-    const request = logoutMutation({});
+    const handleSuccess = () => {
+      queryClient.clear();
+      router.push(`/${locale}/`);
+      router.refresh();
+      return t("logout.success.title");
+    };
+
+    const request = logoutMutation({}).catch((error) => {
+      if ((error as ErrorWithResponse)?.response?.status === 401) {
+        return;
+      }
+      throw error;
+    });
+
     toast.promise(request, {
       loading: t("common.loading"),
-      success: () => {
+      success: handleSuccess,
+      error: (error: ErrorWithResponse) => {
+        queryClient.clear();
         router.push(`/${locale}/`);
-        router.refresh();
-        return t("logout.success.title");
+        return {
+          message: t("logout.error.title"),
+          description: error.response?.description ?? t("common.error.default"),
+        };
       },
-      error: (error: ErrorWithResponse) => ({
-        message: t("logout.error.title"),
-        description: error.response?.description ?? t("common.error.default"),
-      }),
     });
 
     return request;
@@ -43,19 +57,33 @@ export function useLogout() {
   });
 
   const logoutAll = async () => {
-    const request = logoutAllMutation({});
+    const handleSuccess = () => {
+      queryClient.clear();
+      router.push(`/${locale}/`);
+      router.refresh();
+      return t("logoutAll.success.title");
+    };
+
+    const request = logoutAllMutation({}).catch((error) => {
+      if ((error as ErrorWithResponse)?.response?.status === 401) {
+        return;
+      }
+      throw error;
+    });
+
     toast.promise(request, {
       loading: t("common.loading"),
-      success: () => {
+      success: handleSuccess,
+      error: (error: ErrorWithResponse) => {
+        queryClient.clear();
         router.push(`/${locale}/`);
-        router.refresh();
-        return t("logoutAll.success.title");
+        return {
+          message: t("logoutAll.error.title"),
+          description: error.response?.description ?? t("common.error.default"),
+        };
       },
-      error: (error: ErrorWithResponse) => ({
-        message: t("logoutAll.error.title"),
-        description: error.response?.description ?? t("common.error.default"),
-      }),
     });
+
     return request;
   };
 

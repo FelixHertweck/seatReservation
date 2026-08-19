@@ -104,7 +104,7 @@ export function useLocationEditorSave({
       const error = err as ErrorWithResponse;
       dispatch({ type: "SET_SYNC_STATE", kind, localId, syncState: "error" });
       toast.error(t("management.locationEditor.saveFailed"), {
-        description: error?.response?.description,
+        description: error?.response?.description || t("common.error.default"),
       });
     },
     [dispatch, t],
@@ -321,7 +321,8 @@ export function useLocationEditorSave({
       } catch (err) {
         const error = err as ErrorWithResponse;
         toast.error(t("management.locationEditor.saveFailed"), {
-          description: error?.response?.description,
+          description:
+            error?.response?.description || t("common.error.default"),
         });
         return false;
       }
@@ -516,7 +517,8 @@ export function useLocationEditorSave({
       } catch (err) {
         const error = err as ErrorWithResponse;
         toast.error(t("management.locationEditor.saveFailed"), {
-          description: error?.response?.description,
+          description:
+            error?.response?.description || t("common.error.default"),
         });
         return false;
       }
@@ -549,7 +551,7 @@ export function useLocationEditorSave({
     } catch (err) {
       const error = err as ErrorWithResponse;
       toast.error(t("management.locationEditor.saveFailed"), {
-        description: error?.response?.description,
+        description: error?.response?.description || t("common.error.default"),
       });
       return false;
     }
