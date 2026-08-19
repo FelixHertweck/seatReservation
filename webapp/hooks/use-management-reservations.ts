@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useT } from "@/lib/i18n/hooks";
 import type {
   BlockSeatsRequestDto,
+  EventUserAllowancesDto,
   ReservationRequestDto,
   ReservationResponseDto,
 } from "@/api";
@@ -20,6 +21,9 @@ import {
   getApiManagerSeatsOptions,
   getApiManagerAreasOptions,
   getApiManagerMarkersOptions,
+  getApiManagerOverviewQueryKey,
+  getApiManagerReservationAllowanceEventByEventIdOptions,
+  getApiManagerReservationAllowanceEventByEventIdQueryKey,
   getApiManagerReservationsEventByIdOptions,
   getApiManagerReservationsEventByIdQueryKey,
   postApiManagerReservationsMutation,
@@ -74,6 +78,13 @@ export function useManagementReservations(eventId: string | null) {
     enabled: !!eventId,
   });
 
+  const { data: allowances } = useQuery({
+    ...getApiManagerReservationAllowanceEventByEventIdOptions({
+      path: { eventId: eventId ?? "" },
+    }),
+    enabled: !!eventId,
+  });
+
   const createMutation = useMutation({
     ...postApiManagerReservationsMutation(),
   });
@@ -84,21 +95,96 @@ export function useManagementReservations(eventId: string | null) {
     ...deleteApiManagerReservationsMutation(),
   });
 
-  const invalidateForEvent = () => {
-    if (!eventId) return;
-    queryClient.invalidateQueries({
-      queryKey: getApiManagerReservationsEventByIdQueryKey({
-        path: { id: eventId },
-      }),
-    });
+  const appendReservations = (
+    newReservations: ReservationResponseDto[],
+    targetEventId?: string,
+  ) => {
+    const evtId = targetEventId ?? eventId;
+    if (!evtId) return;
+    const updater = (old: ReservationResponseDto[] | undefined) => {
+      if (!old) return newReservations;
+      const existingIds = new Set(old.map((r) => r.id));
+      const toAdd = newReservations.filter((r) => !existingIds.has(r.id));
+      return [...old, ...toAdd];
+    };
+    queryClient.setQueriesData(
+      {
+        queryKey: getApiManagerReservationsEventByIdQueryKey({
+          path: { id: evtId },
+        }),
+      },
+      updater,
+    );
+  };
+
+  const removeReservations = (ids: string[], targetEventId?: string) => {
+    const evtId = targetEventId ?? eventId;
+    if (!evtId) return;
+    const idsSet = new Set(ids);
+    const updater = (old: ReservationResponseDto[] | undefined) =>
+      old
+        ? old.filter(
+            (r) => !idsSet.has(r.id ?? "") && !idsSet.has(r.seatId ?? ""),
+          )
+        : [];
+    queryClient.setQueriesData(
+      {
+        queryKey: getApiManagerReservationsEventByIdQueryKey({
+          path: { id: evtId },
+        }),
+      },
+      updater,
+    );
+  };
+
+  const deductUserAllowance = (
+    userId: string,
+    count: number,
+    targetEventId?: string,
+  ) => {
+    const evtId = targetEventId ?? eventId;
+    if (!evtId) return;
+    const updater = (old: EventUserAllowancesDto[] | undefined) => {
+      if (!old) return old;
+      return old.map((a) => {
+        if (a.userId?.toString() === userId) {
+          return {
+            ...a,
+            reservationsAllowedCount: Math.max(
+              0,
+              (a.reservationsAllowedCount ?? 0) - count,
+            ),
+          };
+        }
+        return a;
+      });
+    };
+    queryClient.setQueriesData(
+      {
+        queryKey: getApiManagerReservationAllowanceEventByEventIdQueryKey({
+          path: { eventId: evtId },
+        }),
+      },
+      updater,
+    );
+  };
+
+  const invalidateAggregates = () => {
     queryClient.invalidateQueries({
       queryKey: getApiManagerEventsOptions().queryKey,
+    });
+    queryClient.invalidateQueries({
+      queryKey: getApiManagerOverviewQueryKey(),
     });
   };
 
   const createReservation = async (data: ReservationRequestDto) => {
     const request = createMutation.mutateAsync({ body: data }).then((res) => {
-      invalidateForEvent();
+      appendReservations(res, data.eventId);
+      if (data.deductAllowance && data.userId) {
+        deductUserAllowance(data.userId, data.seatIds.length, data.eventId);
+      }
+      invalidateAggregates();
       return res;
     });
     toast.promise(request, {
@@ -114,7 +200,8 @@ export function useManagementReservations(eventId: string | null) {
 
   const blockSeats = async (data: BlockSeatsRequestDto) => {
     const request = blockMutation.mutateAsync({ body: data }).then((res) => {
-      invalidateForEvent();
+      appendReservations(res, data.eventId);
+      invalidateAggregates();
       return res;
     });
     toast.promise(request, {
@@ -132,15 +219,8 @@ export function useManagementReservations(eventId: string | null) {
     const request = deleteMutation
       .mutateAsync({ query: { ids } })
       .then((res) => {
-        queryClient.setQueriesData(
-          {
-            queryKey: getApiManagerReservationsEventByIdQueryKey({
-              path: { id: eventId ?? "" },
-            }),
-          },
-          (old: ReservationResponseDto[] | undefined) =>
-            old ? old.filter((r) => !ids.includes(r.id ?? "")) : [],
-        );
+        removeReservations(ids, eventId ?? undefined);
+        invalidateAggregates();
         return res;
       });
     toast.promise(request, {
@@ -188,6 +268,7 @@ export function useManagementReservations(eventId: string | null) {
     areas: areas ?? [],
     markers: markers ?? [],
     reservations: reservations ?? [],
+    allowances: allowances ?? [],
     isLoading: eventsLoading || locationsLoading || usersLoading,
     isSeatsLoading: !!locationId && seatsLoading,
     isReservationsLoading: reservationsLoading,

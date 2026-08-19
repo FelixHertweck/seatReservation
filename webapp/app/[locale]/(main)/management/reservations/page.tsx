@@ -2,9 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowUp, Plus, Ban, Download, Trash2 } from "lucide-react";
+import { ArrowUp, Plus, Ban, Download, Trash2, X } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
+import { cn } from "@/lib/utils";
 import { sanitizeFileName } from "@/lib/utils/filename";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +21,7 @@ import { ReservationConfirmationModal } from "@/components/management/reservatio
 import { ReservationsTable } from "@/components/management/reservations/reservations-table";
 import { useManagementReservations } from "@/hooks/use-management-reservations";
 import { useFillHeight } from "@/hooks/use-fill-height";
+import { findSeatStatus } from "@/lib/reservationSeat";
 import type { ReservationResponseDto, SeatDto } from "@/api";
 import { useQuery } from "@tanstack/react-query";
 import { getApiManagerReservationsConfirmationEmailByEventIdByUserIdOptions } from "@/api/@tanstack/react-query.gen";
@@ -56,7 +58,7 @@ function ReservationsViewPanel({
   highlightedSeatId,
   onSeatClick,
   onViewConfirmation,
-}: ReservationsViewPanelProps) {
+}: Readonly<ReservationsViewPanelProps>) {
   return (
     <div className="space-y-3">
       <SearchAndFilter
@@ -100,6 +102,7 @@ export default function ManagementReservationsPage() {
     areas,
     markers,
     reservations,
+    allowances,
     isLoading,
     isSeatsLoading,
     isReservationsLoading,
@@ -231,6 +234,10 @@ export default function ManagementReservationsPage() {
       if (isSelected) {
         return prev.filter((s) => s.id !== seat.id);
       }
+      const seatStatus = findSeatStatus(seat.id, seatStatuses);
+      if (seatStatus) {
+        return prev;
+      }
       return [...prev, seat];
     });
   };
@@ -361,6 +368,7 @@ export default function ManagementReservationsPage() {
       <ReservationActionPanel
         mode="reserve"
         users={users}
+        allowances={allowances}
         selectedSeats={selectedSeats}
         userId={reserveUserId}
         onUserIdChange={setReserveUserId}
@@ -389,11 +397,11 @@ export default function ManagementReservationsPage() {
         title={t("management.reservations.title")}
         description={t("management.reservations.description")}
         actions={
-          eventId && mode === "view" ? (
+          eventId ? (
             <>
               <OverflowActionBar
                 actions={[
-                  ...(selectedIds.size > 0
+                  ...(selectedIds.size > 0 && mode === "view"
                     ? [
                         {
                           key: "delete",
@@ -411,6 +419,7 @@ export default function ManagementReservationsPage() {
                     icon: <Download className="h-4 w-4" />,
                     onClick: () => handleExport("csv"),
                     isLoading: exportingFormat === "csv",
+                    disabled: mode !== "view",
                   },
                   {
                     key: "pdf",
@@ -418,22 +427,94 @@ export default function ManagementReservationsPage() {
                     icon: <Download className="h-4 w-4" />,
                     onClick: () => handleExport("pdf"),
                     isLoading: exportingFormat === "pdf",
+                    disabled: mode !== "view",
                   },
                   {
                     key: "block",
-                    label: t("management.reservations.blockSeats"),
-                    icon: <Ban className="h-4 w-4" />,
-                    onClick: handleStartBlock,
+                    label: (
+                      <span className="grid place-items-center">
+                        <span
+                          className={cn(
+                            "col-start-1 row-start-1 inline-flex items-center",
+                            mode === "block" ? "visible" : "invisible",
+                          )}
+                          aria-hidden={mode !== "block"}
+                        >
+                          {t("common.cancel")}
+                        </span>
+                        <span
+                          className={cn(
+                            "col-start-1 row-start-1 inline-flex items-center",
+                            mode === "block" ? "invisible" : "visible",
+                          )}
+                          aria-hidden={mode === "block"}
+                        >
+                          {t("management.reservations.blockSeats")}
+                        </span>
+                      </span>
+                    ),
+                    icon: (
+                      <span className="grid place-items-center">
+                        <span
+                          className={cn(
+                            "col-start-1 row-start-1 inline-flex items-center",
+                            mode === "block" ? "visible" : "invisible",
+                          )}
+                          aria-hidden={mode !== "block"}
+                        >
+                          <X className="h-4 w-4" />
+                        </span>
+                        <span
+                          className={cn(
+                            "col-start-1 row-start-1 inline-flex items-center",
+                            mode === "block" ? "invisible" : "visible",
+                          )}
+                          aria-hidden={mode === "block"}
+                        >
+                          <Ban className="h-4 w-4" />
+                        </span>
+                      </span>
+                    ),
+                    onClick: mode === "block" ? resetAction : handleStartBlock,
+                    disabled: mode === "reserve",
                   },
                 ]}
               />
               <Button
-                onClick={handleStartReserve}
-                aria-label={t("management.reservations.newReservation")}
+                variant={mode === "reserve" ? "outline" : "default"}
+                onClick={mode === "reserve" ? resetAction : handleStartReserve}
+                disabled={mode === "block"}
+                aria-label={
+                  mode === "reserve"
+                    ? t("common.cancel")
+                    : t("management.reservations.newReservation")
+                }
               >
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">
-                  {t("management.reservations.newReservation")}
+                <span className="grid place-items-center">
+                  <span
+                    className={cn(
+                      "col-start-1 row-start-1 inline-flex items-center gap-2",
+                      mode === "reserve" ? "visible" : "invisible",
+                    )}
+                    aria-hidden={mode !== "reserve"}
+                  >
+                    <X className="h-4 w-4" />
+                    <span className="hidden sm:inline">
+                      {t("common.cancel")}
+                    </span>
+                  </span>
+                  <span
+                    className={cn(
+                      "col-start-1 row-start-1 inline-flex items-center gap-2",
+                      mode === "reserve" ? "invisible" : "visible",
+                    )}
+                    aria-hidden={mode === "reserve"}
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">
+                      {t("management.reservations.newReservation")}
+                    </span>
+                  </span>
                 </span>
               </Button>
             </>
@@ -488,6 +569,7 @@ export default function ManagementReservationsPage() {
                   userReservedSeats={userReservedSeats}
                   highlightedSeatId={!isInteractive ? highlightedSeatId : null}
                   onSeatSelect={isInteractive ? handleSeatToggle : () => {}}
+                  isLoading={isSeatsLoading}
                 />
               </div>
             )}
