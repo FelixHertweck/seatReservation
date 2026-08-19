@@ -107,7 +107,6 @@ public class OverviewService {
                                                 && !now.isAfter(e.getBookingDeadline()))
                         .count();
 
-        long reservationsCount = allReservations.size();
         long reservationsReserved =
                 allReservations.stream()
                         .filter(r -> r.getStatus() == ReservationStatus.RESERVED)
@@ -120,6 +119,7 @@ public class OverviewService {
                 allReservations.stream()
                         .filter(r -> r.getStatus() == ReservationStatus.PENDING)
                         .count();
+        long reservationsCount = reservationsReserved + reservationsBlocked + reservationsPending;
 
         Set<UUID> locationIds =
                 allEvents.stream()

@@ -75,6 +75,7 @@ public class OverviewServiceTest {
     private Event upcomingEvent;
     private Event pastEvent;
     private Reservation reservation;
+    private Reservation blockedReservation;
     private EventUserAllowance allowance;
 
     @BeforeEach
@@ -178,6 +179,19 @@ public class OverviewServiceTest {
                         null);
         reservation.id = id(300);
 
+        Seat blockedSeat = new Seat("S2", location, "1", 1, 2, null, null);
+        blockedSeat.id = id(201);
+
+        blockedReservation =
+                new Reservation(
+                        null,
+                        upcomingEvent,
+                        blockedSeat,
+                        Instant.now(),
+                        ReservationStatus.BLOCKED,
+                        null);
+        blockedReservation.id = id(301);
+
         allowance = new EventUserAllowance(regularUser, upcomingEvent, 3);
         allowance.id = id(400);
     }
@@ -186,7 +200,8 @@ public class OverviewServiceTest {
     void getOverview_AsManager_Success() {
         when(eventRepository.findByManager(managerUser))
                 .thenReturn(List.of(upcomingEvent, pastEvent));
-        when(reservationRepository.findByManager(managerUser)).thenReturn(List.of(reservation));
+        when(reservationRepository.findByManager(managerUser))
+                .thenReturn(List.of(reservation, blockedReservation));
         when(eventUserAllowanceRepository.findByEventManager(managerUser))
                 .thenReturn(List.of(allowance));
         when(eventLocationRepository.getSeatCountsByLocationIds(Set.of(location.id)))
@@ -198,9 +213,9 @@ public class OverviewServiceTest {
         assertEquals(2, overview.stats().eventsCount());
         assertEquals(1, overview.stats().upcomingEventsCount());
         assertEquals(1, overview.stats().bookingOpenCount());
-        assertEquals(1, overview.stats().reservationsCount());
+        assertEquals(2, overview.stats().reservationsCount());
         assertEquals(1, overview.stats().reservationsReserved());
-        assertEquals(0, overview.stats().reservationsBlocked());
+        assertEquals(1, overview.stats().reservationsBlocked());
         assertEquals(0, overview.stats().reservationsPending());
         assertEquals(10, overview.stats().occupancyPercent());
         assertEquals(1, overview.stats().occupancyReserved());
