@@ -684,7 +684,8 @@
     "seatTitle": "Seat {{seatNumber}} ({{seatRow}})",
     "resetButton": "Reset",
     "stageText": "STAGE",
-    "loading": "Loading seat map..."
+    "loading": "Loading seat map...",
+    "empty": "No seats configured for this location yet."
   },
   "eventCard": {
     "statusAvailable": "Available",

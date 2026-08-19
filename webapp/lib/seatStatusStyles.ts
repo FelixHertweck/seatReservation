@@ -22,7 +22,7 @@ export const SEAT_STATUS_BG: Record<SeatVisualStatus, string> = {
   USER_RESERVED: "bg-yellow-500 dark:bg-yellow-600",
   RESERVED: "bg-red-500 dark:bg-red-600",
   BLOCKED: "bg-gray-500 dark:bg-gray-600",
-  PENDING: "bg-amber-500 dark:bg-amber-600",
+  PENDING: "bg-purple-500 dark:bg-purple-600",
   CHECKED_IN: "bg-yellow-300 dark:bg-yellow-600",
   CANCELLED: "bg-violet-500 dark:bg-violet-500",
   NO_SHOW: "bg-orange-500 dark:bg-orange-600",
@@ -32,7 +32,7 @@ export const SEAT_STATUS_BG: Record<SeatVisualStatus, string> = {
 export const SEAT_STATUS_TEXT: Partial<Record<SeatVisualStatus, string>> = {
   USER_RESERVED: "text-black dark:text-white",
   CHECKED_IN: "text-black dark:text-white",
-  PENDING: "text-black dark:text-white",
+  PENDING: "text-white",
 };
 
 export const SEAT_STATUS_LABEL_KEY: Record<SeatVisualStatus, string> = {

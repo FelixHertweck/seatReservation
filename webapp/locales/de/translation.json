@@ -520,7 +520,8 @@
     "seatTitle": "Platz {{seatNumber}} ({{seatRow}})",
     "resetButton": "Zurücksetzen",
     "stageText": "BÜHNE",
-    "loading": "Sitzplan wird geladen..."
+    "loading": "Sitzplan wird geladen...",
+    "empty": "Für diesen Standort sind noch keine Sitzplätze konfiguriert."
   },
   "eventCard": {
     "statusAvailable": "Verfügbar",

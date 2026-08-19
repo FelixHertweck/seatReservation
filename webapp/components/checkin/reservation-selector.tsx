@@ -148,6 +148,18 @@ export function ReservationSelector({
                     {reservation.seat?.seatRow &&
                       ` (${reservation.seat.seatRow})`}
                   </div>
+                  {(reservation.seat?.area || reservation.seat?.entrance) && (
+                    <div className="text-[10px] text-muted-foreground">
+                      {[
+                        reservation.seat?.area &&
+                          `${t("seatMapModal.areaLabel")}: ${reservation.seat.area}`,
+                        reservation.seat?.entrance &&
+                          `${t("seatMapModal.entranceLabel")}: ${reservation.seat.entrance}`,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </div>
+                  )}
                   <div className="mt-2 flex items-center gap-2">
                     <Badge
                       className={cn(
