@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   CheckCheck,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -54,6 +55,8 @@ export function NotificationBell() {
   } = useWebPush();
 
   const [open, setOpen] = useState(false);
+  const [isPushToggling, setIsPushToggling] = useState(false);
+  const isPushPending = isPushLoading || isPushToggling;
 
   const { data: unreadData } = useQuery({
     ...getApiNotificationsUnreadCountOptions(),
@@ -90,6 +93,7 @@ export function NotificationBell() {
   };
 
   const handleTogglePush = async () => {
+    setIsPushToggling(true);
     try {
       if (isPushSubscribed) {
         await unsubscribeFromPush();
@@ -101,7 +105,27 @@ export function NotificationBell() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       toast.error(msg);
+    } finally {
+      setIsPushToggling(false);
     }
+  };
+
+  const getPushBannerIcon = () => {
+    if (isPushSubscribed) {
+      return (
+        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+      );
+    }
+    if (pushPermission === "denied") {
+      return <BellOff className="h-4 w-4 shrink-0 text-destructive" />;
+    }
+    return <BellRing className="h-4 w-4 shrink-0 text-muted-foreground" />;
+  };
+
+  const getPushBannerButtonLabel = () => {
+    if (isPushPending) return t("notifications.pushBanner.loadingButton");
+    if (isPushSubscribed) return t("notifications.pushBanner.disableButton");
+    return t("notifications.pushBanner.enableButton");
   };
 
   return (
@@ -118,12 +142,12 @@ export function NotificationBell() {
         <Button
           variant="outline"
           size="icon"
-          className="relative hover:bg-accent/80 transition-all duration-200"
+          className="relative h-10 w-10 shrink-0"
           aria-label={t("notifications.title")}
         >
-          <Bell className="h-5 w-5 transition-transform duration-200 hover:scale-110" />
+          <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[11px] font-bold text-destructive-foreground ring-2 ring-background animate-pulse">
+            <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground ring-2 ring-background">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           )}
@@ -230,13 +254,7 @@ export function NotificationBell() {
         {isPushSupported && (
           <div className="flex items-center justify-between gap-3 border-t border-border/50 px-4 py-2.5 bg-muted/20">
             <div className="flex items-center gap-2 min-w-0">
-              {isPushSubscribed ? (
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-              ) : pushPermission === "denied" ? (
-                <BellOff className="h-4 w-4 shrink-0 text-destructive" />
-              ) : (
-                <BellRing className="h-4 w-4 shrink-0 text-muted-foreground" />
-              )}
+              {getPushBannerIcon()}
               <span
                 className="truncate text-xs text-muted-foreground"
                 title={
@@ -257,12 +275,11 @@ export function NotificationBell() {
                 size="sm"
                 variant={isPushSubscribed ? "outline" : "default"}
                 onClick={handleTogglePush}
-                disabled={isPushLoading}
-                className="h-7 shrink-0 text-xs"
+                disabled={isPushPending}
+                className="h-7 shrink-0 text-xs gap-1.5"
               >
-                {isPushSubscribed
-                  ? t("notifications.pushBanner.disableButton")
-                  : t("notifications.pushBanner.enableButton")}
+                {isPushPending && <Loader2 className="h-3 w-3 animate-spin" />}
+                <span>{getPushBannerButtonLabel()}</span>
               </Button>
             )}
           </div>

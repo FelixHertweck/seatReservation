@@ -15,15 +15,13 @@ import {
   PageHeaderNavSlot,
 } from "@/components/page-header";
 
-import { NotificationBell } from "@/components/notifications/notification-bell";
-
 export default async function MainLayout({
   params,
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
-}) {
+}>) {
   const { locale } = await params;
   return (
     <SidebarProvider>
@@ -32,9 +30,8 @@ export default async function MainLayout({
         <SidebarInset className="transition-[margin] duration-200 ease-linear md:!m-0 md:peer-data-[state=expanded]:!ml-[var(--sidebar-width)] md:peer-data-[state=collapsed]:!ml-[var(--sidebar-width-icon)]">
           <header className="flex flex-col border-b bg-background">
             <div className="flex min-h-14 items-center gap-4 px-4 py-2 lg:min-h-[60px] lg:px-6 md:peer-data-[state=collapsed]:px-3 md:peer-data-[state=expanded]:px-6">
-              <SidebarTrigger className="hover:scale-110 transition-transform duration-200" />
+              <SidebarTrigger className="hover:scale-110 transition-transform duration-200 shrink-0" />
               <PageHeaderSlot />
-              <NotificationBell />
             </div>
             <PageHeaderNavSlot />
           </header>

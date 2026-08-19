@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import Link from "next/link";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 type PageHeaderContent = {
   title: ReactNode;
@@ -27,7 +28,9 @@ const PageHeaderSetterContext = createContext<SetPageHeaderContent | null>(
 const PageHeaderNavContext = createContext<ReactNode | null>(null);
 const PageHeaderNavSetterContext = createContext<SetPageHeaderNav | null>(null);
 
-export function PageHeaderProvider({ children }: { children: ReactNode }) {
+export function PageHeaderProvider({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   const [content, setContent] = useState<PageHeaderContent | null>(null);
   const [nav, setNav] = useState<ReactNode | null>(null);
 
@@ -63,12 +66,12 @@ export function PageHeader({
   description,
   actions,
   search,
-}: {
+}: Readonly<{
   title: ReactNode;
   description?: ReactNode;
   actions?: ReactNode;
   search?: ReactNode;
-}) {
+}>) {
   const setContent = usePageHeaderSetter();
 
   useEffect(() => {
@@ -89,7 +92,7 @@ function usePageHeaderNavSetter() {
   return setNav;
 }
 
-export function PageHeaderNav({ children }: { children: ReactNode }) {
+export function PageHeaderNav({ children }: Readonly<{ children: ReactNode }>) {
   const setNav = usePageHeaderNavSetter();
 
   useEffect(() => {
@@ -109,19 +112,22 @@ export function PageHeaderSlot() {
 
   if (!content) {
     return (
-      <div className="w-full flex-1">
+      <div className="flex w-full flex-1 items-center justify-between">
         <h1 className="text-lg font-semibold md:text-xl">
           <Link href="/" className="bg-transparent">
             Seat Reservation
           </Link>
         </h1>
+        <NotificationBell />
       </div>
     );
   }
 
+  const hasControls = Boolean(content.search || content.actions);
+
   return (
     <div className="flex w-full flex-1 min-w-0 flex-wrap items-center gap-2 sm:gap-4">
-      <div className="min-w-0 flex-1 max-sm:w-full">
+      <div className={`min-w-0 flex-1 ${hasControls ? "max-sm:w-full" : ""}`}>
         <h1 className="truncate text-lg font-semibold md:text-xl">
           {content.title}
         </h1>
@@ -142,11 +148,15 @@ export function PageHeaderSlot() {
           {content.search}
         </div>
       )}
-      {content.actions && (
-        <div className="order-3 flex shrink-0 items-center gap-2 max-sm:ml-auto sm:order-none sm:flex-nowrap">
-          {content.actions}
-        </div>
-      )}
+      <div
+        className={
+          "order-3 flex shrink-0 items-center gap-2 max-sm:ml-auto sm:order-none sm:flex-nowrap" +
+          (!content.search ? " sm:ml-auto" : "")
+        }
+      >
+        {content.actions}
+        <NotificationBell />
+      </div>
     </div>
   );
 }
