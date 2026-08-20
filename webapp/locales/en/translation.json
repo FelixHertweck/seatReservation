@@ -1453,9 +1453,12 @@
         "marker": "Marker",
         "area": "Area",
         "multiple": "{{count}} selected",
+        "multipleSeats": "{{count}} seats selected",
+        "multipleMarkers": "{{count}} markers selected",
         "deleteButton": "Delete",
         "positionLabel": "Position",
-        "assignAreaPlaceholder": "Assign area"
+        "assignAreaPlaceholder": "Assign area",
+        "assignEntrancePlaceholder": "Assign entrance"
       },
       "seats": {
         "title": "Seats",

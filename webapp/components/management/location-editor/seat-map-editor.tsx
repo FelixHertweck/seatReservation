@@ -93,7 +93,9 @@ interface SeatNodeProps {
   dimmed: boolean;
   tool: EditorTool;
   zoom: number;
-  onClick: (id: LocalId, shift: boolean) => void;
+  onClick: (id: LocalId, modifiers: { ctrl: boolean; shift: boolean }) => void;
+  dragDelta?: { x: number; y: number } | null;
+  isGroupDragging?: boolean;
 }
 
 const SeatNode = React.memo(function SeatNode({
@@ -103,9 +105,18 @@ const SeatNode = React.memo(function SeatNode({
   tool,
   zoom,
   onClick,
+  dragDelta,
+  isGroupDragging,
 }: SeatNodeProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: seat.localId, disabled: tool !== "select" });
+
+  let effectiveTransform: string | undefined;
+  if (isGroupDragging && dragDelta) {
+    effectiveTransform = `translate3d(${dragDelta.x / zoom}px, ${dragDelta.y / zoom}px, 0)`;
+  } else if (transform) {
+    effectiveTransform = `translate3d(${transform.x / zoom}px, ${transform.y / zoom}px, 0)`;
+  }
 
   return (
     <button
@@ -118,14 +129,17 @@ const SeatNode = React.memo(function SeatNode({
       onClick={(e) => {
         if (tool !== "select") return;
         e.stopPropagation();
-        onClick(seat.localId, e.shiftKey);
+        onClick(seat.localId, {
+          ctrl: e.ctrlKey || e.metaKey,
+          shift: e.shiftKey,
+        });
       }}
       className={cn(
         "absolute z-10 flex h-8 w-8 items-center justify-center rounded-full text-[10px] font-medium text-white transition-opacity",
         "bg-emerald-600 hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring",
         selected && "ring-2 ring-offset-1 ring-blue-500",
         seat.syncState === "error" && "outline outline-2 outline-red-500",
-        isDragging && "opacity-70 z-30",
+        (isDragging || isGroupDragging) && "opacity-70 z-30",
         dimmed && "opacity-25 saturate-0 hover:brightness-100",
       )}
       style={{
@@ -134,9 +148,7 @@ const SeatNode = React.memo(function SeatNode({
         width: SEAT_SIZE,
         height: SEAT_SIZE,
         touchAction: "none",
-        transform: transform
-          ? `translate3d(${transform.x / zoom}px, ${transform.y / zoom}px, 0)`
-          : undefined,
+        transform: effectiveTransform,
       }}
       title={`${seat.seatRow}${seat.seatNumber}`}
     >
@@ -151,7 +163,9 @@ interface MarkerNodeProps {
   selected: boolean;
   tool: EditorTool;
   zoom: number;
-  onClick: (id: LocalId, shift: boolean) => void;
+  onClick: (id: LocalId, modifiers: { ctrl: boolean; shift: boolean }) => void;
+  dragDelta?: { x: number; y: number } | null;
+  isGroupDragging?: boolean;
 }
 
 const MarkerNode = React.memo(function MarkerNode({
@@ -160,9 +174,18 @@ const MarkerNode = React.memo(function MarkerNode({
   tool,
   zoom,
   onClick,
+  dragDelta,
+  isGroupDragging,
 }: MarkerNodeProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: marker.localId, disabled: tool !== "select" });
+
+  let effectiveTransform: string | undefined;
+  if (isGroupDragging && dragDelta) {
+    effectiveTransform = `translate3d(${dragDelta.x / zoom}px, ${dragDelta.y / zoom}px, 0)`;
+  } else if (transform) {
+    effectiveTransform = `translate3d(${transform.x / zoom}px, ${transform.y / zoom}px, 0)`;
+  }
 
   return (
     <button
@@ -175,12 +198,15 @@ const MarkerNode = React.memo(function MarkerNode({
       onClick={(e) => {
         if (tool !== "select") return;
         e.stopPropagation();
-        onClick(marker.localId, e.shiftKey);
+        onClick(marker.localId, {
+          ctrl: e.ctrlKey || e.metaKey,
+          shift: e.shiftKey,
+        });
       }}
       className={cn(
         "absolute z-0 flex h-8 w-8 items-center justify-center overflow-hidden rounded-md bg-slate-300/80 px-0.5 text-[10px] font-bold text-slate-800 dark:bg-slate-600/80 dark:text-slate-100",
         selected && "ring-2 ring-offset-1 ring-blue-500",
-        isDragging && "opacity-70 z-30",
+        (isDragging || isGroupDragging) && "opacity-70 z-30",
       )}
       style={{
         left: cellToPx(marker.x),
@@ -188,9 +214,7 @@ const MarkerNode = React.memo(function MarkerNode({
         width: SEAT_SIZE,
         height: SEAT_SIZE,
         touchAction: "none",
-        transform: transform
-          ? `translate3d(${transform.x / zoom}px, ${transform.y / zoom}px, 0)`
-          : undefined,
+        transform: effectiveTransform,
       }}
       title={marker.label}
     >
@@ -292,6 +316,11 @@ export function SeatMapEditor({
     dx: number;
     dy: number;
   } | null>(null);
+  const [activeDrag, setActiveDrag] = useState<{
+    id: string;
+    delta: { x: number; y: number };
+  } | null>(null);
+  const [anchorId, setAnchorId] = useState<LocalId | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
   // Shared with handleCanvasClick's draw-area point placement: converts a
@@ -326,17 +355,61 @@ export function SeatMapEditor({
     return m;
   }, [state.seats, state.markers]);
 
-  const handleEntityClick = (id: LocalId, shift: boolean) => {
+  const handleEntityClick = (
+    id: LocalId,
+    modifiers: { ctrl: boolean; shift: boolean },
+  ) => {
     onSelectedAreaChange(null);
-    const next = new Set(selection);
-    if (shift) {
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-    } else {
-      next.clear();
-      next.add(id);
+    const { ctrl, shift } = modifiers;
+
+    if (shift && anchorId) {
+      const anchorEntity =
+        state.seats.find((s) => s.localId === anchorId) ??
+        state.markers.find((m) => m.localId === anchorId);
+      const targetEntity =
+        state.seats.find((s) => s.localId === id) ??
+        state.markers.find((m) => m.localId === id);
+
+      if (anchorEntity && targetEntity) {
+        const minX = Math.min(anchorEntity.x, targetEntity.x);
+        const maxX = Math.max(anchorEntity.x, targetEntity.x);
+        const minY = Math.min(anchorEntity.y, targetEntity.y);
+        const maxY = Math.max(anchorEntity.y, targetEntity.y);
+
+        const inRangeIds = [
+          ...state.seats
+            .filter(
+              (s) => s.x >= minX && s.x <= maxX && s.y >= minY && s.y <= maxY,
+            )
+            .map((s) => s.localId),
+          ...state.markers
+            .filter(
+              (m) => m.x >= minX && m.x <= maxX && m.y >= minY && m.y <= maxY,
+            )
+            .map((m) => m.localId),
+        ];
+
+        const next = ctrl ? new Set(selection) : new Set<LocalId>();
+        inRangeIds.forEach((rangeId) => next.add(rangeId));
+        onSelectionChange(next);
+        return;
+      }
     }
-    onSelectionChange(next);
+
+    if (ctrl) {
+      const next = new Set(selection);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+        setAnchorId(id);
+      }
+      onSelectionChange(next);
+      return;
+    }
+
+    setAnchorId(id);
+    onSelectionChange(new Set([id]));
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -347,7 +420,9 @@ export function SeatMapEditor({
     if (id.includes(":vertex:")) return;
     if (!selection.has(id)) {
       onSelectionChange(new Set([id]));
+      setAnchorId(id);
     }
+    setActiveDrag({ id, delta: { x: 0, y: 0 } });
   };
 
   const handleDragMove = (event: DragMoveEvent) => {
@@ -362,6 +437,10 @@ export function SeatMapEditor({
       });
       return;
     }
+    setActiveDrag({
+      id: activeId,
+      delta: { x: event.delta.x, y: event.delta.y },
+    });
     const ids = selection.has(activeId) ? selection : new Set([activeId]);
     const dx = Math.round(event.delta.x / zoom / CELL_TOTAL_SIZE);
     const dy = Math.round(event.delta.y / zoom / CELL_TOTAL_SIZE);
@@ -380,6 +459,9 @@ export function SeatMapEditor({
       if (!entity) return;
       const tx = entity.x + dx;
       const ty = entity.y + dy;
+      if (tx < 1 || ty < 1 || tx > MAX_GRID || ty > MAX_GRID) {
+        blocked = true;
+      }
       const key = `${tx}-${ty}`;
       const occupant = occupiedCells.get(key);
       if (occupant && !ids.has(occupant)) blocked = true;
@@ -401,7 +483,7 @@ export function SeatMapEditor({
       if (!entity) return;
       const tx = entity.x + dx;
       const ty = entity.y + dy;
-      if (tx < 1 || ty < 1) {
+      if (tx < 1 || ty < 1 || tx > MAX_GRID || ty > MAX_GRID) {
         blocked = true;
         return;
       }
@@ -419,6 +501,7 @@ export function SeatMapEditor({
     const activeId = String(event.active.id);
     setCollisionCells(null);
     setVertexDrag(null);
+    setActiveDrag(null);
 
     if (activeId.includes(":vertex:")) {
       const [areaLocalId, , indexStr] = activeId.split(":");
@@ -447,6 +530,7 @@ export function SeatMapEditor({
   const handleDragCancel = () => {
     setCollisionCells(null);
     setVertexDrag(null);
+    setActiveDrag(null);
   };
 
   const handleEdgeClick = (
@@ -464,6 +548,7 @@ export function SeatMapEditor({
     if (tool !== "draw-area") {
       onSelectionChange(new Set());
       onSelectedAreaChange(null);
+      setAnchorId(null);
       return;
     }
     const rect = e.currentTarget.getBoundingClientRect();
@@ -503,10 +588,12 @@ export function SeatMapEditor({
       if (selection.size > 0) {
         autosave.deleteEntities(selection);
         onSelectionChange(new Set());
+        setAnchorId(null);
       }
     } else if (e.key === "Escape") {
       onSelectionChange(new Set());
       onSelectedAreaChange(null);
+      setAnchorId(null);
     } else if (
       tool === "select" &&
       selection.size > 0 &&
@@ -805,31 +892,60 @@ export function SeatMapEditor({
                 })}
 
               {/* Markers */}
-              {state.markers.map((marker) => (
-                <MarkerNode
-                  key={marker.localId}
-                  marker={marker}
-                  selected={selection.has(marker.localId)}
-                  tool={tool}
-                  zoom={zoom}
-                  onClick={handleEntityClick}
-                />
-              ))}
+              {(() => {
+                const isGroupActive = Boolean(
+                  activeDrag &&
+                  selection.has(activeDrag.id) &&
+                  selection.size > 0,
+                );
+                return state.markers.map((marker) => {
+                  const isSelected = selection.has(marker.localId);
+                  return (
+                    <MarkerNode
+                      key={marker.localId}
+                      marker={marker}
+                      selected={isSelected}
+                      tool={tool}
+                      zoom={zoom}
+                      onClick={handleEntityClick}
+                      dragDelta={
+                        isGroupActive && isSelected ? activeDrag?.delta : null
+                      }
+                      isGroupDragging={isGroupActive && isSelected}
+                    />
+                  );
+                });
+              })()}
 
               {/* Seats */}
-              {state.seats.map((seat) => (
-                <SeatNode
-                  key={seat.localId}
-                  seat={seat}
-                  selected={selection.has(seat.localId)}
-                  dimmed={
-                    selectedAreaId != null && seat.areaRef !== selectedAreaId
-                  }
-                  tool={tool}
-                  zoom={zoom}
-                  onClick={handleEntityClick}
-                />
-              ))}
+              {(() => {
+                const isGroupActive = Boolean(
+                  activeDrag &&
+                  selection.has(activeDrag.id) &&
+                  selection.size > 0,
+                );
+                return state.seats.map((seat) => {
+                  const isSelected = selection.has(seat.localId);
+                  return (
+                    <SeatNode
+                      key={seat.localId}
+                      seat={seat}
+                      selected={isSelected}
+                      dimmed={
+                        selectedAreaId != null &&
+                        seat.areaRef !== selectedAreaId
+                      }
+                      tool={tool}
+                      zoom={zoom}
+                      onClick={handleEntityClick}
+                      dragDelta={
+                        isGroupActive && isSelected ? activeDrag?.delta : null
+                      }
+                      isGroupDragging={isGroupActive && isSelected}
+                    />
+                  );
+                });
+              })()}
             </div>
           </div>
         </div>

@@ -29,6 +29,41 @@ export function SeatsPanel({
   const t = useT();
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const [anchorId, setAnchorId] = useState<LocalId | null>(null);
+
+  const handleSeatClick = (seatLocalId: LocalId, e: React.MouseEvent) => {
+    if (e.shiftKey && anchorId) {
+      const fromIdx = state.seats.findIndex((s) => s.localId === anchorId);
+      const toIdx = state.seats.findIndex((s) => s.localId === seatLocalId);
+      if (fromIdx !== -1 && toIdx !== -1) {
+        const start = Math.min(fromIdx, toIdx);
+        const end = Math.max(fromIdx, toIdx);
+        const next =
+          e.ctrlKey || e.metaKey ? new Set(selection) : new Set<LocalId>();
+        for (let i = start; i <= end; i++) {
+          next.add(state.seats[i].localId);
+        }
+        onSelectionChange(next);
+        return;
+      }
+    }
+
+    if (e.ctrlKey || e.metaKey) {
+      const next = new Set(selection);
+      if (next.has(seatLocalId)) {
+        next.delete(seatLocalId);
+      } else {
+        next.add(seatLocalId);
+        setAnchorId(seatLocalId);
+      }
+      onSelectionChange(next);
+      return;
+    }
+
+    setAnchorId(seatLocalId);
+    onSelectionChange(new Set([seatLocalId]));
+  };
+
   return (
     <div className="space-y-3">
       <Button
@@ -57,7 +92,7 @@ export function SeatsPanel({
             >
               <button
                 type="button"
-                onClick={() => onSelectionChange(new Set([seat.localId]))}
+                onClick={(e) => handleSeatClick(seat.localId, e)}
                 className="flex flex-1 items-center justify-between text-left"
               >
                 <span className="font-medium">{seat.seatNumber}</span>
