@@ -789,7 +789,7 @@
     "cancelButton": "Abbrechen",
     "importingButton": "Importiere...",
     "importDataButton": "Daten importieren",
-    "locationDataValidationError": "Standortdaten müssen Name, Adresse und Kapazität enthalten",
+    "locationDataValidationError": "Standortdaten müssen Name und Adresse enthalten",
     "selectLocationForSeatsError": "Bitte wählen Sie einen Standort für die Plätze aus",
     "seatsDataArrayError": "Platzdaten müssen ein Array sein",
     "seatDataValidationError": "Jeder Platz muss seatNumber und coordinate (xCoordinate, yCoordinate) haben",
