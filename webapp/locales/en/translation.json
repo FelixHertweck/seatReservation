@@ -953,7 +953,7 @@
     "cancelButton": "Cancel",
     "importingButton": "Importing...",
     "importDataButton": "Import Data",
-    "locationDataValidationError": "Location data must include name, address, and capacity",
+    "locationDataValidationError": "Location data must include name and address",
     "selectLocationForSeatsError": "Please select a location for the seats",
     "seatsDataArrayError": "Seats data must be an array",
     "seatDataValidationError": "Each seat must have seatNumber and coordinate (xCoordinate, yCoordinate)",
