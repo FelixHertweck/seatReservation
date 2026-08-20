@@ -74,6 +74,18 @@ export function SelectionPanel({
       ? state.areas.find((a) => a.localId === selectedAreaId)
       : undefined;
 
+  const selectedSeats = state.seats.filter((s) => selection.has(s.localId));
+  const firstSeatRow = selectedSeats[0]?.seatRow ?? "";
+  const allSameRow =
+    selectedSeats.length > 0 &&
+    selectedSeats.every((s) => s.seatRow === firstSeatRow);
+  const commonRow = allSameRow ? firstSeatRow : "";
+
+  const [bulkRow, setBulkRow] = useSyncedField(
+    commonRow,
+    `bulk-row:${ids.join(",")}:${commonRow}`,
+  );
+
   const [seatNumber, setSeatNumber] = useSyncedField(
     seat?.seatNumber ?? "",
     `${seat?.localId}:${seat?.seatNumber}`,
@@ -154,20 +166,102 @@ export function SelectionPanel({
     const selectedSeatIds = ids.filter((id) =>
       state.seats.some((s) => s.localId === id),
     );
+    const selectedMarkerIds = ids.filter((id) =>
+      state.markers.some((m) => m.localId === id),
+    );
     const allSeats = selectedSeatIds.length === ids.length;
+    const allMarkers = selectedMarkerIds.length === ids.length;
+
+    const firstAreaRef = selectedSeats[0]?.areaRef;
+    const allSameArea =
+      selectedSeats.length > 0 &&
+      selectedSeats.every((s) => s.areaRef === firstAreaRef);
+    const currentAreaValue = allSameArea && firstAreaRef ? firstAreaRef : NONE;
+
+    const firstEntranceRef = selectedSeats[0]?.entranceRef;
+    const allSameEntrance =
+      selectedSeats.length > 0 &&
+      selectedSeats.every((s) => s.entranceRef === firstEntranceRef);
+    const currentEntranceValue =
+      allSameEntrance && firstEntranceRef ? firstEntranceRef : NONE;
+
+    let label = t("management.locationEditor.selection.multiple", {
+      count: selection.size,
+    });
+    if (allSeats) {
+      label = t("management.locationEditor.selection.multipleSeats", {
+        count: selection.size,
+      });
+    } else if (allMarkers) {
+      label = t("management.locationEditor.selection.multipleMarkers", {
+        count: selection.size,
+      });
+    }
 
     return (
       <div className="space-y-4">
-        <p className="text-sm">
-          {t("management.locationEditor.selection.multiple", {
-            count: selection.size,
-          })}
-        </p>
+        <p className="text-sm font-medium">{label}</p>
+        {allSeats && (
+          <div className="space-y-2">
+            <Label>{t("management.locationEditor.seats.seatRowLabel")}</Label>
+            <Input
+              value={bulkRow}
+              onChange={(e) => setBulkRow(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.currentTarget.blur();
+                }
+              }}
+              onBlur={() => {
+                if (bulkRow !== commonRow) {
+                  selectedSeatIds.forEach((id) =>
+                    autosave.updateSeat(id, { seatRow: bulkRow }),
+                  );
+                }
+              }}
+            />
+          </div>
+        )}
+        {allSeats && state.entrances.some((e) => e.serverId) && (
+          <div className="space-y-2">
+            <Label>{t("management.locationEditor.seats.entranceLabel")}</Label>
+            <Select
+              value={currentEntranceValue}
+              onValueChange={(value) =>
+                selectedSeatIds.forEach((id) =>
+                  autosave.updateSeat(id, {
+                    entranceRef: value === NONE ? undefined : value,
+                  }),
+                )
+              }
+            >
+              <SelectTrigger>
+                <SelectValue
+                  placeholder={t(
+                    "management.locationEditor.selection.assignEntrancePlaceholder",
+                  )}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NONE}>
+                  {t("management.locationEditor.seats.noneOption")}
+                </SelectItem>
+                {state.entrances
+                  .filter((e) => e.serverId)
+                  .map((e) => (
+                    <SelectItem key={e.localId} value={e.localId}>
+                      {e.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         {allSeats && state.areas.some((a) => a.serverId) && (
           <div className="space-y-2">
             <Label>{t("management.locationEditor.seats.areaLabel")}</Label>
             <Select
-              value={NONE}
+              value={currentAreaValue}
               onValueChange={(value) =>
                 autosave.assignAreaToSeats(
                   new Set(selectedSeatIds),

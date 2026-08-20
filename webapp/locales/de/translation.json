@@ -1453,9 +1453,12 @@
         "marker": "Marker",
         "area": "Bereich",
         "multiple": "{{count}} ausgewählt",
+        "multipleSeats": "{{count}} Sitze ausgewählt",
+        "multipleMarkers": "{{count}} Marker ausgewählt",
         "deleteButton": "Löschen",
         "positionLabel": "Position",
-        "assignAreaPlaceholder": "Bereich zuweisen"
+        "assignAreaPlaceholder": "Bereich zuweisen",
+        "assignEntrancePlaceholder": "Eingang zuweisen"
       },
       "seats": {
         "title": "Sitze",

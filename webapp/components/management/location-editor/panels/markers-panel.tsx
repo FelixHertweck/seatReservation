@@ -29,6 +29,41 @@ export function MarkersPanel({
   const t = useT();
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const [anchorId, setAnchorId] = useState<LocalId | null>(null);
+
+  const handleMarkerClick = (markerLocalId: LocalId, e: React.MouseEvent) => {
+    if (e.shiftKey && anchorId) {
+      const fromIdx = state.markers.findIndex((m) => m.localId === anchorId);
+      const toIdx = state.markers.findIndex((m) => m.localId === markerLocalId);
+      if (fromIdx !== -1 && toIdx !== -1) {
+        const start = Math.min(fromIdx, toIdx);
+        const end = Math.max(fromIdx, toIdx);
+        const next =
+          e.ctrlKey || e.metaKey ? new Set(selection) : new Set<LocalId>();
+        for (let i = start; i <= end; i++) {
+          next.add(state.markers[i].localId);
+        }
+        onSelectionChange(next);
+        return;
+      }
+    }
+
+    if (e.ctrlKey || e.metaKey) {
+      const next = new Set(selection);
+      if (next.has(markerLocalId)) {
+        next.delete(markerLocalId);
+      } else {
+        next.add(markerLocalId);
+        setAnchorId(markerLocalId);
+      }
+      onSelectionChange(next);
+      return;
+    }
+
+    setAnchorId(markerLocalId);
+    onSelectionChange(new Set([markerLocalId]));
+  };
+
   return (
     <div className="space-y-3">
       <Button
@@ -57,7 +92,7 @@ export function MarkersPanel({
             >
               <button
                 type="button"
-                onClick={() => onSelectionChange(new Set([marker.localId]))}
+                onClick={(e) => handleMarkerClick(marker.localId, e)}
                 className="flex flex-1 items-center justify-between text-left"
               >
                 <span>{marker.label}</span>
