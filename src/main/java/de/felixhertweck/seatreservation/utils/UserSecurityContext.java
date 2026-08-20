@@ -27,6 +27,7 @@ import jakarta.inject.Inject;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import io.quarkus.security.identity.SecurityIdentity;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
@@ -67,8 +68,12 @@ public class UserSecurityContext {
         if (uidClaim == null) {
             throw new IllegalStateException("JWT missing uid claim");
         }
-        UUID id = UUID.fromString(uidClaim.toString());
-        return new AuthenticatedUser(id, securityIdentity.getRoles());
+        try {
+            UUID id = UUID.fromString(uidClaim.toString());
+            return new AuthenticatedUser(id, securityIdentity.getRoles());
+        } catch (IllegalArgumentException e) {
+            throw new JwtInvalidException("Invalid uid in JWT", e);
+        }
     }
 
     /**
