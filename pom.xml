@@ -31,7 +31,7 @@
     <mockito.version>5.20.0</mockito.version>
     <owasp-java-html-sanitizer.version>20260313.1</owasp-java-html-sanitizer.version>
     <com.google.zxing.version>3.5.4</com.google.zxing.version>
-    <java-otp.version>0.4.0</java-otp.version>
+    <java-otp.version>1.0.0</java-otp.version>
     <commons-codec.version>1.22.1</commons-codec.version>
     <testcontainers.version>1.21.4</testcontainers.version>
     <bouncycastle.version>1.85</bouncycastle.version>
