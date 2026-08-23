@@ -67,12 +67,13 @@ public class ReservationExporter {
         }
         if (index < escaped.length()) {
             char firstNonWs = escaped.charAt(index);
-            if (firstNonWs == '=' || firstNonWs == '+' || firstNonWs == '-' || firstNonWs == '@') {
+            if (firstNonWs == '='
+                    || firstNonWs == '+'
+                    || firstNonWs == '-'
+                    || firstNonWs == '@'
+                    || firstNonWs == '\t') {
                 escaped = "'" + escaped;
             }
-        }
-        if (!escaped.startsWith("'") && escaped.charAt(0) == '\t') {
-            escaped = "'" + escaped;
         }
 
         // Standard CSV escaping if field contains quotes, commas or newlines
@@ -94,7 +95,7 @@ public class ReservationExporter {
      * leading-whitespace check below.
      */
     private static boolean isSpreadsheetTrimmable(char c) {
-        return Character.isWhitespace(c) || Character.isSpaceChar(c);
+        return c != '\t' && (Character.isWhitespace(c) || Character.isSpaceChar(c));
     }
 
     private static final String TEMPLATE_PATH_BLOCKED = "/export-template/blocked.pdf";

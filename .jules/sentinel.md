@@ -1,0 +1,4 @@
+## 2025-08-23 - Fix CSV injection bypass via tab characters
+**Vulnerability:** Tab characters (`\t`) were treated as trimmable whitespace in CSV export fields (`ReservationExporter`), allowing an attacker to inject formulas into exported CSV files by using a tab as the first non-whitespace character, thereby bypassing the CSV injection check.
+**Learning:** `Character.isWhitespace()` returns `true` for tab characters (`\t`). Spreadsheet applications also treat tab characters as formula triggers in CSV files (or ignore them when looking for one). Because `isSpreadsheetTrimmable` used `Character.isWhitespace(c)`, the tab character would be skipped during whitespace trimming, allowing a payload starting with `\t` to bypass the formula injection checks.
+**Prevention:** Explicitly exclude tab characters (`\t`) from the trimmable characters loop in `isSpreadsheetTrimmable` so that they can be evaluated and escaped properly in `escapeCsvField`.
