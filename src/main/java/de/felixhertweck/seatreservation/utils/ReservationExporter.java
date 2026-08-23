@@ -48,8 +48,18 @@ import com.lowagie.text.pdf.PdfWriter;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.User;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 public class ReservationExporter {
+
+    /**
+     * Same property as {@link
+     * de.felixhertweck.seatreservation.email.template.ExternalEmailTemplateLocator}; this class
+     * uses its {@code export/} subfolder instead of {@code email/}.
+     */
+    private static final String TEMPLATE_OVERRIDE_DIR_PROPERTY = "template.override-dir";
+
+    private static final String EXPORT_OVERRIDE_SUBDIR = "export";
 
     private static final String TEMPLATE_PATH_RESERVED = "/export-template/reserved.pdf";
 
@@ -174,7 +184,8 @@ public class ReservationExporter {
                 } else {
                     for (Reservation reservation : reservations) {
                         if (reservation.getStatus() == ReservationStatus.BLOCKED) {
-                            byte[] templateBytes = loadTemplatePdf(TEMPLATE_PATH_BLOCKED);
+                            byte[] templateBytes =
+                                    loadTemplatePdf(TEMPLATE_PATH_BLOCKED, "blocked.pdf");
                             if (templateBytes != null) {
                                 addPageFromTemplate(
                                         writer, document, reservation, null, templateBytes);
@@ -182,7 +193,8 @@ public class ReservationExporter {
                                 addStandardBlockedPage(writer, document, reservation);
                             }
                         } else { // RESERVED or other statuses
-                            byte[] templateBytes = loadTemplatePdf(TEMPLATE_PATH_RESERVED);
+                            byte[] templateBytes =
+                                    loadTemplatePdf(TEMPLATE_PATH_RESERVED, "reserved.pdf");
                             if (templateBytes != null) {
                                 addPageFromTemplate(
                                         writer,
@@ -204,18 +216,43 @@ public class ReservationExporter {
         }
     }
 
-    private static byte[] loadTemplatePdf(String path) throws IOException {
-        if (path == null || path.trim().isEmpty()) {
-            return null;
+    /**
+     * Resolves a PDF export template, preferring an operator-supplied override over the bundled
+     * classpath version.
+     *
+     * @param classpathPath the bundled template's classpath location (e.g. {@code
+     *     /export-template/reserved.pdf})
+     * @param overrideFileName the file name looked up under {@code <template.override-dir>/export/}
+     *     (e.g. {@code reserved.pdf})
+     * @return the template bytes, or {@code null} if neither source has it
+     */
+    private static byte[] loadTemplatePdf(String classpathPath, String overrideFileName)
+            throws IOException {
+        byte[] overrideBytes = loadOverrideTemplatePdf(overrideFileName);
+        if (overrideBytes != null) {
+            return overrideBytes;
         }
-        InputStream resourceStream = ReservationExporter.class.getResourceAsStream(path);
+        InputStream resourceStream = ReservationExporter.class.getResourceAsStream(classpathPath);
         if (resourceStream != null) {
             try (InputStream is = resourceStream) {
                 return is.readAllBytes();
             }
         }
-        File templateFile = new File(path);
-        if (templateFile.exists() && templateFile.canRead()) {
+        return null;
+    }
+
+    private static byte[] loadOverrideTemplatePdf(String fileName) throws IOException {
+        String overrideDir =
+                ConfigProvider.getConfig()
+                        .getOptionalValue(TEMPLATE_OVERRIDE_DIR_PROPERTY, String.class)
+                        .map(String::trim)
+                        .filter(dir -> !dir.isEmpty())
+                        .orElse(null);
+        if (overrideDir == null) {
+            return null;
+        }
+        File templateFile = new File(new File(overrideDir, EXPORT_OVERRIDE_SUBDIR), fileName);
+        if (templateFile.isFile() && templateFile.canRead()) {
             return Files.readAllBytes(templateFile.toPath());
         }
         return null;

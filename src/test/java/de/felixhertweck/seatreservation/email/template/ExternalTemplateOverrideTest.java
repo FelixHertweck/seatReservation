@@ -57,7 +57,7 @@ class ExternalTemplateOverrideTest {
             Objects.requireNonNull(url, "email-template-overrides test resource not found");
             try {
                 Path dir = Path.of(url.toURI());
-                return Map.of("email.template.override-dir", dir.toString());
+                return Map.of("template.override-dir", dir.toString());
             } catch (URISyntaxException e) {
                 throw new IllegalStateException(e);
             }

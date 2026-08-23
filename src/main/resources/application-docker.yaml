@@ -46,10 +46,13 @@ smallrye:
   jwt:
     new-token:
       issuer: ${APP_URL}
+      signature-algorithm: ES256
     sign:
       key:
         location: /deployments/keys/privateKey.pem
 mp:
   jwt:
-    publickey:
-      location: /deployments/keys/publicKey.pem
+    verify:
+      publickey:
+        location: /deployments/keys/publicKey.pem
+        algorithm: ES256

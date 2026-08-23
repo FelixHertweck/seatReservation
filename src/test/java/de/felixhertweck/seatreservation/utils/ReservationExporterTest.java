@@ -21,7 +21,10 @@ package de.felixhertweck.seatreservation.utils;
 
 import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -31,13 +34,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.lowagie.text.Document;
+import com.lowagie.text.Element;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.ColumnText;
+import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfReader;
+import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.pdf.TextField;
+import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class ReservationExporterTest {
+
+    @TempDir Path tempDir;
 
     private Reservation createReservation(
             UUID id,
@@ -229,6 +246,44 @@ class ReservationExporterTest {
         assertNotNull(pdfBytes);
         assertTrue(pdfBytes.length > 100, "PDF should not be empty");
         assertEquals("%PDF-", new String(pdfBytes, 0, 5));
+    }
+
+    @AfterEach
+    void clearOverrideDirProperty() {
+        System.clearProperty("template.override-dir");
+    }
+
+    private byte[] buildOverrideBlockedTemplate() throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (Document document = new Document()) {
+            PdfWriter writer = PdfWriter.getInstance(document, baos);
+            document.open();
+            PdfContentByte canvas = writer.getDirectContent();
+            ColumnText.showTextAligned(
+                    canvas, Element.ALIGN_LEFT, new Phrase("OVERRIDE MARKER"), 50, 700, 0);
+            TextField seatInfoField =
+                    new TextField(writer, new Rectangle(50, 600, 250, 620), "seatInfo");
+            writer.addAnnotation(seatInfoField.getTextField());
+        }
+        return baos.toByteArray();
+    }
+
+    @Test
+    void exportReservationsToPdf_withOverrideDirTemplate_usesExternalTemplate() throws Exception {
+        Path exportDir = tempDir.resolve("export");
+        Files.createDirectories(exportDir);
+        Files.write(exportDir.resolve("blocked.pdf"), buildOverrideBlockedTemplate());
+        System.setProperty("template.override-dir", tempDir.toString());
+
+        Reservation reservation =
+                createReservation(id(1), "C1", "3", null, null, ReservationStatus.BLOCKED);
+        byte[] pdfBytes =
+                ReservationExporter.exportReservationsToPdf(List.of(reservation), null)
+                        .toByteArray();
+
+        String text = new PdfTextExtractor(new PdfReader(pdfBytes)).getTextFromPage(1);
+        assertTrue(text.contains("OVERRIDE MARKER"), text);
+        assertTrue(text.contains("C1 (3)"), text);
     }
 
     @Test
