@@ -188,6 +188,17 @@ class ReservationExporterTest {
     }
 
     @Test
+    void exportReservationsToCsv_fieldWithLeadingTabAfterWhitespace_isEscaped() throws IOException {
+        Reservation reservation =
+                createReservation(
+                        id(1), "A1", "1", " \n\tcmd", "Mustermann", ReservationStatus.RESERVED);
+        byte[] csvBytes =
+                ReservationExporter.exportReservationsToCsv(List.of(reservation)).toByteArray();
+        String csv = new String(csvBytes);
+        assertTrue(csv.contains("' \n\tcmd"), csv);
+    }
+
+    @Test
     void exportReservationsToCsv_fieldWithoutFormulaTrigger_isNotEscaped() throws IOException {
         Reservation reservation =
                 createReservation(
