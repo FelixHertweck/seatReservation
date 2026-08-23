@@ -59,12 +59,11 @@ services:
     # Override application.yaml
     #  - ./application.yaml:/deployments/config/application.yaml
 
-    # Export templates for PDF generation
-    #  - ./export-template:/export-template:ro
-
-    # Override email templates at runtime (mirror the bundled layout, e.g.
-    # ./email-templates/email/password-changed.html or email/fragments/card-layout-styles.html)
-    #  - ./email-templates:/deployments/email-templates:ro
+    # Override bundled templates at runtime without rebuilding the image (mirror the bundled
+    # layout: email templates under email/, e.g. email/password-changed.html or
+    # email/fragments/card-layout-styles.html; PDF export templates under export/, e.g.
+    # export/reserved.pdf, export/blocked.pdf)
+    #  - ./template-overrides:/deployments/template-overrides:ro
 
     environment:
       # Application configuration
@@ -73,8 +72,8 @@ services:
       # If you use only HTTP, set this to false
       # - SSL_ENABLED=false
 
-      # Point to the volume mounted above to enable email template overrides
-      # - EMAIL_TEMPLATE_OVERRIDE_DIR=/deployments/email-templates
+      # Point to the volume mounted above to enable template overrides (email + PDF export)
+      # - TEMPLATE_OVERRIDE_DIR=/deployments/template-overrides
 
       # Email configuration
       - MAIL_FROM=${MAIL_FROM}

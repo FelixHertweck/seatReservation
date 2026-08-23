@@ -33,6 +33,7 @@ smallrye:
     always-check-authorization: true
     new-token:
       issuer: http://localhost:8080
+      signature-algorithm: ES256
     sign:
       key:
         location: keys/privateKey.pem
@@ -44,12 +45,21 @@ mp:
     verify:
         publickey:
             location: keys/publicKey.pem
+            algorithm: ES256
+
+# Optional external directory used to override bundled templates at runtime without rebuilding
+# the image. Mirrors the bundled layout via two subfolders: email templates under
+# <dir>/email/ (e.g. reservation-confirmation.html) and PDF export templates under
+# <dir>/export/ (e.g. reserved.pdf, blocked.pdf). Leave empty to use only the bundled/classpath
+# templates. Picked up on application start.
+template:
+  override-dir: ""
 
 exporter:
     pdf:
         minutesBeforeEventStart: 10
 
-email:  
+email:
   resend-cooldown-seconds: 60
   frontend-base-url: http://localhost:8080
   verification:
@@ -79,12 +89,6 @@ email:
  
   # Template for entrance information text
   entrance-info-template: "Please use entrance {entrance} for seats {seats}"
-
-  # Optional external directory holding email template overrides (leave empty to use the
-  # bundled templates). Files there mirror the bundled layout, e.g.
-  # <dir>/email/reservation-confirmation.html, and are picked up on application start.
-  template:
-    override-dir: ""
 
   header:
     confirmation: "Please Confirm Your Email Address"

@@ -40,10 +40,13 @@ import org.jboss.logging.Logger;
  * Lets operators override the bundled email templates at runtime without rebuilding the
  * application.
  *
- * <p>When {@code email.template.override-dir} points to a directory, this locator is consulted
- * before the default classpath locator for any {@code email/*} template. If a matching {@code
- * .html} file exists in that directory it is used instead of the version shipped inside the
- * artifact; otherwise the locator returns empty and Qute falls back to the bundled template.
+ * <p>When {@code template.override-dir} points to a directory, this locator is consulted before the
+ * default classpath locator for any {@code email/*} template (the same directory's {@code export/}
+ * subfolder is used for PDF export template overrides, see {@link
+ * de.felixhertweck.seatreservation.utils.ReservationExporter}). If a matching {@code .html} file
+ * exists under the directory's {@code email/} subfolder it is used instead of the version shipped
+ * inside the artifact; otherwise the locator returns empty and Qute falls back to the bundled
+ * template.
  *
  * <p>The override files are still ordinary Qute templates (same {@code {#for}}/{@code {#if}} syntax
  * and HTML escaping) — only their source is read from the filesystem. Because they are not visible
@@ -69,7 +72,7 @@ public class ExternalEmailTemplateLocator implements TemplateLocator {
 
     @Inject
     public ExternalEmailTemplateLocator(
-            @ConfigProperty(name = "email.template.override-dir") Optional<String> overrideDir) {
+            @ConfigProperty(name = "template.override-dir") Optional<String> overrideDir) {
         this(
                 overrideDir
                         .map(String::trim)

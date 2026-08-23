@@ -35,7 +35,7 @@ jobs:
       - name: Generate keys for JWT and encryption tests
         run: |
           mkdir keys
-          openssl genpkey -algorithm RSA -out keys/privateKey.pem -pkeyopt rsa_keygen_bits:2048 && openssl rsa -pubout -in keys/privateKey.pem -out keys/publicKey.pem
+          openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out keys/privateKey.pem && openssl ec -pubout -in keys/privateKey.pem -out keys/publicKey.pem
           openssl rand -base64 32 > keys/totp-encryption.key
 
       - name: Set up Maven Cache

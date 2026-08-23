@@ -81,7 +81,7 @@ The fastest way to run the full system (reverse proxy, frontend, backend, databa
 
 ```shell script
 # 1. Generate JWT and encryption keys (once)
-mkdir -p keys && openssl genpkey -algorithm RSA -out keys/privateKey.pem -pkeyopt rsa_keygen_bits:2048 && openssl rsa -pubout -in keys/privateKey.pem -out keys/publicKey.pem
+mkdir -p keys && openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out keys/privateKey.pem && openssl ec -pubout -in keys/privateKey.pem -out keys/publicKey.pem
 openssl rand -base64 32 > keys/totp-encryption.key
 
 # 2. Create and edit your environment file
@@ -145,7 +145,7 @@ Execute the following commands to generate the necessary keys for JWT authentica
 encrypting sensitive data at rest (e.g. TOTP 2FA secrets):
 
 ```shell script
-mkdir -p keys && openssl genpkey -algorithm RSA -out keys/privateKey.pem -pkeyopt rsa_keygen_bits:2048 && openssl rsa -pubout -in keys/privateKey.pem -out keys/publicKey.pem
+mkdir -p keys && openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out keys/privateKey.pem && openssl ec -pubout -in keys/privateKey.pem -out keys/publicKey.pem
 openssl rand -base64 32 > keys/totp-encryption.key
 ```
 
@@ -283,35 +283,42 @@ The application renders emails from customizable [Qute](https://quarkus.io/guide
 
 Edit these files directly to adjust the look and content of outgoing emails, keeping the existing `{placeholder}` expressions intact. Subject lines and small text snippets are configured under `email.header.*` and related keys in [`application.yaml`](src/main/resources/application.yaml).
 
-#### Overriding Templates in a Deployment
-
-Instead of editing the bundled files (which requires rebuilding the image), you can supply your own templates from an external directory via `email.template.override-dir` (env var `EMAIL_TEMPLATE_OVERRIDE_DIR`). This is picked up on application start and takes precedence over the bundled templates.
-
-To customize a template:
-
-1.   Create a directory, e.g. `./email-templates/email/`.
-2.   Add an `.html` file named after the template you want to replace, e.g. `password-changed.html`. It only needs to contain the templates you actually want to change — anything missing falls back to the bundled version.
-3.   Write it as a normal, self-contained HTML file (Qute `{placeholder}`, `{#if}`, `{#for}` syntax is supported), using the same `{placeholder}` names as the original.
-4.   Point the app at the directory:
-     -   Locally: set `EMAIL_TEMPLATE_OVERRIDE_DIR=/path/to/email-templates` in `.env`.
-     -   Docker Compose: mount the directory into the container and set the env var — see the commented `email-templates` volume and `EMAIL_TEMPLATE_OVERRIDE_DIR` entry in [`docker-compose.yml`](docker-compose.yml).
-5.   Restart the application to pick up the changes.
-
 ### PDF Export Templates
 
 The application supports exporting reservations as PDF documents, utilizing predefined PDF templates with AcroForm fields. There are two distinct templates used based on the reservation status:
 
--   **`/export-template/reserved.pdf`**: Used for reservations with the status `RESERVED`.
+-   **`reserved.pdf`**: Used for reservations with the status `RESERVED`.
     -   **Required Form Fields:**
         -   `reservedUntil`: The date until which the seat is reserved.
         -   `userName`: The full name of the user who made the reservation.
         -   `seatInfo`: Information about the seat (e.g., "A1 (Row 1)").
 
--   **`/export-template/blocked.pdf`**: Used for reservations with the status `BLOCKED`.
+-   **`blocked.pdf`**: Used for reservations with the status `BLOCKED`.
     -   **Required Form Fields:**
         -   `seatInfo`: Information about the seat (e.g., "A1 (Row 1)").
 
-If these template files are not found at the specified paths, the system will generate a standard PDF layout with basic reservation information.
+If these template files are not supplied (see below), the system generates a standard PDF layout with basic reservation information instead.
+
+#### Overriding Templates in a Deployment
+
+Instead of editing the bundled files (which requires rebuilding the image), you can supply your own email and PDF export templates from a single external directory via `template.override-dir` (env var `TEMPLATE_OVERRIDE_DIR`). This is picked up on application start and takes precedence over the bundled templates.
+
+The directory mirrors the bundled layout via two subfolders:
+
+-   `email/` — Qute HTML templates, e.g. `email/password-changed.html`, `email/fragments/card-layout-styles.html`.
+-   `export/` — PDF templates, e.g. `export/reserved.pdf`, `export/blocked.pdf`.
+
+Only place the files you actually want to override — anything missing falls back to the bundled email template or the standard programmatic PDF layout.
+
+To customize a template:
+
+1.   Create a directory, e.g. `./template-overrides/`, with an `email/` and/or `export/` subfolder.
+2.   Add the file(s) you want to replace, named as described above (e.g. `email/password-changed.html`, `export/blocked.pdf`).
+3.   Email templates are normal, self-contained HTML files (Qute `{placeholder}`, `{#if}`, `{#for}` syntax is supported), using the same `{placeholder}` names as the original. PDF templates are regular PDF files with the AcroForm text fields listed above.
+4.   Point the app at the directory:
+     -   Locally: set `TEMPLATE_OVERRIDE_DIR=/path/to/template-overrides` in `.env`.
+     -   Docker Compose: mount the directory into the container and set the env var — see the commented `template-overrides` volume and `TEMPLATE_OVERRIDE_DIR` entry in [`docker-compose.yml`](docker-compose.yml).
+5.   Restart the application to pick up the changes.
 
 ## Backend (Quarkus)
 
