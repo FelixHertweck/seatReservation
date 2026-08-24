@@ -62,4 +62,8 @@ jobs:
         with:
           package: ${{ matrix.package-name }}
           delete-tags: pr-${{ github.event.pull_request.number }}
+          delete-untagged: true
+          delete-ghost-images: true
+          delete-partial-images: true
+          delete-orphaned-images: true
           token: ${{ secrets.GITHUB_TOKEN }}
