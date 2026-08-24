@@ -5,9 +5,11 @@ import { Mail, Printer } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Button } from "@/components/custom-ui/button";
+import { cn } from "@/lib/utils";
 import type { BoxOfficeReservationResponseDto } from "@/api";
 
 interface BoxOfficeConfirmationProps {
+  className?: string;
   result: BoxOfficeReservationResponseDto;
   // The address the supervisor typed in, held only in local form state -- the
   // backend never persists or echoes it back, so it must be passed in here
@@ -20,6 +22,7 @@ interface BoxOfficeConfirmationProps {
 }
 
 export function BoxOfficeConfirmation({
+  className,
   result,
   guestEmail,
   notifiedUsername,
@@ -33,7 +36,12 @@ export function BoxOfficeConfirmation({
   };
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border p-4 sm:p-6">
+    <div
+      className={cn(
+        "flex flex-col gap-4 rounded-lg border p-4 sm:p-6",
+        className,
+      )}
+    >
       <div>
         <h3 className="font-medium">{t("boxOffice.confirmation.title")}</h3>
         <p className="text-sm text-muted-foreground">

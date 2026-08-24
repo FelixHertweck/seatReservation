@@ -1,13 +1,20 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { ArrowUp, Clock, Loader2 } from "lucide-react";
+import { ArrowUp, ChevronUp, Clock, Loader2 } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
 import { formatDateTime } from "@/lib/utils";
 import { useSupervisorEvent } from "@/hooks/use-supervisor-event";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Skeleton } from "@/components/custom-ui/skeleton";
 import EventSelector from "@/components/common/supervisor/event-selector";
 import { SeatMap } from "@/components/common/seat-map";
@@ -41,6 +48,8 @@ const convertReservationsToStatuses = (
 function BoxOfficePageContent() {
   const t = useT();
   const { selectedEventId, selectEvent } = useSupervisorEvent();
+  const isMobile = useIsMobile();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const [selectedSeats, setSelectedSeats] = useState<SeatDto[]>([]);
   const [highlightedSeatId, setHighlightedSeatId] = useState<string | null>(
@@ -144,6 +153,7 @@ function BoxOfficePageContent() {
 
   const handleSeatChipClick = (seatId: string) => {
     setHighlightedSeatId((prev) => (prev === seatId ? null : seatId));
+    if (isMobile) setIsDrawerOpen(false);
   };
 
   const handleSubmit = async () => {
@@ -176,7 +186,18 @@ function BoxOfficePageContent() {
 
   const handleCreateAnother = () => {
     setConfirmation(null);
+    if (isMobile) setIsDrawerOpen(false);
   };
+
+  const drawerTitle = useMemo(() => {
+    if (confirmation) {
+      return t("boxOffice.confirmation.title");
+    }
+    if (selectedSeats.length > 0) {
+      return `${t("boxOffice.title")} (${selectedSeats.length})`;
+    }
+    return t("boxOffice.title");
+  }, [confirmation, selectedSeats.length, t]);
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
@@ -223,7 +244,9 @@ function BoxOfficePageContent() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div
+          className={`grid gap-4 ${isMobile ? "grid-cols-1" : "lg:grid-cols-2"}`}
+        >
           <div
             ref={seatMapColumnRef}
             className="flex flex-col gap-2"
@@ -253,40 +276,103 @@ function BoxOfficePageContent() {
             )}
           </div>
 
-          <div className="space-y-3">
-            {confirmation ? (
-              <BoxOfficeConfirmation
-                result={confirmation.result}
-                guestEmail={confirmation.guestEmail}
-                notifiedUsername={confirmation.notifiedUsername}
-                onCreateAnother={handleCreateAnother}
-              />
-            ) : (
-              <BoxOfficeActionPanel
-                reserveMode={reserveMode}
-                onReserveModeChange={setReserveMode}
-                users={isLoadingUsers ? [] : users}
-                userId={userId}
-                onUserIdChange={setUserId}
-                deductAllowance={deductAllowance}
-                onDeductAllowanceChange={setDeductAllowance}
-                guestName={guestName}
-                onGuestNameChange={setGuestName}
-                guestEmail={guestEmail}
-                onGuestEmailChange={setGuestEmail}
-                checkedIn={checkedIn}
-                onCheckedInChange={setCheckedIn}
-                selectedSeats={selectedSeats}
-                highlightedSeatId={highlightedSeatId}
-                onSeatChipClick={handleSeatChipClick}
-                onSeatRemove={handleSeatToggle}
-                isSubmitting={isSubmitting}
-                onSubmit={handleSubmit}
-              />
-            )}
-          </div>
+          {/* Action Panel / Confirmation - Desktop */}
+          {!isMobile && (
+            <div className="space-y-3">
+              {confirmation ? (
+                <BoxOfficeConfirmation
+                  result={confirmation.result}
+                  guestEmail={confirmation.guestEmail}
+                  notifiedUsername={confirmation.notifiedUsername}
+                  onCreateAnother={handleCreateAnother}
+                />
+              ) : (
+                <BoxOfficeActionPanel
+                  reserveMode={reserveMode}
+                  onReserveModeChange={setReserveMode}
+                  users={isLoadingUsers ? [] : users}
+                  userId={userId}
+                  onUserIdChange={setUserId}
+                  deductAllowance={deductAllowance}
+                  onDeductAllowanceChange={setDeductAllowance}
+                  guestName={guestName}
+                  onGuestNameChange={setGuestName}
+                  guestEmail={guestEmail}
+                  onGuestEmailChange={setGuestEmail}
+                  checkedIn={checkedIn}
+                  onCheckedInChange={setCheckedIn}
+                  selectedSeats={selectedSeats}
+                  highlightedSeatId={highlightedSeatId}
+                  onSeatChipClick={handleSeatChipClick}
+                  onSeatRemove={handleSeatToggle}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleSubmit}
+                />
+              )}
+            </div>
+          )}
         </div>
       )}
+
+      {/* Box Office Drawer - Mobile */}
+      {isMobile && (
+        <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>{drawerTitle}</DrawerTitle>
+            </DrawerHeader>
+            <div className="px-4 pb-4 max-h-[80vh] overflow-y-auto">
+              {confirmation ? (
+                <BoxOfficeConfirmation
+                  className="border-0 p-0 sm:p-0"
+                  result={confirmation.result}
+                  guestEmail={confirmation.guestEmail}
+                  notifiedUsername={confirmation.notifiedUsername}
+                  onCreateAnother={handleCreateAnother}
+                />
+              ) : (
+                <BoxOfficeActionPanel
+                  className="border-0 p-0 sm:p-0"
+                  reserveMode={reserveMode}
+                  onReserveModeChange={setReserveMode}
+                  users={isLoadingUsers ? [] : users}
+                  userId={userId}
+                  onUserIdChange={setUserId}
+                  deductAllowance={deductAllowance}
+                  onDeductAllowanceChange={setDeductAllowance}
+                  guestName={guestName}
+                  onGuestNameChange={setGuestName}
+                  guestEmail={guestEmail}
+                  onGuestEmailChange={setGuestEmail}
+                  checkedIn={checkedIn}
+                  onCheckedInChange={setCheckedIn}
+                  selectedSeats={selectedSeats}
+                  highlightedSeatId={highlightedSeatId}
+                  onSeatChipClick={handleSeatChipClick}
+                  onSeatRemove={handleSeatToggle}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleSubmit}
+                />
+              )}
+            </div>
+          </DrawerContent>
+        </Drawer>
+      )}
+
+      {/* Drawer Trigger - Mobile */}
+      {isMobile &&
+        selectedEventId &&
+        isDeadlinePassed &&
+        !isInitialLoading &&
+        !isDrawerOpen && (
+          <div
+            className="fixed bottom-0 left-0 right-0 bg-background border-t p-2 flex items-center justify-center gap-2 cursor-pointer shadow-lg z-10"
+            onClick={() => setIsDrawerOpen(true)}
+          >
+            <ChevronUp className="h-6 w-6 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">{drawerTitle}</span>
+          </div>
+        )}
     </div>
   );
 }
