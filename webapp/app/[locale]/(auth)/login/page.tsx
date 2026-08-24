@@ -70,12 +70,12 @@ export default function LoginPage() {
     }
 
     const retryAfterDate = new Date(retryAfter).getTime();
-    const now = new Date().getTime();
+    const now = Date.now();
 
     if (retryAfterDate > now) {
       setIsRetryAfterActive(true);
       const calculateRemaining = () => {
-        const current = new Date().getTime();
+        const current = Date.now();
         const remaining = Math.max(
           0,
           Math.ceil((retryAfterDate - current) / 1000),
@@ -124,6 +124,9 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!username.trim() || !password) {
+      return;
+    }
     if (isEmailUsername) {
       setLoginError(t("login.error.emailNotAllowed"));
       return;
@@ -331,7 +334,7 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent className="p-0 md:p-6 md:pt-0">
           <Altcha onVerified={setAltchaPayload} resetKey={altchaResetKey} />
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label htmlFor="username">{t("login.username")}</Label>
