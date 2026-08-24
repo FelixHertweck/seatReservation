@@ -89,8 +89,18 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
 
+      # Passkey / WebAuthn configuration -- must match the domain the app is actually served from
+      - WEBAUTHN_RP_ID=${WEBAUTHN_RP_ID}
+      - WEBAUTHN_ORIGINS=${WEBAUTHN_ORIGINS}
+
+      # Web Push (VAPID) configuration -- without these, subscriptions are invalidated on every restart
+      - SEATRESERVATION_VAPID_PUBLIC_KEY=${SEATRESERVATION_VAPID_PUBLIC_KEY}
+      - SEATRESERVATION_VAPID_PRIVATE_KEY=${SEATRESERVATION_VAPID_PRIVATE_KEY}
+      - SEATRESERVATION_VAPID_SUBJECT=${SEATRESERVATION_VAPID_SUBJECT}
+
       # Security / CAPTCHA configuration
       - ALTCHA_SECRET=${ALTCHA_SECRET}
+      - SESSION_ENCRYPTION_KEY=${SESSION_ENCRYPTION_KEY}
 
     networks:
       - app-network

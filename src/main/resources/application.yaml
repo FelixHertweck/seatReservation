@@ -47,6 +47,23 @@ mp:
             location: keys/publicKey.pem
             algorithm: ES256
 
+# Env-driven WebAuthn/passkey values; the static settings (name, endpoints, priority, ...) stay
+# in application.properties.
+quarkus:
+  webauthn:
+    # RP id is the registrable domain (no scheme/port); default origins cover the packaged app
+    # and the Next.js dev server.
+    relying-party:
+      id: ${WEBAUTHN_RP_ID:localhost}
+    origins: ${WEBAUTHN_ORIGINS:http://localhost:8080,http://localhost:3000}
+  http:
+    auth:
+      session:
+        # Encrypts persistent WebAuthn challenge/session state; without it Quarkus generates a
+        # random key on every startup, invalidating in-progress passkey ceremonies across
+        # restarts/replicas.
+        encryption-key: ${SESSION_ENCRYPTION_KEY}
+
 # Optional external directory used to override bundled templates at runtime without rebuilding
 # the image. Mirrors the bundled layout via two subfolders: email templates under
 # <dir>/email/ (e.g. reservation-confirmation.html) and PDF export templates under
@@ -133,4 +150,9 @@ altcha:
 "%test":
   altcha:
     hmac-key: test-only-altcha-secret-not-for-production
+  quarkus:
+    http:
+      auth:
+        session:
+          encryption-key: test-only-session-key-not-for-production
 

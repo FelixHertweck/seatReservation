@@ -159,6 +159,15 @@ Also generate the ALTCHA CAPTCHA HMAC secret and set it as `ALTCHA_SECRET` in yo
 openssl rand -base64 32
 ```
 
+Likewise, generate a session encryption key and set it as `SESSION_ENCRYPTION_KEY` (encrypts
+persistent WebAuthn/passkey challenge state; without it a new key would be generated on every
+startup, breaking in-progress passkey ceremonies across restarts — the backend refuses to start
+without it):
+
+```shell script
+openssl rand -base64 32
+```
+
 ### Automatic Admin User Creation
 
 Upon initial startup, the application automatically checks for the existence of an 'admin' user. If no user with the username 'admin' is found, a new admin account will be created during the application's startup phase. The credentials for this automatically created user are:
