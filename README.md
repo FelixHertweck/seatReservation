@@ -168,6 +168,15 @@ without it):
 openssl rand -base64 32
 ```
 
+Finally, generate a VAPID key pair for Web Push notifications and set them as
+`SEATRESERVATION_VAPID_PUBLIC_KEY` / `SEATRESERVATION_VAPID_PRIVATE_KEY` (without them, a new key
+pair is generated on every startup, invalidating every existing browser push subscription on
+restart):
+
+```shell script
+npx web-push generate-vapid-keys
+```
+
 ### Automatic Admin User Creation
 
 Upon initial startup, the application automatically checks for the existence of an 'admin' user. If no user with the username 'admin' is found, a new admin account will be created during the application's startup phase. The credentials for this automatically created user are:
