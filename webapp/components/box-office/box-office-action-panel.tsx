@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 export type BoxOfficeReserveMode = "user" | "guest";
 
 interface BoxOfficeActionPanelProps {
+  className?: string;
   reserveMode: BoxOfficeReserveMode;
   onReserveModeChange: (mode: BoxOfficeReserveMode) => void;
   users: LimitedUserInfoDto[];
@@ -35,6 +36,7 @@ interface BoxOfficeActionPanelProps {
 }
 
 export function BoxOfficeActionPanel({
+  className,
   reserveMode,
   onReserveModeChange,
   users,
@@ -62,7 +64,12 @@ export function BoxOfficeActionPanel({
     (reserveMode === "user" ? !!userId : !!guestName.trim());
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border p-4 sm:p-6">
+    <div
+      className={cn(
+        "flex flex-col gap-4 rounded-lg border p-4 sm:p-6",
+        className,
+      )}
+    >
       <div>
         <h3 className="font-medium">{t("boxOffice.newReservation")}</h3>
         <p className="text-sm text-muted-foreground">
