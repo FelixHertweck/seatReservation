@@ -96,9 +96,10 @@ public class WalletResource {
         }
 
         User currentUser = userSecurityContext.getCurrentUser();
-        LOG.debugf(
-                "Received GET request for wallet pass (%s) for reservation %s by user %s",
-                providerStr, id, currentUser.id);
+        LOG.infof(
+                "Received GET request for wallet pass (%s) for reservation ID: %s by user: %s (ID:"
+                        + " %s)",
+                providerStr, id, currentUser.getUsername(), currentUser.id);
 
         WalletPassResponseDTO responseDTO =
                 walletPassService.generatePass(id, currentUser, provider);

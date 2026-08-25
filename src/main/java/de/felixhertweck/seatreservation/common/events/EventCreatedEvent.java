@@ -24,6 +24,13 @@ import java.util.UUID;
 
 /**
  * Event fired when a new Event is created by a manager. Observers can react (e.g. scheduling the
- * event's reminder email).
+ * event's reminder email, creating the Google Wallet pass class).
  */
-public record EventCreatedEvent(UUID eventId, Instant reminderSendDate) {}
+public record EventCreatedEvent(
+        UUID eventId,
+        String eventName,
+        String locationName,
+        String locationAddress,
+        Instant startTime,
+        Instant endTime,
+        Instant reminderSendDate) {}

@@ -148,7 +148,15 @@ public class EventService {
                 supervisors.size(),
                 event.getManagers().size());
 
-        eventCreatedBus.fire(new EventCreatedEvent(event.getId(), event.getReminderSendDate()));
+        eventCreatedBus.fireAsync(
+                new EventCreatedEvent(
+                        event.getId(),
+                        event.getName(),
+                        location != null ? location.getName() : null,
+                        location != null ? location.getAddress() : null,
+                        event.getStartTime(),
+                        event.getEndTime(),
+                        event.getReminderSendDate()));
 
         return new EventResponseDTO(event);
     }
@@ -541,11 +549,17 @@ public class EventService {
         }
 
         for (Event event : eventsToDelete) {
+            List<UUID> reservationIds = event.getReservations().stream().map(r -> r.id).toList();
             eventRepository.delete(event);
-            LOG.debugf(
-                    "Event '%s' (ID: %s) deleted successfully by user ID: %s (ID: %s)",
-                    event.getName(), event.getId(), currentUser.id, currentUser.getId());
-            eventDeletedBus.fire(new EventDeletedEvent(event.getId()));
+            LOG.infof(
+                    "Event '%s' (ID: %s) deleted successfully by user ID: %s (ID: %s). Firing"
+                            + " EventDeletedEvent with %d reservation(s)...",
+                    event.getName(),
+                    event.getId(),
+                    currentUser.id,
+                    currentUser.getId(),
+                    reservationIds.size());
+            eventDeletedBus.fireAsync(new EventDeletedEvent(event.getId(), reservationIds));
         }
 
         LOG.infof("Events '%s' deleted successfully", ids);
@@ -676,7 +690,7 @@ public class EventService {
         List<Reservation> activeReservations =
                 reservationRepository.findActiveByEventWithUserAndSeat(event);
 
-        eventCancelledBus.fire(
+        eventCancelledBus.fireAsync(
                 new EventCancelledEvent(
                         event.getId(),
                         event.getName(),

@@ -19,10 +19,16 @@
  */
 package de.felixhertweck.seatreservation.common.events;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
  * Event fired when an Event is deleted by a manager. Observers can react (e.g. cancelling any
- * reminder scheduled for the event).
+ * reminder scheduled for the event, or expiring wallet passes for its reservations).
+ *
+ * <p>{@code reservationIds} lists all reservations the event had (of any status), captured before
+ * deletion — deletion is only allowed once no reservation is active, but reservations that were
+ * never individually cancelled (e.g. already checked-in/completed ones) still need this list so
+ * observers can revoke anything they issued for them.
  */
-public record EventDeletedEvent(UUID eventId) {}
+public record EventDeletedEvent(UUID eventId, List<UUID> reservationIds) {}
