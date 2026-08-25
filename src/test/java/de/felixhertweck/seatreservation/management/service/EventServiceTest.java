@@ -1011,7 +1011,7 @@ public class EventServiceTest {
         verify(eventRepository, times(1)).persist(any(Event.class));
 
         ArgumentCaptor<EventCreatedEvent> captor = ArgumentCaptor.forClass(EventCreatedEvent.class);
-        verify(eventCreatedBus, times(1)).fire(captor.capture());
+        verify(eventCreatedBus, times(1)).fireAsync(captor.capture());
         assertEquals(id(10), captor.getValue().eventId());
         assertEquals(null, captor.getValue().reminderSendDate());
     }
@@ -1050,7 +1050,7 @@ public class EventServiceTest {
         verify(eventRepository, times(1)).persist(any(Event.class));
 
         ArgumentCaptor<EventCreatedEvent> captor = ArgumentCaptor.forClass(EventCreatedEvent.class);
-        verify(eventCreatedBus, times(1)).fire(captor.capture());
+        verify(eventCreatedBus, times(1)).fireAsync(captor.capture());
         assertEquals(id(10), captor.getValue().eventId());
         assertEquals(reminderDate, captor.getValue().reminderSendDate());
     }
@@ -1436,7 +1436,7 @@ public class EventServiceTest {
                 existingEvent.getStatus());
         assertEquals("Weather conditions", existingEvent.getCancellationReason());
 
-        verify(eventCancelledBus, times(1)).fire(any());
+        verify(eventCancelledBus, times(1)).fireAsync(any());
     }
 
     @Test
@@ -1449,7 +1449,7 @@ public class EventServiceTest {
         assertThrows(
                 ValidationException.class,
                 () -> eventService.cancelEvent(existingEvent.id, "Another reason", managerUser));
-        verify(eventCancelledBus, never()).fire(any());
+        verify(eventCancelledBus, never()).fireAsync(any());
     }
 
     @Test
@@ -1460,7 +1460,7 @@ public class EventServiceTest {
         assertThrows(
                 ValidationException.class,
                 () -> eventService.cancelEvent(existingEvent.id, "   ", managerUser));
-        verify(eventCancelledBus, never()).fire(any());
+        verify(eventCancelledBus, never()).fireAsync(any());
     }
 
     @Test

@@ -97,9 +97,9 @@ public class WalletPassService {
             throw new IllegalStateException("Wallet provider " + provider + " is disabled");
         }
 
-        LOG.debugf(
-                "Generating wallet pass for provider %s, reservation ID: %s, user: %s",
-                provider, reservationId, currentUser.id);
+        LOG.infof(
+                "Generating wallet pass for provider %s, reservation ID: %s, user: %s (ID: %s)",
+                provider, reservationId, currentUser.getUsername(), currentUser.id);
 
         Reservation reservation =
                 reservationRepository

@@ -33,7 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
-import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.event.ObservesAsync;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -87,7 +86,7 @@ public class NotificationService {
      *
      * @param event the event-created notification
      */
-    public void onEventCreated(@Observes EventCreatedEvent event) {
+    public void onEventCreated(@ObservesAsync EventCreatedEvent event) {
         if (event.reminderSendDate() != null) {
             scheduleEventReminder(event.eventId(), event.reminderSendDate());
         }
@@ -116,7 +115,7 @@ public class NotificationService {
      *
      * @param event the event-deleted notification
      */
-    public void onEventDeleted(@Observes EventDeletedEvent event) {
+    public void onEventDeleted(@ObservesAsync EventDeletedEvent event) {
         cancelEventReminder(event.eventId());
     }
 
@@ -126,7 +125,7 @@ public class NotificationService {
      *
      * @param event the event-cancelled notification
      */
-    public void onEventCancelled(@Observes EventCancelledEvent event) {
+    public void onEventCancelled(@ObservesAsync EventCancelledEvent event) {
         if (event == null) {
             return;
         }
