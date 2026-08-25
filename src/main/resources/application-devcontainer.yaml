@@ -1,6 +1,5 @@
 quarkus:
   datasource:
-    db-kind: postgresql
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     jdbc:
