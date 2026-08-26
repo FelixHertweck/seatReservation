@@ -58,7 +58,26 @@ class SvgRendererTest {
         assertTrue(result.contains("<svg"));
         assertTrue(result.contains("</svg>"));
         assertTrue(result.contains("A1"));
-        assertTrue(result.contains("#22C55E")); // Default (available) color
+        assertTrue(result.contains("#9CA3AF")); // Default (unselected/available) color is gray
+    }
+
+    @Test
+    void renderSeats_MultipleSeats_RendersSortedNaturally() {
+        Seat seat1 = new Seat("A10", "1", null);
+        seat1.setCoordinate(new Coordinate(1, 1));
+        Seat seat2 = new Seat("A2", "1", null);
+        seat2.setCoordinate(new Coordinate(2, 1));
+        Seat seat3 = new Seat("A1", "1", null);
+        seat3.setCoordinate(new Coordinate(3, 1));
+
+        String result = SvgRenderer.renderSeats(List.of(seat1, seat2, seat3), Set.of(), Set.of());
+
+        int idxA1 = result.indexOf(">A1<");
+        int idxA2 = result.indexOf(">A2<");
+        int idxA10 = result.indexOf(">A10<");
+
+        assertTrue(idxA1 < idxA2);
+        assertTrue(idxA2 < idxA10);
     }
 
     @Test

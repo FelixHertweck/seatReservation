@@ -25,7 +25,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,6 +60,7 @@ import de.felixhertweck.seatreservation.reservation.service.CheckInTokenService;
 import de.felixhertweck.seatreservation.supervisor.service.BoxOfficeService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.ReservationExporter;
+import de.felixhertweck.seatreservation.utils.SeatComparators;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
@@ -658,8 +658,8 @@ public class ReservationService {
     private List<Reservation> findByEventSorted(Event event) {
         List<Reservation> reservations = findByEvent(event);
 
-        // Sort by seat number
-        reservations.sort(Comparator.comparing(r -> r.getSeat().getSeatNumber()));
+        // Sort by row and seat number naturally
+        reservations.sort(SeatComparators.RESERVATION_COMPARATOR);
 
         return reservations;
     }
