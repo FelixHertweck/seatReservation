@@ -52,6 +52,7 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.utils.QRCodeImage;
+import de.felixhertweck.seatreservation.utils.SeatComparators;
 import de.felixhertweck.seatreservation.wallet.dto.WalletPassResponseDTO;
 import de.felixhertweck.seatreservation.wallet.dto.WalletProvider;
 import de.felixhertweck.seatreservation.wallet.service.WalletPassService;
@@ -201,6 +202,7 @@ public class ReservationEmailContent {
                                         seat.getSeatNumber(),
                                         seat.getSeatRow(),
                                         seat.getArea() != null ? seat.getArea().getName() : null))
+                .sorted(SeatComparators.SEAT_VIEW_COMPARATOR)
                 .toList();
     }
 
@@ -228,9 +230,11 @@ public class ReservationEmailContent {
         }
 
         StringBuilder result = new StringBuilder();
-        for (var entry : seatsByEntrance.entrySet()) {
-            String entranceName = entry.getKey();
-            List<String> seatNumbers = entry.getValue();
+        List<String> sortedEntranceNames = new ArrayList<>(seatsByEntrance.keySet());
+        sortedEntranceNames.sort(SeatComparators.ALPHANUMERIC_COMPARATOR);
+        for (String entranceName : sortedEntranceNames) {
+            List<String> seatNumbers = new ArrayList<>(seatsByEntrance.get(entranceName));
+            seatNumbers.sort(SeatComparators.ALPHANUMERIC_COMPARATOR);
             String seatList = String.join(", ", seatNumbers);
             String line =
                     entranceInfoTemplate
@@ -418,6 +422,7 @@ public class ReservationEmailContent {
                                                 seat.getArea() != null
                                                         ? seat.getArea().getName()
                                                         : null))
+                        .sorted(SeatComparators.SEAT_VIEW_COMPARATOR)
                         .toList();
 
         String entranceInfo = generateEntranceInfo(reservations, seatById);

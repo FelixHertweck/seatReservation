@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
+import de.felixhertweck.seatreservation.utils.SeatComparators;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 /**
@@ -65,7 +66,10 @@ public record BoxOfficeReservationResponseDTO(
         this(
                 reservations.isEmpty() ? null : reservations.getFirst().getEvent().getId(),
                 reservationUserId,
-                reservations.stream().map(BoxOfficeSeatDTO::new).toList(),
+                reservations.stream()
+                        .sorted(SeatComparators.RESERVATION_COMPARATOR)
+                        .map(BoxOfficeSeatDTO::new)
+                        .toList(),
                 confirmationHtml);
     }
 }

@@ -367,7 +367,7 @@ export default function EmailSeatmapPage() {
               <span>{t("emailSeatmap.legend.otherSeats")}</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green-500 rounded" />
+              <div className="w-4 h-4 bg-[#9CA3AF] rounded" />
               <span>{t("emailSeatmap.legend.availableSeats")}</span>
             </div>
           </div>
