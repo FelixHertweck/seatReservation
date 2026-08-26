@@ -129,6 +129,59 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
     }
 
     /**
+     * Retrieves seat counts by reservation status.
+     *
+     * @param manager user
+     * @param isAdmin isAdmin
+     * @return map of status to count
+     */
+    public Map<ReservationStatus, Long> getReservationCounts(User manager, boolean isAdmin) {
+        String hql;
+        if (isAdmin) {
+            hql = "SELECT r.status, COUNT(r) FROM Reservation r GROUP BY r.status";
+        } else {
+            hql =
+                    "SELECT r.status, COUNT(r) FROM Reservation r JOIN r.event e JOIN e.managers m"
+                            + " WHERE m = ?1 GROUP BY r.status";
+        }
+        var query = getEntityManager().createQuery(hql, Object[].class);
+        if (!isAdmin) {
+            query.setParameter(1, manager);
+        }
+        List<Object[]> results = query.getResultList();
+        return results.stream()
+                .collect(Collectors.toMap(row -> (ReservationStatus) row[0], row -> (Long) row[1]));
+    }
+
+    /**
+     * Retrieves seat counts by event and user.
+     *
+     * @param manager user
+     * @param isAdmin isAdmin
+     * @return map of string to count
+     */
+    public Map<String, Long> getReservedSeatCountsByEventAndUser(User manager, boolean isAdmin) {
+        String hql;
+        if (isAdmin) {
+            hql =
+                    "SELECT r.event.id, r.user.id, COUNT(r) FROM Reservation r WHERE r.status ="
+                            + " 'RESERVED' AND r.event IS NOT NULL AND r.user IS NOT NULL GROUP BY"
+                            + " r.event.id, r.user.id";
+        } else {
+            hql =
+                    "SELECT r.event.id, r.user.id, COUNT(r) FROM Reservation r JOIN r.event e JOIN"
+                        + " e.managers m WHERE m = ?1 AND r.status = 'RESERVED' AND r.user IS NOT"
+                        + " NULL GROUP BY r.event.id, r.user.id";
+        }
+        var query = getEntityManager().createQuery(hql, Object[].class);
+        if (!isAdmin) {
+            query.setParameter(1, manager);
+        }
+        return query.getResultList().stream()
+                .collect(Collectors.toMap(row -> row[0] + ":" + row[1], row -> (Long) row[2]));
+    }
+
+    /**
      * Finds all reservations for a given user that are not blocked.
      *
      * @param user the user to search for

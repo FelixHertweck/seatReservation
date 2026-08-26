@@ -36,7 +36,6 @@ import de.felixhertweck.seatreservation.management.dto.ManagementOverviewStatsDT
 import de.felixhertweck.seatreservation.management.dto.UpcomingEventDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
-import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
@@ -77,11 +76,6 @@ public class OverviewService {
                         ? eventRepository.listAll()
                         : eventRepository.findByManager(currentUser);
 
-        List<Reservation> allReservations =
-                manager.isAdmin()
-                        ? reservationRepository.listAll()
-                        : reservationRepository.findByManager(currentUser);
-
         List<EventUserAllowance> allAllowances =
                 manager.isAdmin()
                         ? eventUserAllowanceRepository.listAll()
@@ -108,18 +102,13 @@ public class OverviewService {
                                                 && !now.isAfter(e.getBookingDeadline()))
                         .count();
 
-        long reservationsReserved =
-                allReservations.stream()
-                        .filter(r -> r.getStatus() == ReservationStatus.RESERVED)
-                        .count();
-        long reservationsBlocked =
-                allReservations.stream()
-                        .filter(r -> r.getStatus() == ReservationStatus.BLOCKED)
-                        .count();
-        long reservationsPending =
-                allReservations.stream()
-                        .filter(r -> r.getStatus() == ReservationStatus.PENDING)
-                        .count();
+        Map<ReservationStatus, Long> reservationCounts =
+                reservationRepository.getReservationCounts(currentUser, manager.isAdmin());
+
+        long reservationsReserved = reservationCounts.getOrDefault(ReservationStatus.RESERVED, 0L);
+        long reservationsBlocked = reservationCounts.getOrDefault(ReservationStatus.BLOCKED, 0L);
+        long reservationsPending = reservationCounts.getOrDefault(ReservationStatus.PENDING, 0L);
+
         long reservationsCount = reservationsReserved + reservationsBlocked + reservationsPending;
 
         Set<UUID> locationIds =
@@ -137,20 +126,14 @@ public class OverviewService {
                         ? Map.of()
                         : eventLocationRepository.getSeatCountsByLocationIds(locationIds);
 
-        Map<UUID, Long> reservedCountByEventId =
-                allReservations.stream()
-                        .filter(
-                                r ->
-                                        r.getStatus() == ReservationStatus.RESERVED
-                                                && r.getEvent() != null)
-                        .collect(
-                                Collectors.groupingBy(
-                                        r -> r.getEvent().getId(), Collectors.counting()));
+        Map<UUID, Integer> reservedCountByEventId =
+                reservationRepository.getReservedSeatCountsByEventIds(
+                        allEvents.stream().map(Event::getId).toList());
 
         long occupancyReserved = 0;
         long occupancyCapacity = 0;
         for (Event e : futureEvents) {
-            occupancyReserved += reservedCountByEventId.getOrDefault(e.getId(), 0L);
+            occupancyReserved += reservedCountByEventId.getOrDefault(e.getId(), 0);
             if (e.getEventLocation() != null) {
                 occupancyCapacity += seatCounts.getOrDefault(e.getEventLocation().getId(), 0);
             }
@@ -161,16 +144,8 @@ public class OverviewService {
                         : 0;
 
         Map<String, Long> reservedCountByPair =
-                allReservations.stream()
-                        .filter(
-                                r ->
-                                        r.getStatus() == ReservationStatus.RESERVED
-                                                && r.getEvent() != null
-                                                && r.getUser() != null)
-                        .collect(
-                                Collectors.groupingBy(
-                                        r -> r.getEvent().getId() + ":" + r.getUser().getId(),
-                                        Collectors.counting()));
+                reservationRepository.getReservedSeatCountsByEventAndUser(
+                        currentUser, manager.isAdmin());
 
         long contingentUsed = 0;
         long contingentGranted = 0;
@@ -278,14 +253,14 @@ public class OverviewService {
     }
 
     private UpcomingEventDTO toUpcomingEventDto(
-            Event event, Map<UUID, Integer> seatCounts, Map<UUID, Long> reservedCountByEventId) {
+            Event event, Map<UUID, Integer> seatCounts, Map<UUID, Integer> reservedCountByEventId) {
         String locationName =
                 event.getEventLocation() != null ? event.getEventLocation().getName() : null;
         int capacity =
                 event.getEventLocation() != null
                         ? seatCounts.getOrDefault(event.getEventLocation().getId(), 0)
                         : 0;
-        int reservedCount = Math.toIntExact(reservedCountByEventId.getOrDefault(event.getId(), 0L));
+        int reservedCount = reservedCountByEventId.getOrDefault(event.getId(), 0);
         return new UpcomingEventDTO(
                 event.getId(),
                 event.getName(),

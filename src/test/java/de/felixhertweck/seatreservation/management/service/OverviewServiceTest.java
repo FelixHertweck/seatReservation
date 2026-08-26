@@ -200,8 +200,13 @@ public class OverviewServiceTest {
     void getOverview_AsManager_Success() {
         when(eventRepository.findByManager(managerUser))
                 .thenReturn(List.of(upcomingEvent, pastEvent));
-        when(reservationRepository.findByManager(managerUser))
-                .thenReturn(List.of(reservation, blockedReservation));
+        when(reservationRepository.getReservationCounts(managerUser, false))
+                .thenReturn(Map.of(ReservationStatus.RESERVED, 1L, ReservationStatus.BLOCKED, 1L));
+        when(reservationRepository.getReservedSeatCountsByEventIds(
+                        org.mockito.ArgumentMatchers.any()))
+                .thenReturn(Map.of(upcomingEvent.id, 1, pastEvent.id, 0));
+        when(reservationRepository.getReservedSeatCountsByEventAndUser(managerUser, false))
+                .thenReturn(Map.of(upcomingEvent.id + ":" + regularUser.id, 1L));
         when(eventUserAllowanceRepository.findByEventManager(managerUser))
                 .thenReturn(List.of(allowance));
         when(eventLocationRepository.getSeatCountsByLocationIds(Set.of(location.id)))
@@ -219,6 +224,7 @@ public class OverviewServiceTest {
         assertEquals(0, overview.stats().reservationsPending());
         assertEquals(10, overview.stats().occupancyPercent());
         assertEquals(1, overview.stats().occupancyReserved());
+        assertEquals(4, overview.contingentEvents().getFirst().total());
         assertEquals(10, overview.stats().occupancyCapacity());
         assertEquals(
                 25,
@@ -241,7 +247,13 @@ public class OverviewServiceTest {
     @Test
     void getOverview_AsAdmin_Success() {
         when(eventRepository.listAll()).thenReturn(List.of(upcomingEvent));
-        when(reservationRepository.listAll()).thenReturn(List.of(reservation));
+        when(reservationRepository.getReservationCounts(adminUser, true))
+                .thenReturn(Map.of(ReservationStatus.RESERVED, 1L));
+        when(reservationRepository.getReservedSeatCountsByEventIds(
+                        org.mockito.ArgumentMatchers.any()))
+                .thenReturn(Map.of(upcomingEvent.id, 1));
+        when(reservationRepository.getReservedSeatCountsByEventAndUser(adminUser, true))
+                .thenReturn(Map.of(upcomingEvent.getId() + ":" + regularUser.getId(), 1L));
         when(eventUserAllowanceRepository.listAll()).thenReturn(List.of(allowance));
         when(eventLocationRepository.getSeatCountsByLocationIds(Set.of(location.id)))
                 .thenReturn(Map.of(location.id, 10));
