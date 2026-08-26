@@ -1045,7 +1045,7 @@
     "legend": {
       "yourSeats": "Ihre reservierten Sitzplätze",
       "otherSeats": "Andere reservierte Sitzplätze",
-      "availableSeats": "Verfügbare Sitzplätze"
+      "availableSeats": "Nicht reservierte Sitzplätze"
     },
     "instructions": {
       "desktop": "Mausrad zum Zoomen verwenden • Ziehen zum Verschieben • Klicken Sie auf die Schaltflächen zum Zoomen",
@@ -1349,6 +1349,13 @@
           "title": "Anstehende Buchungsfristen",
           "empty": "Keine anstehenden Buchungsfristen.",
           "deadlineOn": "Frist {{date}}"
+        },
+        "contingentUsage": {
+          "title": "Kontingent-Nutzung pro Event",
+          "empty": "Keine vergebenen Kontingente für anstehende Events.",
+          "manageAllowances": "Kontingente verwalten",
+          "totalSummary": "Gesamt: {{used}} / {{total}} ({{percent}}%)",
+          "usage": "{{used}} / {{total}} genutzt ({{percent}}%)"
         }
       }
     },

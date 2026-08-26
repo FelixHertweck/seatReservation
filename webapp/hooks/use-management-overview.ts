@@ -7,6 +7,16 @@ import type { UpcomingEventDto } from "@/api";
 
 export type UpcomingEvent = UpcomingEventDto;
 
+export interface EventContingentUsage {
+  id: string;
+  name: string;
+  startTime?: Date | string | null;
+  locationName?: string | null;
+  used: number;
+  total: number;
+  percent: number;
+}
+
 export interface ManagementOverview {
   isLoading: boolean;
   stats: {
@@ -26,6 +36,7 @@ export interface ManagementOverview {
   };
   upcomingEvents: UpcomingEvent[];
   deadlineWarnings: UpcomingEvent[];
+  contingentEvents: EventContingentUsage[];
 }
 
 export function useManagementOverview(): ManagementOverview {
@@ -52,5 +63,8 @@ export function useManagementOverview(): ManagementOverview {
     },
     upcomingEvents: overview?.upcomingEvents ?? [],
     deadlineWarnings: overview?.deadlineWarnings ?? [],
+    contingentEvents: ((
+      overview as unknown as { contingentEvents?: EventContingentUsage[] }
+    )?.contingentEvents ?? []) as EventContingentUsage[],
   };
 }

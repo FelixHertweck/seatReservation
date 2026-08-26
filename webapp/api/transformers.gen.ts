@@ -135,10 +135,18 @@ const upcomingEventDtoSchemaResponseTransformer = (data: any) => {
     return data;
 };
 
+const eventContingentUsageDtoSchemaResponseTransformer = (data: any) => {
+    if (data.startTime) {
+        data.startTime = instantSchemaResponseTransformer(data.startTime);
+    }
+    return data;
+};
+
 const managementOverviewDtoSchemaResponseTransformer = (data: any) => {
     data.stats = managementOverviewStatsDtoSchemaResponseTransformer(data.stats);
     data.upcomingEvents = data.upcomingEvents.map((item: any) => upcomingEventDtoSchemaResponseTransformer(item));
     data.deadlineWarnings = data.deadlineWarnings.map((item: any) => upcomingEventDtoSchemaResponseTransformer(item));
+    data.contingentEvents = data.contingentEvents.map((item: any) => eventContingentUsageDtoSchemaResponseTransformer(item));
     return data;
 };
 

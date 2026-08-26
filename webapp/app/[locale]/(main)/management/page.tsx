@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Gauge,
-  CalendarDays,
-  DoorOpen,
-  BookmarkCheck,
-  Ticket,
-} from "lucide-react";
+import { Gauge, CalendarDays, DoorOpen, BookmarkCheck } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
 import { PageHeader } from "@/components/page-header";
@@ -14,13 +8,19 @@ import { StatCard } from "@/components/management/dashboard/stat-card";
 import { UpcomingEventsPanel } from "@/components/management/dashboard/upcoming-events-panel";
 import { QuickActions } from "@/components/management/dashboard/quick-actions";
 import { DeadlinesPanel } from "@/components/management/dashboard/deadlines-panel";
+import { ContingentUsagePanel } from "@/components/management/dashboard/contingent-usage-panel";
 import { useManagementOverview } from "@/hooks/use-management-overview";
 import { OverviewSkeleton } from "@/components/management/dashboard/overview-skeleton";
 
 export default function ManagementOverviewPage() {
   const t = useT();
-  const { isLoading, stats, upcomingEvents, deadlineWarnings } =
-    useManagementOverview();
+  const {
+    isLoading,
+    stats,
+    upcomingEvents,
+    deadlineWarnings,
+    contingentEvents,
+  } = useManagementOverview();
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
@@ -85,17 +85,11 @@ export default function ManagementOverviewPage() {
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <DeadlinesPanel events={deadlineWarnings} isLoading={isLoading} />
-        <StatCard
+        <ContingentUsagePanel
           className="lg:col-span-2"
-          label={t("management.overview.stats.contingentUsage")}
-          value={stats.contingentUsagePercent}
-          suffix="%"
-          subLabel={t("management.overview.stats.contingentUsageSub", {
-            used: stats.contingentUsed,
-            total: stats.contingentGranted,
-          })}
-          icon={Ticket}
-          href="/management/allowances"
+          events={contingentEvents}
+          stats={stats}
+          isLoading={isLoading}
         />
       </div>
     </div>

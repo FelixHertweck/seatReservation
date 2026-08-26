@@ -2,7 +2,7 @@
  * #%L
  * seat-reservation
  * %%
- * Copyright (C) 2025 Felix Hertweck
+ * Copyright (C) 2026 Felix Hertweck
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,19 @@
  */
 package de.felixhertweck.seatreservation.management.dto;
 
-import java.util.List;
+import java.time.Instant;
+import java.util.UUID;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @RegisterForReflection
-@Schema(description = "Aggregated data for the manager dashboard overview")
-public record ManagementOverviewDTO(
-        @Schema(description = "Overview statistics", required = true)
-                ManagementOverviewStatsDTO stats,
-        @Schema(description = "List of upcoming events", required = true)
-                List<UpcomingEventDTO> upcomingEvents,
-        @Schema(description = "List of events with upcoming booking deadlines", required = true)
-                List<UpcomingEventDTO> deadlineWarnings,
-        @Schema(description = "List of events with contingent usage", required = true)
-                List<EventContingentUsageDTO> contingentEvents) {}
+@Schema(description = "Summary of contingent/allowance usage for an event on the manager dashboard")
+public record EventContingentUsageDTO(
+        @Schema(description = "Unique identifier of the event", required = true) UUID id,
+        @Schema(description = "Name of the event", required = true) String name,
+        @Schema(description = "Start time of the event") Instant startTime,
+        @Schema(description = "Name of the event location") String locationName,
+        @Schema(description = "Number of contingent reservations used") int used,
+        @Schema(description = "Total number of contingent reservations granted") int total,
+        @Schema(description = "Contingent usage percentage (0-100)") int percent) {}

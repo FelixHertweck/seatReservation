@@ -408,6 +408,46 @@
           }
         }
       },
+      "EventContingentUsageDTO" : {
+        "description" : "Summary of contingent/allowance usage for an event on the manager dashboard",
+        "type" : "object",
+        "required" : [ "id", "name" ],
+        "properties" : {
+          "id" : {
+            "description" : "Unique identifier of the event",
+            "type" : "string",
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "Name of the event"
+          },
+          "startTime" : {
+            "description" : "Start time of the event",
+            "type" : "string",
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "locationName" : {
+            "type" : "string",
+            "description" : "Name of the event location"
+          },
+          "used" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Number of contingent reservations used"
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Total number of contingent reservations granted"
+          },
+          "percent" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Contingent usage percentage (0-100)"
+          }
+        }
+      },
       "EventLocationMakerDTO" : {
         "type" : "object",
         "properties" : {
@@ -839,7 +879,7 @@
       "ManagementOverviewDTO" : {
         "description" : "Aggregated data for the manager dashboard overview",
         "type" : "object",
-        "required" : [ "stats", "upcomingEvents", "deadlineWarnings" ],
+        "required" : [ "stats", "upcomingEvents", "deadlineWarnings", "contingentEvents" ],
         "properties" : {
           "stats" : {
             "description" : "Overview statistics",
@@ -859,6 +899,13 @@
               "$ref" : "#/components/schemas/UpcomingEventDTO"
             },
             "description" : "List of events with upcoming booking deadlines"
+          },
+          "contingentEvents" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EventContingentUsageDTO"
+            },
+            "description" : "List of events with contingent usage"
           }
         }
       },
