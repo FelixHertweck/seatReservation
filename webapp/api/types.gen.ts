@@ -142,6 +142,40 @@ export type EventCancelRequestDto = {
     reason: string;
 };
 
+/**
+ * Summary of contingent/allowance usage for an event on the manager dashboard
+ */
+export type EventContingentUsageDto = {
+    /**
+     * Unique identifier of the event
+     */
+    id: Uuid;
+    /**
+     * Name of the event
+     */
+    name: string;
+    /**
+     * Start time of the event
+     */
+    startTime?: Instant;
+    /**
+     * Name of the event location
+     */
+    locationName?: string;
+    /**
+     * Number of contingent reservations used
+     */
+    used?: number;
+    /**
+     * Total number of contingent reservations granted
+     */
+    total?: number;
+    /**
+     * Contingent usage percentage (0-100)
+     */
+    percent?: number;
+};
+
 export type EventLocationMakerDto = {
     id?: Uuid;
     label?: string;
@@ -306,6 +340,10 @@ export type ManagementOverviewDto = {
      * List of events with upcoming booking deadlines
      */
     deadlineWarnings: Array<UpcomingEventDto>;
+    /**
+     * List of events with contingent usage
+     */
+    contingentEvents: Array<EventContingentUsageDto>;
 };
 
 /**

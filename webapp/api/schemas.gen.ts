@@ -468,6 +468,50 @@ export const EventCancelRequestDTOSchema = {
     }
 } as const;
 
+export const EventContingentUsageDTOSchema = {
+    description: 'Summary of contingent/allowance usage for an event on the manager dashboard',
+    type: 'object',
+    required: [
+        'id',
+        'name'
+    ],
+    properties: {
+        id: {
+            description: 'Unique identifier of the event',
+            type: 'string',
+            $ref: '#/components/schemas/UUID'
+        },
+        name: {
+            type: 'string',
+            description: 'Name of the event'
+        },
+        startTime: {
+            description: 'Start time of the event',
+            type: 'string',
+            $ref: '#/components/schemas/Instant'
+        },
+        locationName: {
+            type: 'string',
+            description: 'Name of the event location'
+        },
+        used: {
+            type: 'integer',
+            format: 'int32',
+            description: 'Number of contingent reservations used'
+        },
+        total: {
+            type: 'integer',
+            format: 'int32',
+            description: 'Total number of contingent reservations granted'
+        },
+        percent: {
+            type: 'integer',
+            format: 'int32',
+            description: 'Contingent usage percentage (0-100)'
+        }
+    }
+} as const;
+
 export const EventLocationMakerDTOSchema = {
     type: 'object',
     properties: {
@@ -964,7 +1008,8 @@ export const ManagementOverviewDTOSchema = {
     required: [
         'stats',
         'upcomingEvents',
-        'deadlineWarnings'
+        'deadlineWarnings',
+        'contingentEvents'
     ],
     properties: {
         stats: {
@@ -985,6 +1030,13 @@ export const ManagementOverviewDTOSchema = {
                 $ref: '#/components/schemas/UpcomingEventDTO'
             },
             description: 'List of events with upcoming booking deadlines'
+        },
+        contingentEvents: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/EventContingentUsageDTO'
+            },
+            description: 'List of events with contingent usage'
         }
     }
 } as const;

@@ -230,6 +230,12 @@ public class OverviewServiceTest {
         assertEquals(1, overview.upcomingEvents().size());
         assertEquals("Future Event", overview.upcomingEvents().getFirst().name());
         assertEquals(1, overview.deadlineWarnings().size());
+
+        assertEquals(1, overview.contingentEvents().size());
+        assertEquals("Future Event", overview.contingentEvents().getFirst().name());
+        assertEquals(1, overview.contingentEvents().getFirst().used());
+        assertEquals(4, overview.contingentEvents().getFirst().total());
+        assertEquals(25, overview.contingentEvents().getFirst().percent());
     }
 
     @Test

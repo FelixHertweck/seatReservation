@@ -1209,7 +1209,7 @@
     "legend": {
       "yourSeats": "Your Reserved Seats",
       "otherSeats": "Other Reserved Seats",
-      "availableSeats": "Available Seats"
+      "availableSeats": "Unreserved Seats"
     },
     "instructions": {
       "desktop": "Use mouse wheel to zoom • Drag to pan • Click buttons to zoom",
@@ -1349,6 +1349,13 @@
           "title": "Upcoming booking deadlines",
           "empty": "No upcoming booking deadlines.",
           "deadlineOn": "Deadline {{date}}"
+        },
+        "contingentUsage": {
+          "title": "Contingent Usage per Event",
+          "empty": "No allowances granted for upcoming events.",
+          "manageAllowances": "Manage allowances",
+          "totalSummary": "Total: {{used}} / {{total}} ({{percent}}%)",
+          "usage": "{{used}} / {{total}} used ({{percent}}%)"
         }
       }
     },

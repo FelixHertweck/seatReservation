@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import de.felixhertweck.seatreservation.management.dto.EventContingentUsageDTO;
 import de.felixhertweck.seatreservation.management.dto.ManagementOverviewDTO;
 import de.felixhertweck.seatreservation.management.dto.ManagementOverviewStatsDTO;
 import de.felixhertweck.seatreservation.management.dto.UpcomingEventDTO;
@@ -222,7 +223,58 @@ public class OverviewService {
                         .map(e -> toUpcomingEventDto(e, seatCounts, reservedCountByEventId))
                         .toList();
 
-        return new ManagementOverviewDTO(stats, upcomingEvents, deadlineWarnings);
+        Map<UUID, List<EventUserAllowance>> allowancesByEventId =
+                allAllowances.stream()
+                        .filter(a -> a.getEvent() != null)
+                        .collect(Collectors.groupingBy(a -> a.getEvent().getId()));
+
+        List<EventContingentUsageDTO> contingentEvents =
+                allEvents.stream()
+                        .filter(e -> e.getStartTime() == null || !e.getStartTime().isBefore(now))
+                        .filter(e -> allowancesByEventId.containsKey(e.getId()))
+                        .sorted(
+                                Comparator.comparing(
+                                        Event::getStartTime,
+                                        Comparator.nullsLast(Comparator.naturalOrder())))
+                        .map(
+                                e -> {
+                                    List<EventUserAllowance> eventAllowances =
+                                            allowancesByEventId.getOrDefault(e.getId(), List.of());
+                                    long eventUsed = 0;
+                                    long eventGranted = 0;
+                                    for (EventUserAllowance a : eventAllowances) {
+                                        if (a.getUser() == null) continue;
+                                        long used =
+                                                reservedCountByPair.getOrDefault(
+                                                        e.getId() + ":" + a.getUser().getId(), 0L);
+                                        eventUsed += used;
+                                        eventGranted += a.getReservationsAllowedCount() + used;
+                                    }
+                                    int percent =
+                                            eventGranted > 0
+                                                    ? (int)
+                                                            Math.round(
+                                                                    ((double) eventUsed
+                                                                                    / eventGranted)
+                                                                            * 100.0)
+                                                    : 0;
+                                    String locationName =
+                                            e.getEventLocation() != null
+                                                    ? e.getEventLocation().getName()
+                                                    : null;
+                                    return new EventContingentUsageDTO(
+                                            e.getId(),
+                                            e.getName(),
+                                            e.getStartTime(),
+                                            locationName,
+                                            Math.toIntExact(eventUsed),
+                                            Math.toIntExact(eventGranted),
+                                            percent);
+                                })
+                        .filter(dto -> dto.total() > 0)
+                        .toList();
+
+        return new ManagementOverviewDTO(stats, upcomingEvents, deadlineWarnings, contingentEvents);
     }
 
     private UpcomingEventDTO toUpcomingEventDto(
