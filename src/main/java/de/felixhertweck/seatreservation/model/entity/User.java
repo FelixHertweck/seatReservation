@@ -35,6 +35,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 import de.felixhertweck.seatreservation.utils.EncryptedStringConverter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "users")
@@ -81,11 +83,13 @@ public class User extends AbstractEntity {
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_tags", joinColumns = @JoinColumn(name = "user_id"))
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @Column(name = "tags")
     private Set<String> tags = new HashSet<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @Column(name = "role")
     private Set<String> roles = new HashSet<>();
 

@@ -33,14 +33,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * EmailSeatMapToken entity represents a token that allows access to a seat map image for a specific
- * user and event. This token is included in email notifications and enables users to view their
- * seat reservations via a secure link.
- *
- * <p>Multiple tokens can be generated for the same user-event combination (e.g., for different
- * emails). Expired tokens are automatically cleaned up by a scheduled task.
- */
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 @Table(
         name = "email_seat_map_tokens",
@@ -53,10 +48,12 @@ public class EmailSeatMapToken extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Event event;
 
     @Column(unique = true, nullable = false, length = 64)
@@ -72,6 +69,7 @@ public class EmailSeatMapToken extends AbstractEntity {
     @CollectionTable(
             name = "email_seat_map_token_seats",
             joinColumns = @JoinColumn(name = "token_id"))
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @Column(name = "seat_number")
     private Set<String> newReservedSeatNumbers = new HashSet<>();
 

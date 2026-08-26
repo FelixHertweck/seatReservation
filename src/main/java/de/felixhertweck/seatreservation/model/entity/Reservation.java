@@ -40,9 +40,11 @@ import org.hibernate.annotations.OnDeleteAction;
 public class Reservation extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Event event;
 
     @ManyToOne(fetch = FetchType.LAZY)

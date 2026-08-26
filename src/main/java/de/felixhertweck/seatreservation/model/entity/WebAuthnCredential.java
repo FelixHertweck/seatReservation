@@ -28,6 +28,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 /**
  * A WebAuthn (passkey) credential registered by a user. Mirrors the fields the Quarkus WebAuthn
  * extension needs to persist ({@code WebAuthnCredentialRecord.RequiredPersistedData}), plus
@@ -43,6 +46,7 @@ public class WebAuthnCredential extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     // Stored as bytea (small COSE public key); not a @Lob so it can be read outside a transaction.

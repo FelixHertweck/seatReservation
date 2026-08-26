@@ -27,6 +27,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 /**
  * Entity to track 2FA challenge verification attempts for rate limiting purposes. Kept separate
  * from {@link LoginAttempt} (and keyed by user rather than username) so that requesting a fresh
@@ -38,6 +41,7 @@ public class TwoFactorAttempt extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @Column(name = "attempt_time", nullable = false)

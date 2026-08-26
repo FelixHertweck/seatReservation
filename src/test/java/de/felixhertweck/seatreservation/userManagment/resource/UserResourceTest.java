@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.userManagment.resource;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static io.restassured.RestAssured.given;
@@ -216,5 +217,60 @@ public class UserResourceTest {
                 .post("/api/users/admin/import")
                 .then()
                 .statusCode(409); // Expecting Conflict due to DuplicateUserException
+    }
+
+    @jakarta.inject.Inject
+    de.felixhertweck.seatreservation.model.repository.UserRepository userRepository;
+
+    @jakarta.inject.Inject
+    de.felixhertweck.seatreservation.model.repository.RefreshTokenRepository refreshTokenRepository;
+
+    @jakarta.inject.Inject
+    de.felixhertweck.seatreservation.userManagment.service.UserService userService;
+
+    @Test
+    public void testDeleteUser_WithAssociatedEntities_Success() {
+        de.felixhertweck.seatreservation.model.entity.User user =
+                new de.felixhertweck.seatreservation.model.entity.User(
+                        "cascadeuser",
+                        "cascade@example.com",
+                        true,
+                        true,
+                        "hash",
+                        "salt",
+                        "First",
+                        "Last",
+                        Set.of("USER"),
+                        Set.of());
+        io.quarkus.narayana.jta.QuarkusTransaction.requiringNew()
+                .run(
+                        () -> {
+                            userRepository.persist(user);
+                            de.felixhertweck.seatreservation.model.entity.RefreshToken
+                                    refreshToken =
+                                            new de.felixhertweck.seatreservation.model.entity
+                                                    .RefreshToken(
+                                                    "tokenhash123",
+                                                    user,
+                                                    java.time.Instant.now(),
+                                                    java.time.Instant.now()
+                                                            .plus(java.time.Duration.ofDays(30)));
+                            refreshTokenRepository.persist(refreshToken);
+                        });
+
+        de.felixhertweck.seatreservation.utils.AuthenticatedUser adminCaller =
+                new de.felixhertweck.seatreservation.utils.AuthenticatedUser(
+                        java.util.UUID.randomUUID(), Set.of("ADMIN"));
+
+        userService.deleteUser(List.of(user.id), adminCaller);
+
+        io.quarkus.narayana.jta.QuarkusTransaction.requiringNew()
+                .run(
+                        () -> {
+                            org.junit.jupiter.api.Assertions.assertNull(
+                                    userRepository.findById(user.id));
+                            org.junit.jupiter.api.Assertions.assertEquals(
+                                    0, refreshTokenRepository.count("user.id", user.id));
+                        });
     }
 }

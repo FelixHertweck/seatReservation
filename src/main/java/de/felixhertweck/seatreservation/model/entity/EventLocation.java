@@ -37,6 +37,7 @@ public class EventLocation extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id")
+    @org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.SET_NULL)
     private User createdBy;
 
     // Direct managers, independent of any event. Access via a shared event is computed
@@ -46,6 +47,7 @@ public class EventLocation extends AbstractEntity {
             name = "location_managers",
             joinColumns = @JoinColumn(name = "event_location_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
     private Set<User> managers = new HashSet<>();
 
     // Lazy bags; Hibernate can't join-fetch more than one per query (MultipleBagFetchException),

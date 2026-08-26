@@ -27,11 +27,15 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 /** PasswordResetToken entity for password recovery. */
 @Entity
 @Table(name = "password_reset_tokens")
 public class PasswordResetToken extends AbstractEntity {
     @OneToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @Column(unique = true, nullable = false)

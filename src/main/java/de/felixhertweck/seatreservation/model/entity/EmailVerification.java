@@ -27,6 +27,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 /**
  * EmailVerification entity with automatic expiration.
  *
@@ -39,6 +42,7 @@ import jakarta.persistence.Table;
 @Table(name = "email_verification")
 public class EmailVerification extends AbstractEntity {
     @OneToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @Column(unique = true, nullable = false)
