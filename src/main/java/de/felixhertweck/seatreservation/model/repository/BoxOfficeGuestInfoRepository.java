@@ -43,4 +43,17 @@ public class BoxOfficeGuestInfoRepository
         }
         return find("reservation.id in ?1", reservationIds).list();
     }
+
+    /**
+     * Deletes all guest info entries associated with the given reservation IDs.
+     *
+     * @param reservationIds the reservation IDs whose guest info should be deleted
+     * @return the number of deleted records
+     */
+    public long deleteByReservationIds(List<UUID> reservationIds) {
+        if (reservationIds == null || reservationIds.isEmpty()) {
+            return 0;
+        }
+        return delete("reservation.id in ?1", reservationIds);
+    }
 }

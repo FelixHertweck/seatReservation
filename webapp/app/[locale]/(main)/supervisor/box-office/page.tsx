@@ -271,6 +271,7 @@ function BoxOfficePageContent() {
                   selectedSeats={confirmation ? [] : selectedSeats}
                   highlightedSeatId={confirmation ? null : highlightedSeatId}
                   onSeatSelect={confirmation ? () => {} : handleSeatToggle}
+                  allowCancelledSelection={true}
                 />
               </div>
             )}
