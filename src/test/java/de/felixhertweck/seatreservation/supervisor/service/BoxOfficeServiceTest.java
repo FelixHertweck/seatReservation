@@ -31,6 +31,7 @@ import java.util.stream.StreamSupport;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -53,6 +54,7 @@ import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -217,9 +219,10 @@ class BoxOfficeServiceTest {
     }
 
     @Test
-    void reserveForKnownUser_seatAlreadyReserved_throwsIllegalStateException() {
+    void reserveForKnownUser_seatAlreadyReserved_throwsValidationException() {
         Reservation existing = new Reservation();
         existing.setSeat(seat);
+        existing.setStatus(ReservationStatus.RESERVED);
         when(reservationRepository.findByEventIdAndSeatIds(eq(EVENT_ID), anyList()))
                 .thenReturn(List.of(existing));
 
@@ -229,6 +232,27 @@ class BoxOfficeServiceTest {
                         boxOfficeService.reserveForKnownUser(
                                 knownUserRequest(false), supervisorAuth()));
         verify(reservationRepository, never()).persistAll(anyList());
+    }
+
+    @Test
+    void reserveForKnownUser_seatCancelled_replacesOldReservationSuccessfully() {
+        Reservation cancelled = new Reservation();
+        cancelled.id = id(42);
+        cancelled.setSeat(seat);
+        cancelled.setStatus(ReservationStatus.RESERVED);
+        cancelled.setLiveStatus(ReservationLiveStatus.CANCELLED);
+        when(reservationRepository.findByEventIdAndSeatIds(eq(EVENT_ID), anyList()))
+                .thenReturn(List.of(cancelled));
+
+        BoxOfficeReservationResponseDTO result =
+                boxOfficeService.reserveForKnownUser(knownUserRequest(false), supervisorAuth());
+
+        assertNotNull(result);
+        assertEquals(1, result.seats().size());
+        verify(boxOfficeGuestInfoRepository).deleteByReservationIds(List.of(id(42)));
+        verify(reservationRepository).deleteByIds(List.of(id(42)));
+        verify(reservationRepository).flush();
+        verify(reservationRepository).persistAll(anyList());
     }
 
     @Test
@@ -356,9 +380,10 @@ class BoxOfficeServiceTest {
     }
 
     @Test
-    void reserveForGuest_seatAlreadyReserved_throwsIllegalStateException() {
+    void reserveForGuest_seatAlreadyReserved_throwsValidationException() {
         Reservation existing = new Reservation();
         existing.setSeat(seat);
+        existing.setStatus(ReservationStatus.RESERVED);
         when(reservationRepository.findByEventIdAndSeatIds(eq(EVENT_ID), anyList()))
                 .thenReturn(List.of(existing));
 
@@ -368,6 +393,27 @@ class BoxOfficeServiceTest {
                         boxOfficeService.reserveForGuest(
                                 guestRequest(null, false), supervisorAuth()));
         verify(reservationRepository, never()).persistAll(anyList());
+    }
+
+    @Test
+    void reserveForGuest_seatCancelled_replacesOldReservationSuccessfully() {
+        Reservation cancelled = new Reservation();
+        cancelled.id = id(43);
+        cancelled.setSeat(seat);
+        cancelled.setStatus(ReservationStatus.RESERVED);
+        cancelled.setLiveStatus(ReservationLiveStatus.CANCELLED);
+        when(reservationRepository.findByEventIdAndSeatIds(eq(EVENT_ID), anyList()))
+                .thenReturn(List.of(cancelled));
+
+        BoxOfficeReservationResponseDTO result =
+                boxOfficeService.reserveForGuest(guestRequest(null, false), supervisorAuth());
+
+        assertNotNull(result);
+        assertEquals(1, result.seats().size());
+        verify(boxOfficeGuestInfoRepository).deleteByReservationIds(List.of(id(43)));
+        verify(reservationRepository).deleteByIds(List.of(id(43)));
+        verify(reservationRepository).flush();
+        verify(reservationRepository).persistAll(anyList());
     }
 
     @Test

@@ -223,17 +223,7 @@ public class BoxOfficeService {
                 seatRepository.findByIds(seatIds.stream().toList()).stream()
                         .collect(Collectors.toMap(s -> s.id, s -> s, (s1, s2) -> s1));
 
-        // Proactive conflict check (mirrors management.service.ReservationService.blockSeats) so
-        // a taken seat is rejected before any email/broadcast side effect runs, rather than only
-        // surfacing as a late unique-constraint violation at transaction commit.
-        List<Reservation> conflicting =
-                reservationRepository.findByEventIdAndSeatIds(
-                        event.getId(), new ArrayList<>(seatIds));
-        if (!conflicting.isEmpty()) {
-            UUID conflictingSeatId = conflicting.getFirst().getSeat().id;
-            throw new ValidationException(
-                    "Seat with id " + conflictingSeatId + " is already reserved or blocked.");
-        }
+        checkAndClearConflictingReservations(event, seatIds);
 
         EventUserAllowance allowance = null;
         if (deductAllowance) {
@@ -329,6 +319,34 @@ public class BoxOfficeService {
             throw new BookingDeadlineNotPassedException(
                     "Box office reservations are only available after the event's booking"
                             + " deadline has passed.");
+        }
+    }
+
+    /**
+     * Rejects seats that are currently taken or blocked. If a seat has an existing reservation
+     * marked as CANCELLED (e.g. at the door), that reservation is silently deleted and cleared so
+     * the seat can be reassigned to the new guest.
+     */
+    private void checkAndClearConflictingReservations(Event event, Set<UUID> seatIds) {
+        List<Reservation> existingReservations =
+                reservationRepository.findByEventIdAndSeatIds(
+                        event.getId(), new ArrayList<>(seatIds));
+        List<Reservation> cancelledToReplace = new ArrayList<>();
+        for (Reservation existing : existingReservations) {
+            if (existing.getStatus() == ReservationStatus.BLOCKED
+                    || existing.getLiveStatus() != ReservationLiveStatus.CANCELLED) {
+                UUID conflictingSeatId = existing.getSeat().id;
+                throw new ValidationException(
+                        "Seat with id " + conflictingSeatId + " is already reserved or blocked.");
+            }
+            cancelledToReplace.add(existing);
+        }
+
+        if (!cancelledToReplace.isEmpty()) {
+            List<UUID> cancelledIds = cancelledToReplace.stream().map(r -> r.id).toList();
+            boxOfficeGuestInfoRepository.deleteByReservationIds(cancelledIds);
+            reservationRepository.deleteByIds(cancelledIds);
+            reservationRepository.flush();
         }
     }
 }

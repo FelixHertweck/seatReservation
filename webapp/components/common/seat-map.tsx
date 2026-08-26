@@ -38,6 +38,7 @@ interface SeatMapProps {
   onSeatSelect: (seat: SeatDto) => void;
   readonly?: boolean;
   isLoading?: boolean;
+  allowCancelledSelection?: boolean;
 }
 
 const SeatComponent = React.memo(
@@ -342,6 +343,7 @@ export function SeatMap({
   onSeatSelect,
   readonly = false,
   isLoading = false,
+  allowCancelledSelection = false,
 }: Readonly<SeatMapProps>): ReactElement {
   const t = useT();
 
@@ -549,10 +551,17 @@ export function SeatMap({
       if (selectedSeatIds.has(seat.id)) return true;
 
       if (seatStatuses.length > 0 && isSupervisorSeatStatus(seatStatuses[0])) {
-        const hasSupervisorStatus = (
+        const supervisorStatus = (
           seatStatuses as SupervisorSeatStatusDto[]
-        ).some((s) => s.seatId === seat.id);
-        return !hasSupervisorStatus;
+        ).find((s) => s.seatId === seat.id);
+        if (!supervisorStatus) return true;
+        if (
+          allowCancelledSelection &&
+          supervisorStatus.liveStatus === "CANCELLED"
+        ) {
+          return true;
+        }
+        return false;
       } else {
         const seatStatus = findSeatStatus(
           seat.id,
@@ -561,7 +570,7 @@ export function SeatMap({
         return !seatStatus;
       }
     },
-    [readonly, selectedSeatIds, seatStatuses],
+    [readonly, selectedSeatIds, seatStatuses, allowCancelledSelection],
   );
 
   const gridStructure = useMemo(() => {
