@@ -27,10 +27,8 @@ import jakarta.transaction.Transactional;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 
-import de.felixhertweck.seatreservation.management.dto.AreaRequestDTO;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
-import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
@@ -60,9 +58,7 @@ public class AreaResourceTest {
     @Inject EventRepository eventRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject ReservationRepository reservationRepository;
-
     @Inject CheckInTokenRepository checkInTokenRepository;
-
     @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
     @Inject UserRepository userRepository;
 
@@ -95,8 +91,6 @@ public class AreaResourceTest {
         cleanUpDatabase();
     }
 
-    // Deletes in FK-safe order; this database is shared across all @QuarkusTest classes in the
-    // run, so leftover rows from another test class' locations must be cleared too.
     private void cleanUpDatabase() {
         emailSeatMapTokenRepository.deleteAll();
         reservationRepository.deleteAll();
@@ -188,146 +182,5 @@ public class AreaResourceTest {
                             type = ClaimType.STRING))
     void testGetAreaByIdNotFound() {
         given().when().get("/api/manager/areas/" + id(999)).then().statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testCreateArea() {
-        given().contentType("application/json")
-                .body(new AreaRequestDTO(testLocation.id, "Balkon", null))
-                .when()
-                .post("/api/manager/areas")
-                .then()
-                .statusCode(200)
-                .body("name", is("Balkon"));
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testCreateAreaInvalidData() {
-        given().contentType("application/json")
-                .body("{\"name\":\"\"}")
-                .when()
-                .post("/api/manager/areas")
-                .then()
-                .statusCode(400);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testUpdateArea() {
-        given().contentType("application/json")
-                .body(new AreaRequestDTO(testLocation.id, "Loge", null))
-                .when()
-                .put("/api/manager/areas/" + testArea.id)
-                .then()
-                .statusCode(200)
-                .body("name", is("Loge"));
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testUpdateAreaNotFound() {
-        given().contentType("application/json")
-                .body(new AreaRequestDTO(testLocation.id, "Loge", null))
-                .when()
-                .put("/api/manager/areas/" + id(999))
-                .then()
-                .statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testDeleteArea() {
-        given().when()
-                .queryParam("ids", testArea.id)
-                .delete("/api/manager/areas")
-                .then()
-                .statusCode(204);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testDeleteAreaNotFound() {
-        given().when()
-                .queryParam("ids", id(999).toString())
-                .delete("/api/manager/areas")
-                .then()
-                .statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testDeleteAreaConflictWhenReferencedBySeat() {
-        Seat seat = new Seat("A1", "Row 1", testLocation);
-        seat.setArea(testArea);
-        persistSeat(seat);
-
-        given().when()
-                .queryParam("ids", testArea.id)
-                .delete("/api/manager/areas")
-                .then()
-                .statusCode(409);
-    }
-
-    @Transactional
-    void persistSeat(Seat seat) {
-        seatRepository.persist(seat);
     }
 }

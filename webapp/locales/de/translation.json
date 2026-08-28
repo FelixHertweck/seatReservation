@@ -1552,7 +1552,9 @@
       "entrances": {
         "title": "Eingänge",
         "addButton": "Eingang hinzufügen",
+        "editButton": "Eingang bearbeiten",
         "dialogDescription": "Name des neuen Eingangs.",
+        "editDialogDescription": "Namen des Eingangs anpassen.",
         "nameLabel": "Name",
         "emptyList": "Noch keine Eingänge.",
         "deleteConfirm": "Eingang \"{{name}}\" löschen?",

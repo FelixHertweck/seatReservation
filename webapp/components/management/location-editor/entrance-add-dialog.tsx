@@ -34,6 +34,7 @@ export function EntranceAddDialog({
     if (!name.trim()) return;
     autosave.addEntrance({ name: name.trim() });
     setName("");
+    onOpenChange(false);
   };
 
   return (
@@ -47,21 +48,31 @@ export function EntranceAddDialog({
             {t("management.locationEditor.entrances.dialogDescription")}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleAdd();
+          }}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label>{t("management.locationEditor.entrances.nameLabel")}</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoFocus
+            />
           </div>
           <Button
+            type="submit"
             size="sm"
             className="w-full"
-            onClick={handleAdd}
             disabled={!name.trim()}
           >
             <Plus className="h-4 w-4" />
             {t("management.locationEditor.entrances.addButton")}
           </Button>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

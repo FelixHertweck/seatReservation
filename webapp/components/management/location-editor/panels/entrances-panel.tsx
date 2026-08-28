@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Button } from "@/components/custom-ui/button";
 import { EntranceAddDialog } from "@/components/management/location-editor/entrance-add-dialog";
+import { EntranceEditDialog } from "@/components/management/location-editor/entrance-edit-dialog";
 import type { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
 import type {
+  EditorEntrance,
   LocalId,
   LocationEditorState,
 } from "@/components/management/location-editor/types";
@@ -17,9 +19,15 @@ interface EntrancesPanelProps {
   autosave: ReturnType<typeof useLocationEditorSave>;
 }
 
-export function EntrancesPanel({ state, autosave }: EntrancesPanelProps) {
+export function EntrancesPanel({
+  state,
+  autosave,
+}: Readonly<EntrancesPanelProps>) {
   const t = useT();
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editingEntrance, setEditingEntrance] = useState<EditorEntrance | null>(
+    null,
+  );
 
   const referencedCount = (entranceLocalId: LocalId) =>
     state.seats.filter((s) => s.entranceRef === entranceLocalId).length;
@@ -30,7 +38,7 @@ export function EntrancesPanel({ state, autosave }: EntrancesPanelProps) {
         size="sm"
         variant="outline"
         className="w-full"
-        onClick={() => setDialogOpen(true)}
+        onClick={() => setAddDialogOpen(true)}
       >
         <Plus className="h-4 w-4" />
         {t("management.locationEditor.entrances.addButton")}
@@ -49,26 +57,39 @@ export function EntrancesPanel({ state, autosave }: EntrancesPanelProps) {
                 key={entrance.localId}
                 className="flex items-center justify-between rounded-md px-2 py-1.5 text-xs transition-colors hover:bg-accent"
               >
-                <span className="truncate">{entrance.name}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0"
-                  disabled={count > 0}
-                  title={
-                    count > 0
-                      ? t(
-                          "management.locationEditor.entrances.cannotDeleteReferenced",
-                          { count },
-                        )
-                      : undefined
-                  }
-                  onClick={() =>
-                    autosave.deleteEntrances(new Set([entrance.localId]))
-                  }
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
+                <span className="flex-1 truncate" title={entrance.name}>
+                  {entrance.name}
+                  {count > 0 && (
+                    <span className="ml-1.5 text-[10px] text-muted-foreground">
+                      ({count})
+                    </span>
+                  )}
+                </span>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    title={t("management.locationEditor.entrances.editButton")}
+                    onClick={() => setEditingEntrance(entrance)}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                    title={t(
+                      "management.locationEditor.entrances.deleteConfirm",
+                      { name: entrance.name },
+                    )}
+                    onClick={() =>
+                      autosave.deleteEntrances(new Set([entrance.localId]))
+                    }
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </div>
             );
           })
@@ -76,8 +97,17 @@ export function EntrancesPanel({ state, autosave }: EntrancesPanelProps) {
       </div>
 
       <EntranceAddDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        autosave={autosave}
+      />
+
+      <EntranceEditDialog
+        entrance={editingEntrance}
+        open={!!editingEntrance}
+        onOpenChange={(open) => {
+          if (!open) setEditingEntrance(null);
+        }}
         autosave={autosave}
       />
     </div>

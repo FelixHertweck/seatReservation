@@ -19,17 +19,12 @@
  */
 package de.felixhertweck.seatreservation.management.resource;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
-import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -38,7 +33,6 @@ import jakarta.ws.rs.core.MediaType;
 
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.common.exception.ValidationException;
-import de.felixhertweck.seatreservation.management.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.management.service.SeatService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
@@ -60,30 +54,6 @@ public class SeatResource {
     @Inject SeatService seatService;
 
     @Inject UserSecurityContext userSecurityContext;
-
-    @POST
-    @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content = @Content(schema = @Schema(implementation = SeatDTO.class)))
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(
-            responseCode = "403",
-            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    @APIResponse(responseCode = "404", description = "Not Found: Event location not found")
-    @APIResponse(
-            responseCode = "409",
-            description =
-                    "Conflict: Seat with this row and number already exists in this event location")
-    public SeatDTO createSeat(@Valid SeatRequestDTO seatRequestDTO) {
-        LOG.debugf("Received POST request to /api/manager/seats to create a new seat.");
-        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
-        SeatDTO result = seatService.createSeatManager(seatRequestDTO, currentUser);
-        LOG.debugf(
-                "Seat with ID %s created successfully for event location ID %s.",
-                result.id(), result.locationId());
-        return result;
-    }
 
     @GET
     @APIResponse(
@@ -138,53 +108,5 @@ public class SeatResource {
             LOG.warnf("Seat with ID %s not found.", id);
         }
         return result;
-    }
-
-    @PUT
-    @Path("/{id}")
-    @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content = @Content(schema = @Schema(implementation = SeatDTO.class)))
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(
-            responseCode = "403",
-            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    @APIResponse(
-            responseCode = "404",
-            description = "Not Found: Seat with specified ID not found for the current manager")
-    @APIResponse(
-            responseCode = "409",
-            description =
-                    "Conflict: Seat with this row and number already exists in this event location")
-    public SeatDTO updateManagerSeat(
-            @PathParam("id") UUID id, @Valid SeatRequestDTO seatUpdateDTO) {
-        LOG.debugf("Received PUT request to /api/manager/seats/%s to update seat.", id);
-        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
-        SeatDTO result = seatService.updateSeatForManager(id, seatUpdateDTO, currentUser);
-        LOG.debugf("Seat with ID %s updated successfully.", id);
-        return result;
-    }
-
-    @DELETE
-    @APIResponse(responseCode = "200", description = "OK")
-    @APIResponse(responseCode = "204", description = "Seat deleted successfully")
-    @APIResponse(responseCode = "400", description = "Bad Request: Invalid input")
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(
-            responseCode = "403",
-            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    @APIResponse(
-            responseCode = "404",
-            description = "Not Found: Seat with specified ID not found for the current manager")
-    public void deleteManagerSeat(@QueryParam("ids") List<UUID> ids) {
-        LOG.debugf(
-                "Received DELETE request to /api/manager/seats with IDs: %s",
-                ids != null ? ids : Collections.emptyList());
-        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
-        seatService.deleteSeatForManager(ids, currentUser);
-        LOG.debugf(
-                "Seats with IDs %s deleted successfully.",
-                ids != null ? ids : Collections.emptyList());
     }
 }

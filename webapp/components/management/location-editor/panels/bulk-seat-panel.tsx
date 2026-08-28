@@ -278,13 +278,11 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
             <SelectItem value={NONE}>
               {t("management.locationEditor.bulk.noneOption")}
             </SelectItem>
-            {state.entrances
-              .filter((e) => e.serverId)
-              .map((e) => (
-                <SelectItem key={e.localId} value={e.localId}>
-                  {e.name}
-                </SelectItem>
-              ))}
+            {state.entrances.map((e) => (
+              <SelectItem key={e.localId} value={e.localId}>
+                {e.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -299,13 +297,11 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
             <SelectItem value={NONE}>
               {t("management.locationEditor.bulk.noneOption")}
             </SelectItem>
-            {state.areas
-              .filter((a) => a.serverId)
-              .map((a) => (
-                <SelectItem key={a.localId} value={a.localId}>
-                  {a.name}
-                </SelectItem>
-              ))}
+            {state.areas.map((a) => (
+              <SelectItem key={a.localId} value={a.localId}>
+                {a.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

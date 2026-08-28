@@ -19,17 +19,12 @@
  */
 package de.felixhertweck.seatreservation.management.resource;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
-import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -37,7 +32,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
 import de.felixhertweck.seatreservation.common.exception.ValidationException;
-import de.felixhertweck.seatreservation.management.dto.EntranceRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EntranceResponseDTO;
 import de.felixhertweck.seatreservation.management.service.EntranceService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -60,22 +54,6 @@ public class EntranceResource {
     @Inject EntranceService entranceService;
 
     @Inject UserSecurityContext userSecurityContext;
-
-    @POST
-    @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content = @Content(schema = @Schema(implementation = EntranceResponseDTO.class)))
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(
-            responseCode = "403",
-            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    @APIResponse(responseCode = "404", description = "Not Found: Event location not found")
-    public EntranceResponseDTO createEntrance(@Valid EntranceRequestDTO entranceRequestDTO) {
-        LOG.debugf("Received POST request to /api/manager/entrances to create a new entrance.");
-        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
-        return entranceService.createEntrance(entranceRequestDTO, currentUser);
-    }
 
     @GET
     @APIResponse(
@@ -121,46 +99,5 @@ public class EntranceResource {
         LOG.debugf("Received GET request to /api/manager/entrances/%s.", id);
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return entranceService.findEntranceByIdForManager(id, currentUser);
-    }
-
-    @PUT
-    @Path("/{id}")
-    @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content = @Content(schema = @Schema(implementation = EntranceResponseDTO.class)))
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(
-            responseCode = "403",
-            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    @APIResponse(
-            responseCode = "404",
-            description = "Not Found: Entrance with specified ID not found for the current manager")
-    public EntranceResponseDTO updateManagerEntrance(
-            @PathParam("id") UUID id, @Valid EntranceRequestDTO entranceRequestDTO) {
-        LOG.debugf("Received PUT request to /api/manager/entrances/%s to update entrance.", id);
-        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
-        return entranceService.updateEntrance(id, entranceRequestDTO, currentUser);
-    }
-
-    @DELETE
-    @APIResponse(responseCode = "204", description = "Entrance(s) deleted successfully")
-    @APIResponse(responseCode = "400", description = "Bad Request: Invalid input")
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(
-            responseCode = "403",
-            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    @APIResponse(
-            responseCode = "404",
-            description = "Not Found: Entrance with specified ID not found for the current manager")
-    @APIResponse(
-            responseCode = "409",
-            description = "Conflict: Entrance is still referenced by at least one seat")
-    public void deleteManagerEntrance(@QueryParam("ids") List<UUID> ids) {
-        LOG.debugf(
-                "Received DELETE request to /api/manager/entrances with IDs: %s",
-                ids != null ? ids : Collections.emptyList());
-        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
-        entranceService.deleteEntrances(ids, currentUser);
     }
 }
