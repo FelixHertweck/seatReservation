@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type SetStateAction, type Dispatch } from "react";
+import { useEffect, useMemo, type SetStateAction, type Dispatch } from "react";
 import { useT } from "@/lib/i18n/hooks";
 import { Button } from "@/components/custom-ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +20,10 @@ import {
   SEAT_STATUS_TEXT,
   getSeatVisualStatus,
 } from "@/lib/seatStatusStyles";
-import type { CheckInInfoResponseDto } from "@/api";
+import type {
+  CheckInInfoResponseDto,
+  SupervisorReservationResponseDto,
+} from "@/api";
 
 export type ReservationAction = "CHECK_IN" | "CANCEL" | "NONE";
 
@@ -40,6 +43,16 @@ interface ReservationSelectorProps {
   onClear: () => void;
 }
 
+/** Numeric sort priority for the checkin list: pending first, then cancelled, then checked-in. */
+function getStatusSortPriority(
+  r: SupervisorReservationResponseDto,
+): number {
+  const visual = getSeatVisualStatus(r.status, r.liveStatus);
+  if (visual === "CHECKED_IN") return 2;
+  if (visual === "CANCELLED") return 1;
+  return 0; // RESERVED / PENDING / etc. – needs action → show first
+}
+
 export function ReservationSelector({
   checkInInfo,
   eventId,
@@ -55,15 +68,30 @@ export function ReservationSelector({
 }: ReservationSelectorProps) {
   const t = useT();
 
-  // Initialize reservation actions when check-in info loads. Reservations
-  // default to being checked in, but can be switched to "cancel" or "do
-  // nothing" individually before submitting.
+  // Sort reservations: pending → cancelled → checked-in
+  const sortedReservations = useMemo(() => {
+    if (!checkInInfo?.reservations) return [];
+    return [...checkInInfo.reservations].sort(
+      (a, b) => getStatusSortPriority(a) - getStatusSortPriority(b),
+    );
+  }, [checkInInfo?.reservations]);
+
+  // Initialize reservation actions when check-in info loads.
+  // Already checked-in / cancelled reservations get NONE by default (no double processing).
   useEffect(() => {
-    if (checkInInfo?.reservations && checkInInfo.reservations.length > 0) {
+    if (sortedReservations.length > 0) {
       const initialActions: Record<string, ReservationAction> = {};
-      checkInInfo.reservations.forEach((reservation) => {
+      sortedReservations.forEach((reservation) => {
         if (reservation.id) {
-          initialActions[reservation.id] = "CHECK_IN";
+          const visual = getSeatVisualStatus(
+            reservation.status,
+            reservation.liveStatus,
+          );
+          // Already processed → no default action; still pending → default to CHECK_IN
+          initialActions[reservation.id] =
+            visual === "CHECKED_IN" || visual === "CANCELLED"
+              ? "NONE"
+              : "CHECK_IN";
         }
       });
       setReservationActions(initialActions);
@@ -73,13 +101,21 @@ export function ReservationSelector({
         setIsDrawerOpen(true);
       }
     }
-  }, [checkInInfo, isMobile, setIsDrawerOpen, setReservationActions]);
+  }, [checkInInfo, isMobile, setIsDrawerOpen, setReservationActions, sortedReservations]);
 
-  const setReservationAction = (
+  /**
+   * Clicking the active action toggles it off (resets to NONE).
+   * Clicking an inactive action sets it.
+   * This replaces the separate "Unverändert" button.
+   */
+  const toggleReservationAction = (
     reservationId: string,
     action: ReservationAction,
   ) => {
-    setReservationActions((prev) => ({ ...prev, [reservationId]: action }));
+    setReservationActions((prev) => ({
+      ...prev,
+      [reservationId]: prev[reservationId] === action ? "NONE" : action,
+    }));
   };
 
   const onProcessingSubmit = () => {
@@ -99,7 +135,7 @@ export function ReservationSelector({
       );
     }
 
-    if (!checkInInfo?.reservations || checkInInfo.reservations.length === 0) {
+    if (sortedReservations.length === 0) {
       return (
         <div className="text-center py-8 text-muted-foreground">
           {t("checkin.reservations.noReservations")}
@@ -111,7 +147,7 @@ export function ReservationSelector({
       <div className="flex flex-col h-full">
         <div className="flex-1 overflow-y-auto space-y-4 p-4">
           {/* User Info Card - shown once at the top */}
-          {checkInInfo.user && (
+          {checkInInfo?.user && (
             <div className="space-y-2">
               <div className="text-sm">
                 <span className="font-semibold">
@@ -123,11 +159,11 @@ export function ReservationSelector({
           )}
 
           <div className="space-y-2">
-            {checkInInfo.reservations.map((reservation, index) => {
+            {sortedReservations.map((reservation, index) => {
               const reservationId = reservation.id!;
               const action = reservationActions[reservationId] ?? "NONE";
               const currentStatus = getSeatVisualStatus(
-                "RESERVED",
+                reservation.status,
                 reservation.liveStatus,
               );
               const targetStatus =
@@ -137,10 +173,17 @@ export function ReservationSelector({
                     ? "CANCELLED"
                     : currentStatus;
 
+              // Disable CHECK_IN if already checked in; disable CANCEL if already cancelled
+              const isAlreadyCheckedIn = currentStatus === "CHECKED_IN";
+              const isAlreadyCancelled = currentStatus === "CANCELLED";
+
               return (
                 <Card
                   key={reservationId.toString() || `reservation-${index}`}
-                  className="p-4"
+                  className={cn(
+                    "p-4",
+                    (isAlreadyCheckedIn || isAlreadyCancelled) && "opacity-60",
+                  )}
                 >
                   <div className="text-sm font-medium">
                     {t("checkin.reservations.seat")}:{" "}
@@ -188,45 +231,38 @@ export function ReservationSelector({
                       </>
                     )}
                   </div>
+                  {/* Action toggle buttons – clicking the active button deselects it (= NONE) */}
                   <div className="mt-3 flex gap-1 rounded-md border p-1">
                     <button
                       type="button"
+                      disabled={isAlreadyCheckedIn}
                       onClick={() =>
-                        setReservationAction(reservationId, "CHECK_IN")
+                        toggleReservationAction(reservationId, "CHECK_IN")
                       }
                       className={cn(
                         "flex-1 rounded-sm px-2 py-1 text-xs font-medium transition-colors",
-                        action === "CHECK_IN"
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:bg-muted",
+                        isAlreadyCheckedIn
+                          ? "cursor-not-allowed text-muted-foreground/40"
+                          : action === "CHECK_IN"
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:bg-muted",
                       )}
                     >
                       {t("checkin.reservations.actionCheckIn")}
                     </button>
                     <button
                       type="button"
+                      disabled={isAlreadyCancelled}
                       onClick={() =>
-                        setReservationAction(reservationId, "NONE")
+                        toggleReservationAction(reservationId, "CANCEL")
                       }
                       className={cn(
                         "flex-1 rounded-sm px-2 py-1 text-xs font-medium transition-colors",
-                        action === "NONE"
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:bg-muted",
-                      )}
-                    >
-                      {t("checkin.reservations.actionNone")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setReservationAction(reservationId, "CANCEL")
-                      }
-                      className={cn(
-                        "flex-1 rounded-sm px-2 py-1 text-xs font-medium transition-colors",
-                        action === "CANCEL"
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:bg-muted",
+                        isAlreadyCancelled
+                          ? "cursor-not-allowed text-muted-foreground/40"
+                          : action === "CANCEL"
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:bg-muted",
                       )}
                     >
                       {t("checkin.reservations.actionCancel")}
