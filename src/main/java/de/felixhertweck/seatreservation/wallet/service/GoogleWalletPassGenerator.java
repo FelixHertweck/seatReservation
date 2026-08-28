@@ -123,6 +123,16 @@ public class GoogleWalletPassGenerator extends AbstractWalletPassGenerator {
     @ConfigProperty(name = "wallet.google.review-status", defaultValue = "UNDER_REVIEW")
     String reviewStatus;
 
+    /**
+     * Controls whether a Google Wallet pass can be shared between multiple users/devices.
+     * Supported values: {@code MULTIPLE_HOLDERS} (shareable, default), {@code ONE_USER_ALL_DEVICES},
+     * {@code ONE_USER_ONE_DEVICE}.
+     */
+    @ConfigProperty(
+            name = "wallet.google.multiple-holders-allowed",
+            defaultValue = "MULTIPLE_HOLDERS")
+    String multipleDevicesAndHoldersAllowedStatus;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
@@ -154,6 +164,8 @@ public class GoogleWalletPassGenerator extends AbstractWalletPassGenerator {
     private static final String STATE_EXPIRED = "EXPIRED";
     private static final String PATCH_METHOD = "PATCH";
     private static final String EVENT_CLASS_ID_FORMAT = "%s.event_%s";
+    private static final String MULTIPLE_DEVICES_AND_HOLDERS_ALLOWED_STATUS =
+            "multipleDevicesAndHoldersAllowedStatus";
 
     private Map<String, Object> localizedString(String text) {
         return Map.of(DEFAULT_VALUE, Map.of(LANGUAGE, defaultLanguage, VALUE, text));
@@ -242,6 +254,10 @@ public class GoogleWalletPassGenerator extends AbstractWalletPassGenerator {
         if (logoUri.isPresent() && !logoUri.get().isBlank()) {
             eventTicketClass.put("logo", Map.of("sourceUri", Map.of("uri", logoUri.get().trim())));
         }
+
+        eventTicketClass.put(
+                MULTIPLE_DEVICES_AND_HOLDERS_ALLOWED_STATUS,
+                multipleDevicesAndHoldersAllowedStatus);
 
         return eventTicketClass;
     }
@@ -641,6 +657,10 @@ public class GoogleWalletPassGenerator extends AbstractWalletPassGenerator {
             updatePayload.put(DATE_TIME, dateTimeMap);
         }
 
+        updatePayload.put(
+                MULTIPLE_DEVICES_AND_HOLDERS_ALLOWED_STATUS,
+                multipleDevicesAndHoldersAllowedStatus);
+
         String accessToken = fetchAccessToken();
         String classUrl =
                 "https://walletobjects.googleapis.com/walletobjects/v1/eventTicketClass/"
@@ -729,6 +749,10 @@ public class GoogleWalletPassGenerator extends AbstractWalletPassGenerator {
         if (logoUri.isPresent() && !logoUri.get().isBlank()) {
             insertPayload.put("logo", Map.of("sourceUri", Map.of("uri", logoUri.get().trim())));
         }
+
+        insertPayload.put(
+                MULTIPLE_DEVICES_AND_HOLDERS_ALLOWED_STATUS,
+                multipleDevicesAndHoldersAllowedStatus);
 
         String insertUrl = "https://walletobjects.googleapis.com/walletobjects/v1/eventTicketClass";
         String insertBody = objectMapper.writeValueAsString(insertPayload);
