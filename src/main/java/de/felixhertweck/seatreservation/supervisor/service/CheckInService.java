@@ -37,12 +37,14 @@ import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
+import de.felixhertweck.seatreservation.model.entity.BoxOfficeGuestInfo;
 import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.BoxOfficeGuestInfoRepository;
 import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
@@ -57,6 +59,7 @@ import de.felixhertweck.seatreservation.supervisor.exception.CheckInTokenNotFoun
 import de.felixhertweck.seatreservation.supervisor.exception.EventMismatchException;
 import de.felixhertweck.seatreservation.supervisor.exception.UserMismatchException;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
+import de.felixhertweck.seatreservation.utils.SeatComparators;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -70,6 +73,7 @@ public class CheckInService {
     private final EventRepository eventRepository;
     private final LiveViewService webSocketService;
     private final EventAuthorizationService eventAuthorizationService;
+    private final BoxOfficeGuestInfoRepository boxOfficeGuestInfoRepository;
 
     @Inject
     public CheckInService(
@@ -78,13 +82,15 @@ public class CheckInService {
             UserRepository userRepository,
             EventRepository eventRepository,
             LiveViewService webSocketService,
-            EventAuthorizationService eventAuthorizationService) {
+            EventAuthorizationService eventAuthorizationService,
+            BoxOfficeGuestInfoRepository boxOfficeGuestInfoRepository) {
         this.reservationRepository = reservationRepository;
         this.checkInTokenRepository = checkInTokenRepository;
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.webSocketService = webSocketService;
         this.eventAuthorizationService = eventAuthorizationService;
+        this.boxOfficeGuestInfoRepository = boxOfficeGuestInfoRepository;
     }
 
     /**
@@ -129,11 +135,32 @@ public class CheckInService {
             validateToken(token, userId, eventId);
 
             List<Reservation> reservations = reservationRepository.findByCheckInToken(token);
-            for (Reservation reservation : reservations) {
-                if (reservation.getStatus() != ReservationStatus.BLOCKED) {
-                    LOG.debugf("Processed reservation %s for token %s.", reservation, checkInToken);
-                    processedReservations.add(new SupervisorReservationResponseDTO(reservation));
-                }
+
+            // Sort by seat (row + number) so the check-in UI lists seats in a
+            // predictable, human-readable order — especially important for
+            // multi-seat Box Office QR codes that group several reservations.
+            List<Reservation> sorted =
+                    reservations.stream()
+                            .filter(r -> r.getStatus() != ReservationStatus.BLOCKED)
+                            .sorted(SeatComparators.RESERVATION_COMPARATOR)
+                            .toList();
+
+            // Bulk-load guest names for box office reservations (avoids N+1 queries).
+            List<UUID> reservationIds = sorted.stream().map(r -> r.id).toList();
+            Map<UUID, String> guestNameByReservationId =
+                    boxOfficeGuestInfoRepository.findByReservationIdIn(reservationIds).stream()
+                            .filter(gi -> gi.getReservation() != null)
+                            .collect(
+                                    Collectors.toMap(
+                                            gi -> gi.getReservation().id,
+                                            BoxOfficeGuestInfo::getGuestName,
+                                            (a, b) -> a));
+
+            for (Reservation reservation : sorted) {
+                LOG.debugf("Processed reservation %s for token %s.", reservation, checkInToken);
+                processedReservations.add(
+                        new SupervisorReservationResponseDTO(
+                                reservation, guestNameByReservationId.get(reservation.id)));
             }
         }
 
@@ -355,7 +382,8 @@ public class CheckInService {
 
         Map<UUID, Boolean> authorizationCache = new HashMap<>();
 
-        List<SupervisorReservationResponseDTO> processedReservations =
+        // Sort by seat so the check-in UI always lists seats in a predictable order.
+        List<Reservation> filtered =
                 reservations.stream()
                         .filter(
                                 r ->
@@ -367,7 +395,26 @@ public class CheckInService {
                                                                         .isAuthorizedForEvent(
                                                                                 currentUser,
                                                                                 eventId)))
-                        .map(SupervisorReservationResponseDTO::new)
+                        .sorted(SeatComparators.RESERVATION_COMPARATOR)
+                        .toList();
+
+        // Bulk-load guest names for any box office reservations in the result.
+        List<UUID> reservationIds = filtered.stream().map(r -> r.id).toList();
+        Map<UUID, String> guestNameByReservationId =
+                boxOfficeGuestInfoRepository.findByReservationIdIn(reservationIds).stream()
+                        .filter(gi -> gi.getReservation() != null)
+                        .collect(
+                                Collectors.toMap(
+                                        gi -> gi.getReservation().id,
+                                        BoxOfficeGuestInfo::getGuestName,
+                                        (a, b) -> a));
+
+        List<SupervisorReservationResponseDTO> processedReservations =
+                filtered.stream()
+                        .map(
+                                r ->
+                                        new SupervisorReservationResponseDTO(
+                                                r, guestNameByReservationId.get(r.id)))
                         .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         LOG.debugf(
                 "Processed %d reservations for user %s.", processedReservations.size(), username);

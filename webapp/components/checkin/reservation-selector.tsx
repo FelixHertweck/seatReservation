@@ -148,6 +148,11 @@ export function ReservationSelector({
                     {reservation.seat?.seatRow &&
                       ` (${reservation.seat.seatRow})`}
                   </div>
+                  {reservation.guestName && (
+                    <div className="text-sm text-muted-foreground">
+                      {reservation.guestName}
+                    </div>
+                  )}
                   {(reservation.seat?.area || reservation.seat?.entrance) && (
                     <div className="text-[10px] text-muted-foreground">
                       {[
