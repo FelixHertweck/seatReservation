@@ -42,12 +42,6 @@ export type AreaDto = {
     boundary?: Array<CoordinateDto>;
 };
 
-export type AreaRequestDto = {
-    name: string;
-    boundary?: Array<CoordinateDto>;
-    eventLocationId: Uuid;
-};
-
 export type AreaResponseDto = {
     id?: Uuid;
     name?: string;
@@ -127,11 +121,6 @@ export type EmailCooldownDto = {
     retryAfter?: Instant;
 };
 
-export type EntranceRequestDto = {
-    eventLocationId: Uuid;
-    name: string;
-};
-
 export type EntranceResponseDto = {
     id?: Uuid;
     name?: string;
@@ -174,6 +163,43 @@ export type EventContingentUsageDto = {
      * Contingent usage percentage (0-100)
      */
     percent?: number;
+};
+
+export type EventLocationLayoutRequestDto = {
+    name?: string;
+    address?: string;
+    managerIds?: Array<string>;
+    entrances?: Array<LayoutEntranceDto>;
+    areas?: Array<LayoutAreaDto>;
+    markers?: Array<LayoutMarkerDto>;
+    seats?: Array<LayoutSeatDto>;
+    deletedEntranceIds?: Array<string>;
+    deletedAreaIds?: Array<string>;
+    deletedMarkerIds?: Array<string>;
+    deletedSeatIds?: Array<string>;
+};
+
+export type EventLocationLayoutResponseDto = {
+    id?: Uuid;
+    name?: string;
+    address?: string;
+    managerIds?: Array<string>;
+    createdEntranceIdMap?: {
+        [key: string]: string;
+    };
+    createdAreaIdMap?: {
+        [key: string]: string;
+    };
+    createdMarkerIdMap?: {
+        [key: string]: string;
+    };
+    createdSeatIdMap?: {
+        [key: string]: string;
+    };
+    seats?: Array<SeatDto>;
+    markers?: Array<EventLocationMakerDto>;
+    areas?: Array<AreaResponseDto>;
+    entrances?: Array<EntranceResponseDto>;
 };
 
 export type EventLocationMakerDto = {
@@ -289,6 +315,38 @@ export type ImportSeatDto = {
 
 export type Instant = Date;
 
+export type LayoutAreaDto = {
+    id?: Uuid;
+    tempId?: string;
+    name: string;
+    boundary?: Array<CoordinateDto>;
+};
+
+export type LayoutEntranceDto = {
+    id?: Uuid;
+    tempId?: string;
+    name: string;
+};
+
+export type LayoutMarkerDto = {
+    id?: Uuid;
+    tempId?: string;
+    label: string;
+    coordinate: CoordinateDto;
+};
+
+export type LayoutSeatDto = {
+    id?: Uuid;
+    tempId?: string;
+    seatNumber: string;
+    seatRow: string;
+    coordinate: CoordinateDto;
+    entranceId?: Uuid;
+    entranceTempId?: string;
+    areaId?: Uuid;
+    areaTempId?: string;
+};
+
 export type LimitedUserInfoDto = {
     id?: Uuid;
     username?: string;
@@ -316,12 +374,6 @@ export type LoginRequestDto = {
      * ALTCHA proof-of-work verification payload
      */
     altchaPayload: string;
-};
-
-export type MakerRequestDto = {
-    label: string;
-    coordinate: CoordinateDto;
-    eventLocationId: Uuid;
 };
 
 /**
@@ -577,15 +629,6 @@ export type SeatDto = {
     coordinate?: CoordinateDto;
     entrance?: string;
     area?: string;
-    entranceId?: Uuid;
-    areaId?: Uuid;
-};
-
-export type SeatRequestDto = {
-    seatNumber: string;
-    eventLocationId: Uuid;
-    coordinate: CoordinateDto;
-    seatRow: string;
     entranceId?: Uuid;
     areaId?: Uuid;
 };
@@ -1569,47 +1612,6 @@ export type GetApiEmailWalletGoogleResponses = {
     200: unknown;
 };
 
-export type DeleteApiManagerAreasData = {
-    body?: never;
-    path?: never;
-    query?: {
-        ids?: Array<string>;
-    };
-    url: '/api/manager/areas';
-};
-
-export type DeleteApiManagerAreasErrors = {
-    /**
-     * Bad Request: Invalid input
-     */
-    400: unknown;
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Area with specified ID not found for the current manager
-     */
-    404: unknown;
-    /**
-     * Conflict: Area is still referenced by at least one seat
-     */
-    409: unknown;
-};
-
-export type DeleteApiManagerAreasResponses = {
-    /**
-     * Area(s) deleted successfully
-     */
-    204: void;
-};
-
-export type DeleteApiManagerAreasResponse = DeleteApiManagerAreasResponses[keyof DeleteApiManagerAreasResponses];
-
 export type GetApiManagerAreasData = {
     body?: never;
     path?: never;
@@ -1642,41 +1644,6 @@ export type GetApiManagerAreasResponses = {
 };
 
 export type GetApiManagerAreasResponse = GetApiManagerAreasResponses[keyof GetApiManagerAreasResponses];
-
-export type PostApiManagerAreasData = {
-    body: AreaRequestDto;
-    path?: never;
-    query?: never;
-    url: '/api/manager/areas';
-};
-
-export type PostApiManagerAreasErrors = {
-    /**
-     * Bad Request
-     */
-    400: unknown;
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Event location not found
-     */
-    404: unknown;
-};
-
-export type PostApiManagerAreasResponses = {
-    /**
-     * OK
-     */
-    200: AreaResponseDto;
-};
-
-export type PostApiManagerAreasResponse = PostApiManagerAreasResponses[keyof PostApiManagerAreasResponses];
 
 export type GetApiManagerAreasByIdData = {
     body?: never;
@@ -1711,84 +1678,6 @@ export type GetApiManagerAreasByIdResponses = {
 
 export type GetApiManagerAreasByIdResponse = GetApiManagerAreasByIdResponses[keyof GetApiManagerAreasByIdResponses];
 
-export type PutApiManagerAreasByIdData = {
-    body: AreaRequestDto;
-    path: {
-        id: Uuid;
-    };
-    query?: never;
-    url: '/api/manager/areas/{id}';
-};
-
-export type PutApiManagerAreasByIdErrors = {
-    /**
-     * Bad Request
-     */
-    400: unknown;
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Area with specified ID not found for the current manager
-     */
-    404: unknown;
-};
-
-export type PutApiManagerAreasByIdResponses = {
-    /**
-     * OK
-     */
-    200: AreaResponseDto;
-};
-
-export type PutApiManagerAreasByIdResponse = PutApiManagerAreasByIdResponses[keyof PutApiManagerAreasByIdResponses];
-
-export type DeleteApiManagerEntrancesData = {
-    body?: never;
-    path?: never;
-    query?: {
-        ids?: Array<string>;
-    };
-    url: '/api/manager/entrances';
-};
-
-export type DeleteApiManagerEntrancesErrors = {
-    /**
-     * Bad Request: Invalid input
-     */
-    400: unknown;
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Entrance with specified ID not found for the current manager
-     */
-    404: unknown;
-    /**
-     * Conflict: Entrance is still referenced by at least one seat
-     */
-    409: unknown;
-};
-
-export type DeleteApiManagerEntrancesResponses = {
-    /**
-     * Entrance(s) deleted successfully
-     */
-    204: void;
-};
-
-export type DeleteApiManagerEntrancesResponse = DeleteApiManagerEntrancesResponses[keyof DeleteApiManagerEntrancesResponses];
-
 export type GetApiManagerEntrancesData = {
     body?: never;
     path?: never;
@@ -1822,41 +1711,6 @@ export type GetApiManagerEntrancesResponses = {
 
 export type GetApiManagerEntrancesResponse = GetApiManagerEntrancesResponses[keyof GetApiManagerEntrancesResponses];
 
-export type PostApiManagerEntrancesData = {
-    body: EntranceRequestDto;
-    path?: never;
-    query?: never;
-    url: '/api/manager/entrances';
-};
-
-export type PostApiManagerEntrancesErrors = {
-    /**
-     * Bad Request
-     */
-    400: unknown;
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Event location not found
-     */
-    404: unknown;
-};
-
-export type PostApiManagerEntrancesResponses = {
-    /**
-     * OK
-     */
-    200: EntranceResponseDto;
-};
-
-export type PostApiManagerEntrancesResponse = PostApiManagerEntrancesResponses[keyof PostApiManagerEntrancesResponses];
-
 export type GetApiManagerEntrancesByIdData = {
     body?: never;
     path: {
@@ -1889,43 +1743,6 @@ export type GetApiManagerEntrancesByIdResponses = {
 };
 
 export type GetApiManagerEntrancesByIdResponse = GetApiManagerEntrancesByIdResponses[keyof GetApiManagerEntrancesByIdResponses];
-
-export type PutApiManagerEntrancesByIdData = {
-    body: EntranceRequestDto;
-    path: {
-        id: Uuid;
-    };
-    query?: never;
-    url: '/api/manager/entrances/{id}';
-};
-
-export type PutApiManagerEntrancesByIdErrors = {
-    /**
-     * Bad Request
-     */
-    400: unknown;
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Entrance with specified ID not found for the current manager
-     */
-    404: unknown;
-};
-
-export type PutApiManagerEntrancesByIdResponses = {
-    /**
-     * OK
-     */
-    200: EntranceResponseDto;
-};
-
-export type PutApiManagerEntrancesByIdResponse = PutApiManagerEntrancesByIdResponses[keyof PutApiManagerEntrancesByIdResponses];
 
 export type DeleteApiManagerEventlocationsData = {
     body?: never;
@@ -2070,6 +1887,43 @@ export type PutApiManagerEventlocationsByIdResponses = {
 };
 
 export type PutApiManagerEventlocationsByIdResponse = PutApiManagerEventlocationsByIdResponses[keyof PutApiManagerEventlocationsByIdResponses];
+
+export type PutApiManagerEventlocationsByIdLayoutData = {
+    body: EventLocationLayoutRequestDto;
+    path: {
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/manager/eventlocations/{id}/layout';
+};
+
+export type PutApiManagerEventlocationsByIdLayoutErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
+     */
+    403: unknown;
+    /**
+     * Not Found: Event location with specified ID not found
+     */
+    404: unknown;
+};
+
+export type PutApiManagerEventlocationsByIdLayoutResponses = {
+    /**
+     * OK
+     */
+    200: EventLocationLayoutResponseDto;
+};
+
+export type PutApiManagerEventlocationsByIdLayoutResponse = PutApiManagerEventlocationsByIdLayoutResponses[keyof PutApiManagerEventlocationsByIdLayoutResponses];
 
 export type DeleteApiManagerEventsData = {
     body?: never;
@@ -2357,43 +2211,6 @@ export type PostApiManagerEventsByIdManagersByUserIdResponses = {
 
 export type PostApiManagerEventsByIdManagersByUserIdResponse = PostApiManagerEventsByIdManagersByUserIdResponses[keyof PostApiManagerEventsByIdManagersByUserIdResponses];
 
-export type DeleteApiManagerMarkersData = {
-    body?: never;
-    path?: never;
-    query?: {
-        ids?: Array<string>;
-    };
-    url: '/api/manager/markers';
-};
-
-export type DeleteApiManagerMarkersErrors = {
-    /**
-     * Bad Request: Invalid input
-     */
-    400: unknown;
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Marker with specified ID not found for the current manager
-     */
-    404: unknown;
-};
-
-export type DeleteApiManagerMarkersResponses = {
-    /**
-     * Marker(s) deleted successfully
-     */
-    204: void;
-};
-
-export type DeleteApiManagerMarkersResponse = DeleteApiManagerMarkersResponses[keyof DeleteApiManagerMarkersResponses];
-
 export type GetApiManagerMarkersData = {
     body?: never;
     path?: never;
@@ -2427,41 +2244,6 @@ export type GetApiManagerMarkersResponses = {
 
 export type GetApiManagerMarkersResponse = GetApiManagerMarkersResponses[keyof GetApiManagerMarkersResponses];
 
-export type PostApiManagerMarkersData = {
-    body: MakerRequestDto;
-    path?: never;
-    query?: never;
-    url: '/api/manager/markers';
-};
-
-export type PostApiManagerMarkersErrors = {
-    /**
-     * Bad Request
-     */
-    400: unknown;
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Event location not found
-     */
-    404: unknown;
-};
-
-export type PostApiManagerMarkersResponses = {
-    /**
-     * OK
-     */
-    200: EventLocationMakerDto;
-};
-
-export type PostApiManagerMarkersResponse = PostApiManagerMarkersResponses[keyof PostApiManagerMarkersResponses];
-
 export type GetApiManagerMarkersByIdData = {
     body?: never;
     path: {
@@ -2494,43 +2276,6 @@ export type GetApiManagerMarkersByIdResponses = {
 };
 
 export type GetApiManagerMarkersByIdResponse = GetApiManagerMarkersByIdResponses[keyof GetApiManagerMarkersByIdResponses];
-
-export type PutApiManagerMarkersByIdData = {
-    body: MakerRequestDto;
-    path: {
-        id: Uuid;
-    };
-    query?: never;
-    url: '/api/manager/markers/{id}';
-};
-
-export type PutApiManagerMarkersByIdErrors = {
-    /**
-     * Bad Request
-     */
-    400: unknown;
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Marker with specified ID not found for the current manager
-     */
-    404: unknown;
-};
-
-export type PutApiManagerMarkersByIdResponses = {
-    /**
-     * OK
-     */
-    200: EventLocationMakerDto;
-};
-
-export type PutApiManagerMarkersByIdResponse = PutApiManagerMarkersByIdResponses[keyof PutApiManagerMarkersByIdResponses];
 
 export type GetApiManagerOverviewData = {
     body?: never;
@@ -3086,47 +2831,6 @@ export type GetApiManagerReservationsByIdResponses = {
 
 export type GetApiManagerReservationsByIdResponse = GetApiManagerReservationsByIdResponses[keyof GetApiManagerReservationsByIdResponses];
 
-export type DeleteApiManagerSeatsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        ids?: Array<string>;
-    };
-    url: '/api/manager/seats';
-};
-
-export type DeleteApiManagerSeatsErrors = {
-    /**
-     * Bad Request: Invalid input
-     */
-    400: unknown;
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Seat with specified ID not found for the current manager
-     */
-    404: unknown;
-};
-
-export type DeleteApiManagerSeatsResponses = {
-    /**
-     * OK
-     */
-    200: unknown;
-    /**
-     * Seat deleted successfully
-     */
-    204: void;
-};
-
-export type DeleteApiManagerSeatsResponse = DeleteApiManagerSeatsResponses[keyof DeleteApiManagerSeatsResponses];
-
 export type GetApiManagerSeatsData = {
     body?: never;
     path?: never;
@@ -3160,45 +2864,6 @@ export type GetApiManagerSeatsResponses = {
 
 export type GetApiManagerSeatsResponse = GetApiManagerSeatsResponses[keyof GetApiManagerSeatsResponses];
 
-export type PostApiManagerSeatsData = {
-    body: SeatRequestDto;
-    path?: never;
-    query?: never;
-    url: '/api/manager/seats';
-};
-
-export type PostApiManagerSeatsErrors = {
-    /**
-     * Bad Request
-     */
-    400: unknown;
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Event location not found
-     */
-    404: unknown;
-    /**
-     * Conflict: Seat with this row and number already exists in this event location
-     */
-    409: unknown;
-};
-
-export type PostApiManagerSeatsResponses = {
-    /**
-     * OK
-     */
-    200: SeatDto;
-};
-
-export type PostApiManagerSeatsResponse = PostApiManagerSeatsResponses[keyof PostApiManagerSeatsResponses];
-
 export type GetApiManagerSeatsByIdData = {
     body?: never;
     path: {
@@ -3231,47 +2896,6 @@ export type GetApiManagerSeatsByIdResponses = {
 };
 
 export type GetApiManagerSeatsByIdResponse = GetApiManagerSeatsByIdResponses[keyof GetApiManagerSeatsByIdResponses];
-
-export type PutApiManagerSeatsByIdData = {
-    body: SeatRequestDto;
-    path: {
-        id: Uuid;
-    };
-    query?: never;
-    url: '/api/manager/seats/{id}';
-};
-
-export type PutApiManagerSeatsByIdErrors = {
-    /**
-     * Bad Request
-     */
-    400: unknown;
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Seat with specified ID not found for the current manager
-     */
-    404: unknown;
-    /**
-     * Conflict: Seat with this row and number already exists in this event location
-     */
-    409: unknown;
-};
-
-export type PutApiManagerSeatsByIdResponses = {
-    /**
-     * OK
-     */
-    200: SeatDto;
-};
-
-export type PutApiManagerSeatsByIdResponse = PutApiManagerSeatsByIdResponses[keyof PutApiManagerSeatsByIdResponses];
 
 export type GetApiNotificationsData = {
     body?: never;

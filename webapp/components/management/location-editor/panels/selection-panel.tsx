@@ -222,7 +222,7 @@ export function SelectionPanel({
             />
           </div>
         )}
-        {allSeats && state.entrances.some((e) => e.serverId) && (
+        {allSeats && state.entrances.length > 0 && (
           <div className="space-y-2">
             <Label>{t("management.locationEditor.seats.entranceLabel")}</Label>
             <Select
@@ -246,18 +246,16 @@ export function SelectionPanel({
                 <SelectItem value={NONE}>
                   {t("management.locationEditor.seats.noneOption")}
                 </SelectItem>
-                {state.entrances
-                  .filter((e) => e.serverId)
-                  .map((e) => (
-                    <SelectItem key={e.localId} value={e.localId}>
-                      {e.name}
-                    </SelectItem>
-                  ))}
+                {state.entrances.map((e) => (
+                  <SelectItem key={e.localId} value={e.localId}>
+                    {e.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
         )}
-        {allSeats && state.areas.some((a) => a.serverId) && (
+        {allSeats && state.areas.length > 0 && (
           <div className="space-y-2">
             <Label>{t("management.locationEditor.seats.areaLabel")}</Label>
             <Select
@@ -280,13 +278,11 @@ export function SelectionPanel({
                 <SelectItem value={NONE}>
                   {t("management.locationEditor.seats.noneOption")}
                 </SelectItem>
-                {state.areas
-                  .filter((a) => a.serverId)
-                  .map((a) => (
-                    <SelectItem key={a.localId} value={a.localId}>
-                      {a.name}
-                    </SelectItem>
-                  ))}
+                {state.areas.map((a) => (
+                  <SelectItem key={a.localId} value={a.localId}>
+                    {a.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -376,13 +372,11 @@ export function SelectionPanel({
               <SelectItem value={NONE}>
                 {t("management.locationEditor.seats.noneOption")}
               </SelectItem>
-              {state.entrances
-                .filter((e) => e.serverId)
-                .map((e) => (
-                  <SelectItem key={e.localId} value={e.localId}>
-                    {e.name}
-                  </SelectItem>
-                ))}
+              {state.entrances.map((e) => (
+                <SelectItem key={e.localId} value={e.localId}>
+                  {e.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -404,13 +398,11 @@ export function SelectionPanel({
               <SelectItem value={NONE}>
                 {t("management.locationEditor.seats.noneOption")}
               </SelectItem>
-              {state.areas
-                .filter((a) => a.serverId)
-                .map((a) => (
-                  <SelectItem key={a.localId} value={a.localId}>
-                    {a.name}
-                  </SelectItem>
-                ))}
+              {state.areas.map((a) => (
+                <SelectItem key={a.localId} value={a.localId}>
+                  {a.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

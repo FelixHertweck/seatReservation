@@ -27,7 +27,6 @@ import jakarta.transaction.Transactional;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 
-import de.felixhertweck.seatreservation.management.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
@@ -59,31 +58,23 @@ public class SeatResourceTest {
     @Inject SeatRepository seatRepository;
     @Inject EventLocationRepository eventLocationRepository;
     @Inject EventLocationAreaRepository eventLocationAreaRepository;
-
     @Inject EventLocationEntranceRepository eventLocationEntranceRepository;
     @Inject UserRepository userRepository;
     @Inject EventRepository eventRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject ReservationRepository reservationRepository;
-
     @Inject CheckInTokenRepository checkInTokenRepository;
     @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
     private Seat testSeat;
     private EventLocation testLocation;
     private EventLocationArea areaParkett;
-    private EventLocationArea areaBalkon;
-    private EventLocationArea areaLoge;
     private EventLocationEntrance entranceA;
-    private EventLocationEntrance entranceB;
-    private EventLocationEntrance entranceC;
 
     @BeforeEach
     @Transactional
     @SuppressWarnings("unused")
     void setUp() {
-        // Defensively clear any leftover tokens from a previous run's failed teardown - they'd
-        // otherwise block this run's own eventRepository.deleteAll() via the FK to events.
         emailSeatMapTokenRepository.deleteAll();
 
         var manager = userRepository.findByUsernameOptional("manager").orElseThrow();
@@ -102,35 +93,24 @@ public class SeatResourceTest {
         var testAllowance = new EventUserAllowance(manager, testEvent, 100);
         eventUserAllowanceRepository.persist(testAllowance);
 
-        testSeat = new Seat("A1", "R: 1", testLocation);
-        seatRepository.persist(testSeat);
-
         areaParkett = new EventLocationArea("Parkett");
         areaParkett.setEventLocation(testLocation);
         eventLocationAreaRepository.persist(areaParkett);
-        areaBalkon = new EventLocationArea("Balkon");
-        areaBalkon.setEventLocation(testLocation);
-        eventLocationAreaRepository.persist(areaBalkon);
-        areaLoge = new EventLocationArea("Loge");
-        areaLoge.setEventLocation(testLocation);
-        eventLocationAreaRepository.persist(areaLoge);
 
         entranceA = new EventLocationEntrance("A");
         entranceA.setEventLocation(testLocation);
         eventLocationEntranceRepository.persist(entranceA);
-        entranceB = new EventLocationEntrance("B");
-        entranceB.setEventLocation(testLocation);
-        eventLocationEntranceRepository.persist(entranceB);
-        entranceC = new EventLocationEntrance("C");
-        entranceC.setEventLocation(testLocation);
-        eventLocationEntranceRepository.persist(entranceC);
+
+        testSeat = new Seat("A1", "R: 1", testLocation);
+        testSeat.setArea(areaParkett);
+        testSeat.setEntrance(entranceA);
+        seatRepository.persist(testSeat);
     }
 
     @AfterEach
     @Transactional
     @SuppressWarnings("unused")
     void tearDown() {
-        // It's safer to delete all created entities to clean up the state
         emailSeatMapTokenRepository.deleteAll();
         reservationRepository.deleteAll();
         checkInTokenRepository.deleteAll();
@@ -205,7 +185,10 @@ public class SeatResourceTest {
                 .get("/api/manager/seats/" + testSeat.id)
                 .then()
                 .statusCode(200)
-                .body("id", is(testSeat.id.toString()));
+                .body("id", is(testSeat.id.toString()))
+                .body("seatNumber", is("A1"))
+                .body("area", is("Parkett"))
+                .body("entrance", is("A"));
     }
 
     @Test
@@ -220,301 +203,5 @@ public class SeatResourceTest {
                             type = ClaimType.STRING))
     void testGetManagerSeatByIdNotFound() {
         given().when().get("/api/manager/seats/" + id(999)).then().statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testCreateSeat() {
-        given().contentType("application/json")
-                .body(
-                        new SeatRequestDTO(
-                                "A2", "R: 2", testLocation.id, 1, 2, entranceA.id, areaParkett.id))
-                .when()
-                .post("/api/manager/seats")
-                .then()
-                .statusCode(200)
-                .body("seatNumber", is("A2"))
-                .body("area", is("Parkett"));
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testCreateSeatInvalidData() {
-        given().contentType("application/json")
-                .body("{\"seatNumber\":\"\"}")
-                .when()
-                .post("/api/manager/seats")
-                .then()
-                .statusCode(400);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testUpdateManagerSeat() {
-        given().contentType("application/json")
-                .body(
-                        new SeatRequestDTO(
-                                "A3", "R: 2", testLocation.id, 1, 3, entranceA.id, areaBalkon.id))
-                .when()
-                .put("/api/manager/seats/" + testSeat.id)
-                .then()
-                .statusCode(200)
-                .body("seatNumber", is("A3"));
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testUpdateManagerSeatEntranceAndRowArePersisted() {
-        given().contentType("application/json")
-                .body(
-                        new SeatRequestDTO(
-                                "A1", "R: 5", testLocation.id, 1, 1, entranceB.id, areaLoge.id))
-                .when()
-                .put("/api/manager/seats/" + testSeat.id)
-                .then()
-                .statusCode(200)
-                .body("entrance", is("B"))
-                .body("area", is("Loge"))
-                .body("seatRow", is("R: 5"));
-
-        given().when()
-                .queryParam("eventLocationId", testLocation.id)
-                .get("/api/manager/seats")
-                .then()
-                .statusCode(200)
-                .body("size()", is(1))
-                .body(String.format("find { it.id == '%s' }.entrance", testSeat.id), is("B"))
-                .body(String.format("find { it.id == '%s' }.area", testSeat.id), is("Loge"))
-                .body(String.format("find { it.id == '%s' }.seatRow", testSeat.id), is("R: 5"));
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testCreateUpdateAndRetrieveSeatLifecycle() {
-        String createdSeatId =
-                given().contentType("application/json")
-                        .body(
-                                new SeatRequestDTO(
-                                        "B1",
-                                        "R: 7",
-                                        testLocation.id,
-                                        5,
-                                        6,
-                                        entranceA.id,
-                                        areaParkett.id))
-                        .when()
-                        .post("/api/manager/seats")
-                        .then()
-                        .statusCode(200)
-                        .body("seatNumber", is("B1"))
-                        .extract()
-                        .path("id");
-
-        given().contentType("application/json")
-                .body(
-                        new SeatRequestDTO(
-                                "B1", "R: 9", testLocation.id, 7, 8, entranceC.id, areaBalkon.id))
-                .when()
-                .put("/api/manager/seats/" + createdSeatId)
-                .then()
-                .statusCode(200)
-                .body("seatRow", is("R: 9"))
-                .body("entrance", is("C"))
-                .body("area", is("Balkon"));
-
-        given().when()
-                .get("/api/manager/seats/" + createdSeatId)
-                .then()
-                .statusCode(200)
-                .body("seatRow", is("R: 9"))
-                .body("entrance", is("C"));
-
-        given().when()
-                .queryParam("eventLocationId", testLocation.id)
-                .get("/api/manager/seats")
-                .then()
-                .statusCode(200)
-                .body("size()", is(2))
-                .body(String.format("find { it.id == '%s' }.entrance", createdSeatId), is("C"))
-                .body(String.format("find { it.id == '%s' }.seatRow", createdSeatId), is("R: 9"));
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testUpdateManagerSeatNotFound() {
-        given().contentType("application/json")
-                .body(
-                        new SeatRequestDTO(
-                                "A3", "R: 2", testLocation.id, 1, 3, entranceA.id, areaBalkon.id))
-                .when()
-                .put("/api/manager/seats/" + id(999))
-                .then()
-                .statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testDeleteManagerSeat() {
-        given().when()
-                .queryParam("ids", testSeat.id)
-                .delete("/api/manager/seats")
-                .then()
-                .statusCode(204);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testDeleteManagerSeatNotFound() {
-        given().when()
-                .queryParam("ids", id(999).toString())
-                .delete("/api/manager/seats")
-                .then()
-                .statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testDeleteMultipleSeats() {
-        // Create additional seats for bulk delete test
-        var seat2 = new Seat("A2", "R: 1", testLocation);
-
-        var seat3 = new Seat("A3", "R: 1", testLocation);
-
-        seedAdditionalSeats(seat2, seat3);
-
-        // Delete multiple seats
-        given().when()
-                .queryParam("ids", testSeat.id)
-                .queryParam("ids", seat2.id)
-                .queryParam("ids", seat3.id)
-                .delete("/api/manager/seats")
-                .then()
-                .statusCode(204);
-
-        // Verify all were deleted
-        given().when()
-                .queryParam("eventLocationId", testLocation.id)
-                .get("/api/manager/seats")
-                .then()
-                .statusCode(200)
-                .body("size()", is(0));
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testDeleteMultipleSeats_PartialNotFound() {
-        given().when()
-                .queryParam("ids", testSeat.id)
-                .queryParam("ids", id(999).toString())
-                .delete("/api/manager/seats")
-                .then()
-                .statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "user",
-            roles = {"USER"})
-    void testDeleteSeat_Forbidden() {
-        given().when()
-                .queryParam("ids", testSeat.id)
-                .delete("/api/manager/seats")
-                .then()
-                .statusCode(403);
-    }
-
-    @Test
-    void testDeleteSeat_Unauthorized() {
-        given().when()
-                .queryParam("ids", testSeat.id)
-                .delete("/api/manager/seats")
-                .then()
-                .statusCode(401);
-    }
-
-    @Transactional
-    void seedAdditionalSeats(Seat seat2, Seat seat3) {
-        seatRepository.persist(seat2);
-        seatRepository.persist(seat3);
     }
 }

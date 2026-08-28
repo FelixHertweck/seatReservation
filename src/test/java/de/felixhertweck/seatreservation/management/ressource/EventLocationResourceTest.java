@@ -563,4 +563,90 @@ public class EventLocationResourceTest {
                 .body("name", is("New Location"))
                 .body("seatCount", is(2));
     }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
+    void testUpdateLocationLayout_AtomicFullSync() {
+        String layoutPayload =
+                "{\n"
+                    + "  \"name\": \"Synchronized Location\",\n"
+                    + "  \"address\": \"789 Sync Blvd\",\n"
+                    + "  \"entrances\": [\n"
+                    + "    { \"tempId\": \"tmp-entrance-1\", \"name\": \"North Entrance\" }\n"
+                    + "  ],\n"
+                    + "  \"areas\": [\n"
+                    + "    { \"tempId\": \"tmp-area-1\", \"name\": \"Parkett\", \"boundary\":"
+                    + " [{\"xCoordinate\": 0, \"yCoordinate\": 0}, {\"xCoordinate\": 10,"
+                    + " \"yCoordinate\": 0}] }\n"
+                    + "  ],\n"
+                    + "  \"markers\": [\n"
+                    + "    { \"tempId\": \"tmp-marker-1\", \"label\": \"Stage\", \"coordinate\":"
+                    + " {\"xCoordinate\": 5, \"yCoordinate\": 5} }\n"
+                    + "  ],\n"
+                    + "  \"seats\": [\n"
+                    + "    {\n"
+                    + "      \"tempId\": \"tmp-seat-1\",\n"
+                    + "      \"seatNumber\": \"1\",\n"
+                    + "      \"seatRow\": \"Row A\",\n"
+                    + "      \"coordinate\": {\"xCoordinate\": 1, \"yCoordinate\": 1},\n"
+                    + "      \"entranceTempId\": \"tmp-entrance-1\",\n"
+                    + "      \"areaTempId\": \"tmp-area-1\"\n"
+                    + "    },\n"
+                    + "    {\n"
+                    + "      \"tempId\": \"tmp-seat-2\",\n"
+                    + "      \"seatNumber\": \"2\",\n"
+                    + "      \"seatRow\": \"Row A\",\n"
+                    + "      \"coordinate\": {\"xCoordinate\": 2, \"yCoordinate\": 1},\n"
+                    + "      \"entranceTempId\": \"tmp-entrance-1\",\n"
+                    + "      \"areaTempId\": \"tmp-area-1\"\n"
+                    + "    }\n"
+                    + "  ]\n"
+                    + "}";
+
+        given().contentType("application/json")
+                .body(layoutPayload)
+                .when()
+                .put("/api/manager/eventlocations/" + testLocation.getId() + "/layout")
+                .then()
+                .statusCode(200)
+                .body("name", is("Synchronized Location"))
+                .body("address", is("789 Sync Blvd"))
+                .body("seats.size()", is(2))
+                .body("markers.size()", is(1))
+                .body("areas.size()", is(1))
+                .body("entrances.size()", is(1))
+                .body("seats[0].area", is("Parkett"))
+                .body("seats[0].entrance", is("North Entrance"));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "testUser",
+            roles = {"USER"})
+    void testUpdateLocationLayout_Forbidden() {
+        given().contentType("application/json")
+                .body("{}")
+                .when()
+                .put("/api/manager/eventlocations/" + testLocation.getId() + "/layout")
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    void testUpdateLocationLayout_Unauthorized() {
+        given().contentType("application/json")
+                .body("{}")
+                .when()
+                .put("/api/manager/eventlocations/" + testLocation.getId() + "/layout")
+                .then()
+                .statusCode(401);
+    }
 }

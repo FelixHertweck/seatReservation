@@ -135,28 +135,6 @@ export const AreaDTOSchema = {
     }
 } as const;
 
-export const AreaRequestDTOSchema = {
-    type: 'object',
-    required: [
-        'name',
-        'eventLocationId'
-    ],
-    properties: {
-        name: {
-            type: 'string'
-        },
-        boundary: {
-            type: 'array',
-            items: {
-                $ref: '#/components/schemas/CoordinateDTO'
-            }
-        },
-        eventLocationId: {
-            $ref: '#/components/schemas/UUID'
-        }
-    }
-} as const;
-
 export const AreaResponseDTOSchema = {
     type: 'object',
     properties: {
@@ -423,22 +401,6 @@ export const EmailCooldownDTOSchema = {
     }
 } as const;
 
-export const EntranceRequestDTOSchema = {
-    type: 'object',
-    required: [
-        'eventLocationId',
-        'name'
-    ],
-    properties: {
-        eventLocationId: {
-            $ref: '#/components/schemas/UUID'
-        },
-        name: {
-            type: 'string'
-        }
-    }
-} as const;
-
 export const EntranceResponseDTOSchema = {
     type: 'object',
     properties: {
@@ -508,6 +470,163 @@ export const EventContingentUsageDTOSchema = {
             type: 'integer',
             format: 'int32',
             description: 'Contingent usage percentage (0-100)'
+        }
+    }
+} as const;
+
+export const EventLocationLayoutRequestDTOSchema = {
+    type: 'object',
+    properties: {
+        name: {
+            type: 'string'
+        },
+        address: {
+            type: 'string'
+        },
+        managerIds: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        },
+        entrances: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/LayoutEntranceDto'
+            }
+        },
+        areas: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/LayoutAreaDto'
+            }
+        },
+        markers: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/LayoutMarkerDto'
+            }
+        },
+        seats: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/LayoutSeatDto'
+            }
+        },
+        deletedEntranceIds: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        },
+        deletedAreaIds: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        },
+        deletedMarkerIds: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        },
+        deletedSeatIds: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        }
+    }
+} as const;
+
+export const EventLocationLayoutResponseDTOSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            $ref: '#/components/schemas/UUID'
+        },
+        name: {
+            type: 'string'
+        },
+        address: {
+            type: 'string'
+        },
+        managerIds: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        },
+        createdEntranceIdMap: {
+            type: 'object',
+            additionalProperties: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        },
+        createdAreaIdMap: {
+            type: 'object',
+            additionalProperties: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        },
+        createdMarkerIdMap: {
+            type: 'object',
+            additionalProperties: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        },
+        createdSeatIdMap: {
+            type: 'object',
+            additionalProperties: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        },
+        seats: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/SeatDTO'
+            }
+        },
+        markers: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/EventLocationMakerDTO'
+            }
+        },
+        areas: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/AreaResponseDTO'
+            }
+        },
+        entrances: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/EntranceResponseDTO'
+            }
         }
     }
 } as const;
@@ -925,6 +1044,113 @@ export const InstantSchema = {
     ]
 } as const;
 
+export const LayoutAreaDtoSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            $ref: '#/components/schemas/UUID'
+        },
+        tempId: {
+            type: 'string'
+        },
+        name: {
+            type: 'string',
+            pattern: '\\S'
+        },
+        boundary: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/CoordinateDTO'
+            }
+        }
+    },
+    required: [
+        'name'
+    ]
+} as const;
+
+export const LayoutEntranceDtoSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            $ref: '#/components/schemas/UUID'
+        },
+        tempId: {
+            type: 'string'
+        },
+        name: {
+            type: 'string',
+            pattern: '\\S'
+        }
+    },
+    required: [
+        'name'
+    ]
+} as const;
+
+export const LayoutMarkerDtoSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            $ref: '#/components/schemas/UUID'
+        },
+        tempId: {
+            type: 'string'
+        },
+        label: {
+            type: 'string',
+            pattern: '\\S'
+        },
+        coordinate: {
+            $ref: '#/components/schemas/CoordinateDTO'
+        }
+    },
+    required: [
+        'label',
+        'coordinate'
+    ]
+} as const;
+
+export const LayoutSeatDtoSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            $ref: '#/components/schemas/UUID'
+        },
+        tempId: {
+            type: 'string'
+        },
+        seatNumber: {
+            type: 'string',
+            pattern: '\\S'
+        },
+        seatRow: {
+            type: 'string',
+            pattern: '\\S'
+        },
+        coordinate: {
+            $ref: '#/components/schemas/CoordinateDTO'
+        },
+        entranceId: {
+            $ref: '#/components/schemas/UUID'
+        },
+        entranceTempId: {
+            type: 'string'
+        },
+        areaId: {
+            $ref: '#/components/schemas/UUID'
+        },
+        areaTempId: {
+            type: 'string'
+        }
+    },
+    required: [
+        'seatNumber',
+        'seatRow',
+        'coordinate'
+    ]
+} as const;
+
 export const LimitedUserInfoDTOSchema = {
     type: 'object',
     properties: {
@@ -978,26 +1204,6 @@ export const LoginRequestDTOSchema = {
         altchaPayload: {
             type: 'string',
             description: 'ALTCHA proof-of-work verification payload'
-        }
-    }
-} as const;
-
-export const MakerRequestDTOSchema = {
-    type: 'object',
-    required: [
-        'label',
-        'coordinate',
-        'eventLocationId'
-    ],
-    properties: {
-        label: {
-            type: 'string'
-        },
-        coordinate: {
-            $ref: '#/components/schemas/CoordinateDTO'
-        },
-        eventLocationId: {
-            $ref: '#/components/schemas/UUID'
         }
     }
 } as const;
@@ -1449,36 +1655,6 @@ export const SeatDTOSchema = {
             type: 'string'
         },
         area: {
-            type: 'string'
-        },
-        entranceId: {
-            $ref: '#/components/schemas/UUID'
-        },
-        areaId: {
-            $ref: '#/components/schemas/UUID'
-        }
-    }
-} as const;
-
-export const SeatRequestDTOSchema = {
-    type: 'object',
-    required: [
-        'seatNumber',
-        'eventLocationId',
-        'coordinate',
-        'seatRow'
-    ],
-    properties: {
-        seatNumber: {
-            type: 'string'
-        },
-        eventLocationId: {
-            $ref: '#/components/schemas/UUID'
-        },
-        coordinate: {
-            $ref: '#/components/schemas/CoordinateDTO'
-        },
-        seatRow: {
             type: 'string'
         },
         entranceId: {
