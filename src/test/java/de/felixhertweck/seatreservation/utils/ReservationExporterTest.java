@@ -67,9 +67,21 @@ class ReservationExporterTest {
             String firstName,
             String lastName,
             ReservationStatus status) {
+        return createReservation(id, seatNumber, seatRow, firstName, lastName, null, status);
+    }
+
+    private Reservation createReservation(
+            UUID id,
+            String seatNumber,
+            String seatRow,
+            String firstName,
+            String lastName,
+            String email,
+            ReservationStatus status) {
         User user = new User();
         user.setFirstname(firstName);
         user.setLastname(lastName);
+        user.setEmail(email);
         user.id = id;
         Seat seat = new Seat(seatNumber, seatRow, null);
         seat.id = id;
@@ -134,9 +146,26 @@ class ReservationExporterTest {
         assertTrue(
                 csv.startsWith(
                         "ID,Reservation Status,Seat Number,Seat Row,Entrance,Area,First Name,Last"
-                                + " Name,Reservation Date"));
+                                + " Name,Email,Reservation Date"));
         assertTrue(csv.contains("A1"));
         assertTrue(csv.contains("Max"));
+    }
+
+    @Test
+    void exportReservationsToCsv_includesUserEmail() throws IOException {
+        Reservation reservation =
+                createReservation(
+                        id(1),
+                        "A1",
+                        "1",
+                        "Max",
+                        "Mustermann",
+                        "max.mustermann@example.com",
+                        ReservationStatus.RESERVED);
+        byte[] csvBytes =
+                ReservationExporter.exportReservationsToCsv(List.of(reservation)).toByteArray();
+        String csv = new String(csvBytes);
+        assertTrue(csv.contains("Mustermann,max.mustermann@example.com,"), csv);
     }
 
     @Test
@@ -146,7 +175,7 @@ class ReservationExporterTest {
         String csv = new String(csvBytes);
         assertEquals(
                 "ID,Reservation Status,Seat Number,Seat Row,Entrance,Area,First Name,Last"
-                        + " Name,Reservation Date\r\n",
+                        + " Name,Email,Reservation Date\r\n",
                 csv);
     }
 
@@ -165,7 +194,7 @@ class ReservationExporterTest {
         assertTrue(
                 csv.startsWith(
                         "ID,Reservation Status,Seat Number,Seat Row,Entrance,Area,First Name,Last"
-                                + " Name,Reservation Date"));
+                                + " Name,Email,Reservation Date"));
         assertTrue(csv.contains("Max"));
         assertTrue(csv.contains("Erika"));
         long linebreaks = csv.chars().filter(ch -> ch == '\n').count();
