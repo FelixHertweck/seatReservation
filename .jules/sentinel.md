@@ -1,0 +1,4 @@
+## 2024-05-18 - CSV Injection Formula Trigger: Carriage Return
+**Vulnerability:** A CSV injection vulnerability existed in `ReservationExporter.java` where fields starting with a carriage return (`\r`) could act as formula triggers in some spreadsheet applications, but were incorrectly treated as trimmable whitespace.
+**Learning:** When sanitizing user input for CSV export, `\r` and `\t` must not be ignored during the leading whitespace trimming phase. Trimming `\r` allows malicious payloads like `\r=cmd` to slip past formula trigger checks.
+**Prevention:** Explicitly exclude both `\t` and `\r` from any leading-whitespace trimming logic and include them in the set of triggering characters requiring escape (prepend `'`).
