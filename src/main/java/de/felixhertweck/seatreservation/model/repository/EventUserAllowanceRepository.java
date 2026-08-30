@@ -188,7 +188,12 @@ public class EventUserAllowanceRepository
      * @return a list of event user allowances for the specified user, with the event pre-fetched
      */
     public List<EventUserAllowance> findByUserWithEvent(User user) {
-        return find("select a from EventUserAllowance a join fetch a.event where a.user = ?1", user)
+        return find(
+                        // ⚡ Bolt: Eagerly fetch eventLocation to prevent N+1 queries when mapping
+                        // to UserEventResponseDTO
+                        "select a from EventUserAllowance a join fetch a.event e left join fetch"
+                                + " e.event_location where a.user = ?1",
+                        user)
                 .list();
     }
 
