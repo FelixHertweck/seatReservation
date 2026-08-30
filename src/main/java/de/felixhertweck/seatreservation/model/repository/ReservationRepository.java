@@ -263,8 +263,10 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
      */
     public List<Reservation> findByUserWithEvent(User user) {
         return find(
-                        "select r from Reservation r join fetch r.event"
-                                + " where r.user = ?1 and r.status != ?2",
+                        // ⚡ Bolt: Eagerly fetch eventLocation to prevent N+1 queries when mapping
+                        // to UserEventResponseDTO
+                        "select r from Reservation r join fetch r.event e left join fetch"
+                                + " e.eventLocation where r.user = ?1 and r.status != ?2",
                         user,
                         ReservationStatus.BLOCKED)
                 .list();
