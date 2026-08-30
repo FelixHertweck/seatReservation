@@ -266,7 +266,7 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
                         // ⚡ Bolt: Eagerly fetch eventLocation to prevent N+1 queries when mapping
                         // to UserEventResponseDTO
                         "select r from Reservation r join fetch r.event e left join fetch"
-                                + " e.eventLocation where r.user = ?1 and r.status != ?2",
+                                + " e.event_location where r.user = ?1 and r.status != ?2",
                         user,
                         ReservationStatus.BLOCKED)
                 .list();

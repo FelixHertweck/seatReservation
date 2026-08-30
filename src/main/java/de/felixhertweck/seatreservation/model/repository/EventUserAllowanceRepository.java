@@ -192,7 +192,7 @@ public class EventUserAllowanceRepository
                         // ⚡ Bolt: Eagerly fetch eventLocation to prevent N+1 queries when mapping
                         // to UserEventResponseDTO
                         "select a from EventUserAllowance a join fetch a.event e left join fetch"
-                                + " e.eventLocation where a.user = ?1",
+                                + " e.event_location where a.user = ?1",
                         user)
                 .list();
     }
