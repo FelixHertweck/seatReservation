@@ -193,8 +193,8 @@ public class TwoFactorResourceTest {
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
     public void disableTwoFactor_Enabled_ValidCode_Success() throws Exception {
-        long enableTotpStep = currentTotpStep();
         String secret = enableTotpForCurrentUser();
+        long enableTotpStep = currentTotpStep();
 
         // Replay protection rejects reusing a code from an already-accepted TOTP step (RFC 6238),
         // so the code used to disable must land on a step later than the one /2fa/enable consumed.
@@ -302,8 +302,8 @@ public class TwoFactorResourceTest {
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
     public void regenerateBackupCodes_ValidCode_Success() throws Exception {
-        long enableTotpStep = currentTotpStep();
         String secret = enableTotpForCurrentUser();
+        long enableTotpStep = currentTotpStep();
 
         // Replay protection rejects reusing a code from an already-accepted TOTP step (RFC 6238),
         // so the code used to regenerate must land on a step later than the one /2fa/enable
