@@ -108,18 +108,33 @@ public class OverviewService {
                                                 && !now.isAfter(e.getBookingDeadline()))
                         .count();
 
-        long reservationsReserved =
-                allReservations.stream()
-                        .filter(r -> r.getStatus() == ReservationStatus.RESERVED)
-                        .count();
-        long reservationsBlocked =
-                allReservations.stream()
-                        .filter(r -> r.getStatus() == ReservationStatus.BLOCKED)
-                        .count();
-        long reservationsPending =
-                allReservations.stream()
-                        .filter(r -> r.getStatus() == ReservationStatus.PENDING)
-                        .count();
+        // ⚡ Bolt Optimization: Consolidate multiple streams into a single O(N) iteration
+        long reservationsReserved = 0;
+        long reservationsBlocked = 0;
+        long reservationsPending = 0;
+        java.util.Map<UUID, Long> reservedCountByEventId = new java.util.HashMap<>();
+        java.util.Map<String, Long> reservedCountByPair = new java.util.HashMap<>();
+
+        for (Reservation r : allReservations) {
+            ReservationStatus status = r.getStatus();
+            if (status == ReservationStatus.RESERVED) {
+                reservationsReserved++;
+                if (r.getEvent() != null) {
+                    UUID eventId = r.getEvent().getId();
+                    reservedCountByEventId.put(
+                            eventId, reservedCountByEventId.getOrDefault(eventId, 0L) + 1);
+                    if (r.getUser() != null) {
+                        String pairKey = eventId + ":" + r.getUser().getId();
+                        reservedCountByPair.put(
+                                pairKey, reservedCountByPair.getOrDefault(pairKey, 0L) + 1);
+                    }
+                }
+            } else if (status == ReservationStatus.BLOCKED) {
+                reservationsBlocked++;
+            } else if (status == ReservationStatus.PENDING) {
+                reservationsPending++;
+            }
+        }
         long reservationsCount = reservationsReserved + reservationsBlocked + reservationsPending;
 
         Set<UUID> locationIds =
@@ -137,16 +152,6 @@ public class OverviewService {
                         ? Map.of()
                         : eventLocationRepository.getSeatCountsByLocationIds(locationIds);
 
-        Map<UUID, Long> reservedCountByEventId =
-                allReservations.stream()
-                        .filter(
-                                r ->
-                                        r.getStatus() == ReservationStatus.RESERVED
-                                                && r.getEvent() != null)
-                        .collect(
-                                Collectors.groupingBy(
-                                        r -> r.getEvent().getId(), Collectors.counting()));
-
         long occupancyReserved = 0;
         long occupancyCapacity = 0;
         for (Event e : futureEvents) {
@@ -159,18 +164,6 @@ public class OverviewService {
                 occupancyCapacity > 0
                         ? (int) Math.round(((double) occupancyReserved / occupancyCapacity) * 100.0)
                         : 0;
-
-        Map<String, Long> reservedCountByPair =
-                allReservations.stream()
-                        .filter(
-                                r ->
-                                        r.getStatus() == ReservationStatus.RESERVED
-                                                && r.getEvent() != null
-                                                && r.getUser() != null)
-                        .collect(
-                                Collectors.groupingBy(
-                                        r -> r.getEvent().getId() + ":" + r.getUser().getId(),
-                                        Collectors.counting()));
 
         long contingentUsed = 0;
         long contingentGranted = 0;
