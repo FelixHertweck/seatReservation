@@ -1,0 +1,4 @@
+## 2026-09-02 - CSV Formula Injection via Carriage Return
+**Vulnerability:** A CSV Formula Injection vulnerability was found in the `ReservationExporter` because carriage return (`\r`) was incorrectly being trimmed before checking for formula trigger characters (like `=`). Since spreadsheet software like Excel doesn't always strip leading `\r` and can still parse formulas following it, this allowed bypassing the CSV protection.
+**Learning:** `Character.isWhitespace(c)` considers `\r` as whitespace. When validating/escaping CSV injection triggers, do not trim characters like `\r` (or `\t`) which can be used to bypass the checks while still triggering formulas in spreadsheets.
+**Prevention:** Explicitly exclude characters like `\r` and `\t` from any whitespace trimming logic used to detect formula triggers in CSV data to ensure they are properly evaluated or escaped.
