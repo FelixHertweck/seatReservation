@@ -1,0 +1,4 @@
+## 2026-09-03 - Fix CSV injection via Carriage Return in ReservationExporter
+**Vulnerability:** The `escapeCsvField` method in `ReservationExporter.java` failed to identify the carriage return (`\r`) character as a CSV formula injection trigger. Spreadsheet software (like Excel) will evaluate fields starting with `\r=` as formulas, which allowed an attacker to bypass the existing mitigation that only checked for `=`, `+`, `-`, `@`, and `\t`.
+**Learning:** `\r` and `\t` are both evaluated as whitespace in standard spreadsheet injection payloads but are not consistently handled by `Character.isWhitespace()`. It's critical to manually exclude all such characters from trimming and include them in trigger checks.
+**Prevention:** When manually mitigating CSV Injection, ensure that `\r` (along with `\t`) is always included in the trigger character list, and that it is never trimmed before the trigger character evaluation.
