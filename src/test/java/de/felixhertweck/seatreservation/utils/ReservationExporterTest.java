@@ -216,6 +216,17 @@ class ReservationExporterTest {
     }
 
     @Test
+    void exportReservationsToCsv_fieldWithCarriageReturn_isEscaped() throws IOException {
+        Reservation reservation =
+                createReservation(
+                        id(1), "A1", "1", "\rcmd", "Mustermann", ReservationStatus.RESERVED);
+        byte[] csvBytes =
+                ReservationExporter.exportReservationsToCsv(List.of(reservation)).toByteArray();
+        String csv = new String(csvBytes);
+        assertTrue(csv.contains("'\rcmd"), csv);
+    }
+
+    @Test
     void exportReservationsToCsv_fieldWithoutFormulaTrigger_isNotEscaped() throws IOException {
         Reservation reservation =
                 createReservation(
