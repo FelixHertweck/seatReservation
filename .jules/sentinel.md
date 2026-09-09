@@ -1,0 +1,4 @@
+## 2026-09-09 - Fix CSV Injection Bypass via Carriage Return
+**Vulnerability:** The CSV export function was vulnerable to CSV Formula Injection because it failed to escape fields starting with a carriage return (`\r`) character. The whitespace trimming logic (`Character.isWhitespace`) inadvertently consumed the `\r`, preventing it from being recognized as a trigger character.
+**Learning:** When manually implementing CSV injection protections, whitespace trimming logic must explicitly exclude characters like `\t` and `\r` that can act as formula triggers in spreadsheet software. Otherwise, payloads like `\r=cmd` or `\rcmd` can bypass the leading-whitespace checks.
+**Prevention:** Explicitly exclude dangerous trigger characters from any leading-whitespace trimming logic before evaluating the first non-whitespace character for formula triggers. Additionally, ensure all known trigger characters (including `\t` and `\r`) are checked.

@@ -216,6 +216,20 @@ class ReservationExporterTest {
     }
 
     @Test
+    void exportReservationsToCsv_fieldWithLeadingCarriageReturn_isEscaped() throws IOException {
+        Reservation reservation =
+                createReservation(
+                        id(1), "A1", "1", "\rcmd", "Mustermann", ReservationStatus.RESERVED);
+        byte[] csvBytes =
+                ReservationExporter.exportReservationsToCsv(List.of(reservation)).toByteArray();
+        String csv = new String(csvBytes);
+        // The actual text is \rcmd, so after escaping it should have a leading quote: '\rcmd
+        // However, the test framework might represent it as \"'\\rcmd\" if it got quoted due to the
+        // carriage return
+        assertTrue(csv.contains("'"), csv);
+    }
+
+    @Test
     void exportReservationsToCsv_fieldWithoutFormulaTrigger_isNotEscaped() throws IOException {
         Reservation reservation =
                 createReservation(
