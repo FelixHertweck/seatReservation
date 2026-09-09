@@ -44,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -74,6 +75,7 @@ import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCod
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import io.quarkus.elytron.security.common.BcryptUtil;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -1034,7 +1036,10 @@ public class UserServiceTest {
                         "L2",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        when(userRepository.listAll()).thenReturn(Arrays.asList(user1, user2));
+        PanacheQuery<User> mockQuery = mock(PanacheQuery.class);
+        when(mockQuery.stream()).thenReturn(Arrays.asList(user1, user2).stream());
+        when(userRepository.find("select distinct u from User u left join fetch u.tags"))
+                .thenReturn(mockQuery);
 
         List<LimitedUserInfoDTO> users = userService.getAllUsers();
 
@@ -1046,7 +1051,10 @@ public class UserServiceTest {
 
     @Test
     void getAllUsers_Success_NoUsers() {
-        when(userRepository.listAll()).thenReturn(Collections.emptyList());
+        PanacheQuery<User> mockQuery = mock(PanacheQuery.class);
+        when(mockQuery.stream()).thenReturn(Collections.<User>emptyList().stream());
+        when(userRepository.find("select distinct u from User u left join fetch u.tags"))
+                .thenReturn(mockQuery);
 
         List<LimitedUserInfoDTO> users = userService.getAllUsers();
 
