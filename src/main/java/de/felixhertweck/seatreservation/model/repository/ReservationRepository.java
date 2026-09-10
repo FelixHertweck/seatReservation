@@ -307,6 +307,24 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
     }
 
     /**
+     * Finds all reservations for a specific user and event ID, excluding those with BLOCKED status.
+     *
+     * @param user the user to search for
+     * @param eventId the event ID to search for
+     * @return a list of active reservations for the specified user and event
+     */
+    public List<Reservation> findActiveByUserAndEventId(User user, UUID eventId) {
+        return find(
+                        "select r from Reservation r join fetch r.event e left join fetch"
+                            + " e.event_location where r.user = ?1 and r.event.id = ?2 and r.status"
+                            + " != ?3",
+                        user,
+                        eventId,
+                        ReservationStatus.BLOCKED)
+                .list();
+    }
+
+    /**
      * Persists multiple reservations at once.
      *
      * @param newReservations the list of reservations to persist

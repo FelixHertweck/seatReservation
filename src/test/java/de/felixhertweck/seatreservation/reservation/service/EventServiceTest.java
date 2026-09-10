@@ -233,7 +233,7 @@ class EventServiceTest {
     void getEventByIdForCurrentUser_FallbackToReservationIfNoAllowance() {
         when(eventUserAllowanceRepository.findByUserAndEventId(user, event1.id))
                 .thenReturn(Optional.empty());
-        when(reservationRepository.findByUserAndEventId(user, event1.id))
+        when(reservationRepository.findActiveByUserAndEventId(user, event1.id))
                 .thenReturn(List.of(reservation1));
         mockReservationsByEventQuery(Set.of(event1.id), List.of());
         when(seatCartService.findPendingSeatIds(event1.id, user.id))
@@ -250,7 +250,7 @@ class EventServiceTest {
     void getEventByIdForCurrentUser_ThrowsExceptionIfNotFound() {
         when(eventUserAllowanceRepository.findByUserAndEventId(user, event1.id))
                 .thenReturn(Optional.empty());
-        when(reservationRepository.findByUserAndEventId(user, event1.id))
+        when(reservationRepository.findActiveByUserAndEventId(user, event1.id))
                 .thenReturn(Collections.emptyList());
 
         assertThrows(
@@ -266,8 +266,8 @@ class EventServiceTest {
 
         when(eventUserAllowanceRepository.findByUserAndEventId(user, event1.id))
                 .thenReturn(Optional.empty());
-        when(reservationRepository.findByUserAndEventId(user, event1.id))
-                .thenReturn(List.of(reservation1));
+        when(reservationRepository.findActiveByUserAndEventId(user, event1.id))
+                .thenReturn(Collections.emptyList());
 
         assertThrows(
                 EventNotFoundException.class,

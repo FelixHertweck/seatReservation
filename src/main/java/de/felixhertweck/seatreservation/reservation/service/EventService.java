@@ -129,8 +129,7 @@ public class EventService {
             // BLOCKED reservations must not grant access here, matching
             // getEventsForCurrentUser()/findByUserWithEvent, which excludes them too.
             event =
-                    reservationRepository.findByUserAndEventId(user, eventId).stream()
-                            .filter(r -> r.getStatus() != ReservationStatus.BLOCKED)
+                    reservationRepository.findActiveByUserAndEventId(user, eventId).stream()
                             .findFirst()
                             .map(Reservation::getEvent)
                             .orElse(null);
