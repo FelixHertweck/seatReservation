@@ -216,7 +216,8 @@ class ReservationExporterTest {
     }
 
     @Test
-    void exportReservationsToCsv_fieldWithLeadingCarriageReturnAfterWhitespace_isEscaped() throws IOException {
+    void exportReservationsToCsv_fieldWithLeadingCarriageReturnAfterWhitespace_isEscaped()
+            throws IOException {
         Reservation reservation =
                 createReservation(
                         id(1), "A1", "1", " \n\rcmd", "Mustermann", ReservationStatus.RESERVED);
