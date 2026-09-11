@@ -26,7 +26,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -48,22 +47,24 @@ import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepos
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
-import io.quarkus.test.InjectMock;
-import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@QuarkusTest
+@ExtendWith(MockitoExtension.class)
 public class OverviewServiceTest {
 
-    @InjectMock EventRepository eventRepository;
-    @InjectMock EventLocationRepository eventLocationRepository;
-    @InjectMock ReservationRepository reservationRepository;
-    @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
-    @InjectMock UserRepository userRepository;
+    @Mock EventRepository eventRepository;
+    @Mock EventLocationRepository eventLocationRepository;
+    @Mock ReservationRepository reservationRepository;
+    @Mock EventUserAllowanceRepository eventUserAllowanceRepository;
+    @Mock UserRepository userRepository;
 
-    @Inject OverviewService overviewService;
+    @InjectMocks OverviewService overviewService;
 
     private User adminUser;
     private User managerUser;
@@ -132,8 +133,8 @@ public class OverviewServiceTest {
         adminAuth = new AuthenticatedUser(adminUser.id, adminUser.getRoles());
         managerAuth = new AuthenticatedUser(managerUser.id, managerUser.getRoles());
 
-        when(userRepository.getReference(managerUser.id)).thenReturn(managerUser);
-        when(userRepository.getReference(adminUser.id)).thenReturn(adminUser);
+        Mockito.lenient().when(userRepository.getReference(managerUser.id)).thenReturn(managerUser);
+        Mockito.lenient().when(userRepository.getReference(adminUser.id)).thenReturn(adminUser);
 
         location = new EventLocation("Hall A", "Street 1", managerUser);
         location.id = id(10);

@@ -21,9 +21,9 @@ package de.felixhertweck.seatreservation.management.service;
 
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -91,61 +91,57 @@ public class OverviewService {
 
         long eventsCount = allEvents.size();
 
-        List<Event> futureEvents =
-                allEvents.stream()
-                        .filter(e -> e.getStartTime() != null && !e.getStartTime().isBefore(now))
-                        .toList();
+        List<Event> futureEvents = new java.util.ArrayList<>();
+        long bookingOpenCount = 0;
+        Set<UUID> locationIds = new java.util.HashSet<>();
+
+        for (Event e : allEvents) {
+            if (e.getStartTime() != null && !e.getStartTime().isBefore(now)) {
+                futureEvents.add(e);
+            }
+            if (e.getBookingStartTime() != null
+                    && e.getBookingDeadline() != null
+                    && !now.isBefore(e.getBookingStartTime())
+                    && !now.isAfter(e.getBookingDeadline())) {
+                bookingOpenCount++;
+            }
+            if (e.getEventLocation() != null && e.getEventLocation().getId() != null) {
+                locationIds.add(e.getEventLocation().getId());
+            }
+        }
 
         long upcomingEventsCount = futureEvents.size();
 
-        long bookingOpenCount =
-                allEvents.stream()
-                        .filter(
-                                e ->
-                                        e.getBookingStartTime() != null
-                                                && e.getBookingDeadline() != null
-                                                && !now.isBefore(e.getBookingStartTime())
-                                                && !now.isAfter(e.getBookingDeadline()))
-                        .count();
+        long reservationsReserved = 0;
+        long reservationsBlocked = 0;
+        long reservationsPending = 0;
+        Map<UUID, Long> reservedCountByEventId = new HashMap<>();
+        Map<String, Long> reservedCountByPair = new HashMap<>();
 
-        long reservationsReserved =
-                allReservations.stream()
-                        .filter(r -> r.getStatus() == ReservationStatus.RESERVED)
-                        .count();
-        long reservationsBlocked =
-                allReservations.stream()
-                        .filter(r -> r.getStatus() == ReservationStatus.BLOCKED)
-                        .count();
-        long reservationsPending =
-                allReservations.stream()
-                        .filter(r -> r.getStatus() == ReservationStatus.PENDING)
-                        .count();
+        for (Reservation r : allReservations) {
+            ReservationStatus status = r.getStatus();
+            if (status == ReservationStatus.RESERVED) {
+                reservationsReserved++;
+                if (r.getEvent() != null) {
+                    UUID eventId = r.getEvent().getId();
+                    reservedCountByEventId.merge(eventId, 1L, Long::sum);
+                    if (r.getUser() != null) {
+                        String pairKey = eventId + ":" + r.getUser().getId();
+                        reservedCountByPair.merge(pairKey, 1L, Long::sum);
+                    }
+                }
+            } else if (status == ReservationStatus.BLOCKED) {
+                reservationsBlocked++;
+            } else if (status == ReservationStatus.PENDING) {
+                reservationsPending++;
+            }
+        }
         long reservationsCount = reservationsReserved + reservationsBlocked + reservationsPending;
-
-        Set<UUID> locationIds =
-                allEvents.stream()
-                        .map(
-                                e ->
-                                        e.getEventLocation() != null
-                                                ? e.getEventLocation().getId()
-                                                : null)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toSet());
 
         Map<UUID, Integer> seatCounts =
                 locationIds.isEmpty()
                         ? Map.of()
                         : eventLocationRepository.getSeatCountsByLocationIds(locationIds);
-
-        Map<UUID, Long> reservedCountByEventId =
-                allReservations.stream()
-                        .filter(
-                                r ->
-                                        r.getStatus() == ReservationStatus.RESERVED
-                                                && r.getEvent() != null)
-                        .collect(
-                                Collectors.groupingBy(
-                                        r -> r.getEvent().getId(), Collectors.counting()));
 
         long occupancyReserved = 0;
         long occupancyCapacity = 0;
@@ -159,18 +155,6 @@ public class OverviewService {
                 occupancyCapacity > 0
                         ? (int) Math.round(((double) occupancyReserved / occupancyCapacity) * 100.0)
                         : 0;
-
-        Map<String, Long> reservedCountByPair =
-                allReservations.stream()
-                        .filter(
-                                r ->
-                                        r.getStatus() == ReservationStatus.RESERVED
-                                                && r.getEvent() != null
-                                                && r.getUser() != null)
-                        .collect(
-                                Collectors.groupingBy(
-                                        r -> r.getEvent().getId() + ":" + r.getUser().getId(),
-                                        Collectors.counting()));
 
         long contingentUsed = 0;
         long contingentGranted = 0;
