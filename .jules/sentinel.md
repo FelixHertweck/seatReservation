@@ -1,0 +1,4 @@
+## 2026-09-12 - Fix CSV Injection (Formula Injection) vulnerability in ReservationExporter
+**Vulnerability:** The CSV exporter (`ReservationExporter`) manually protected against formula injection, but the trigger character check was missing a check for carriage return (`\r`). An attacker could inject formulas by starting their payload with `\r` (e.g. `\rcmd`).
+**Learning:** When manually sanitizing strings to prevent CSV injection, you must be comprehensive. Spreadsheet software can treat characters like carriage return as formula triggers. These characters must be treated as explicit triggers and excluded from whitespace trimming checks so they are properly escaped.
+**Prevention:** Ensure the character `\r` is explicitly recognized as a formula trigger and excluded from the set of trimmable whitespace characters when checking for CSV injection payloads.
