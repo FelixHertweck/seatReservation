@@ -1,0 +1,13 @@
+--- src/test/java/de/felixhertweck/seatreservation/utils/ReservationExporterTest.java
++++ src/test/java/de/felixhertweck/seatreservation/utils/ReservationExporterTest.java
+@@ -226,9 +226,7 @@
+         String csv = new String(csvBytes);
+         assertTrue(
+                 csv.contains("'\r\ncmd")
+-                        || csv.contains("\"\r\ncmd\"")
+-                        || csv.contains("\"\rcmd\"")
+-                        || csv.contains("'\rcmd")
++                        || csv.contains("\"'\r\ncmd\"")
+                         || csv.contains("\"'\rcmd\""),
+                 csv);
+     }
