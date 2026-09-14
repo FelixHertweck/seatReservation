@@ -108,18 +108,21 @@ public class OverviewService {
                                                 && !now.isAfter(e.getBookingDeadline()))
                         .count();
 
-        long reservationsReserved =
-                allReservations.stream()
-                        .filter(r -> r.getStatus() == ReservationStatus.RESERVED)
-                        .count();
-        long reservationsBlocked =
-                allReservations.stream()
-                        .filter(r -> r.getStatus() == ReservationStatus.BLOCKED)
-                        .count();
-        long reservationsPending =
-                allReservations.stream()
-                        .filter(r -> r.getStatus() == ReservationStatus.PENDING)
-                        .count();
+        // ⚡ Bolt: Consolidated 3 stream().filter().count() passes into a single O(N) loop
+        // to reduce CPU overhead and memory allocations for large reservation collections.
+        long reservationsReserved = 0;
+        long reservationsBlocked = 0;
+        long reservationsPending = 0;
+
+        for (Reservation r : allReservations) {
+            if (r.getStatus() == ReservationStatus.RESERVED) {
+                reservationsReserved++;
+            } else if (r.getStatus() == ReservationStatus.BLOCKED) {
+                reservationsBlocked++;
+            } else if (r.getStatus() == ReservationStatus.PENDING) {
+                reservationsPending++;
+            }
+        }
         long reservationsCount = reservationsReserved + reservationsBlocked + reservationsPending;
 
         Set<UUID> locationIds =
