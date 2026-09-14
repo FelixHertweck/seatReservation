@@ -1,0 +1,4 @@
+## 2025-01-20 - CSV Injection Bypass via Carriage Return
+**Vulnerability:** A CSV injection protection mechanism failed to properly treat carriage return (`\r`) as a non-trimmable character and a potential formula trigger. This allowed payloads like `\r=cmd` to bypass the leading apostrophe addition but still be executed by spreadsheet applications.
+**Learning:** Spreadsheet software treats `\r` and `\t` specially. Unlike space or newline, they can serve as formula triggers if prepended with standard whitespace. Trimming logic that only uses `Character.isWhitespace()` misses these edge cases because it trims over them, causing later characters to be misinterpreted or ignored.
+**Prevention:** Always explicitly check for and exclude `\r` and `\t` from standard whitespace trimming algorithms when sanitizing CSV fields.

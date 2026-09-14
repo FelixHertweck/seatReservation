@@ -81,7 +81,8 @@ public class ReservationExporter {
                     || firstNonWs == '+'
                     || firstNonWs == '-'
                     || firstNonWs == '@'
-                    || firstNonWs == '\t') {
+                    || firstNonWs == '\t'
+                    || firstNonWs == '\r') {
                 escaped = "'" + escaped;
             }
         }
@@ -105,7 +106,7 @@ public class ReservationExporter {
      * leading-whitespace check below.
      */
     private static boolean isSpreadsheetTrimmable(char c) {
-        return c != '\t' && (Character.isWhitespace(c) || Character.isSpaceChar(c));
+        return c != '\t' && c != '\r' && (Character.isWhitespace(c) || Character.isSpaceChar(c));
     }
 
     private static final String TEMPLATE_PATH_BLOCKED = "/export-template/blocked.pdf";
