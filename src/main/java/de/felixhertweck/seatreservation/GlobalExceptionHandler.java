@@ -133,7 +133,10 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             case InvalidUserException ignored -> status = Response.Status.BAD_REQUEST;
             case RegistrationDisabledException ignored -> status = Response.Status.FORBIDDEN;
             case EmailNotVerifiedException ignored -> status = Response.Status.FORBIDDEN;
-            case InvalidTwoFactorCodeException ignored -> status = Response.Status.BAD_REQUEST;
+            case InvalidTwoFactorCodeException ignored -> {
+                status = Response.Status.BAD_REQUEST;
+                errorResponse = new ErrorResponseDTO("Bad Request");
+            }
             case TwoFactorAlreadyEnabledException ignored -> status = Response.Status.CONFLICT;
             case VerificationCodeNotFoundException ignored -> status = Response.Status.BAD_REQUEST;
             case VerifyTokenExpiredException ignored -> status = Response.Status.GONE;
