@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.management.service;
 
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -108,18 +109,17 @@ public class OverviewService {
                                                 && !now.isAfter(e.getBookingDeadline()))
                         .count();
 
-        long reservationsReserved =
-                allReservations.stream()
-                        .filter(r -> r.getStatus() == ReservationStatus.RESERVED)
-                        .count();
-        long reservationsBlocked =
-                allReservations.stream()
-                        .filter(r -> r.getStatus() == ReservationStatus.BLOCKED)
-                        .count();
-        long reservationsPending =
-                allReservations.stream()
-                        .filter(r -> r.getStatus() == ReservationStatus.PENDING)
-                        .count();
+        Map<ReservationStatus, Long> reservationCounts = new EnumMap<>(ReservationStatus.class);
+        for (Reservation r : allReservations) {
+            ReservationStatus status = r.getStatus();
+            if (status != null) {
+                reservationCounts.put(status, reservationCounts.getOrDefault(status, 0L) + 1);
+            }
+        }
+
+        long reservationsReserved = reservationCounts.getOrDefault(ReservationStatus.RESERVED, 0L);
+        long reservationsBlocked = reservationCounts.getOrDefault(ReservationStatus.BLOCKED, 0L);
+        long reservationsPending = reservationCounts.getOrDefault(ReservationStatus.PENDING, 0L);
         long reservationsCount = reservationsReserved + reservationsBlocked + reservationsPending;
 
         Set<UUID> locationIds =
