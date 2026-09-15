@@ -1,0 +1,4 @@
+## 2026-09-15 - Fix CSV Injection from carriage returns
+**Vulnerability:** The CSV exporter was vulnerable to CSV injection because carriage return (`\r`) was treated as whitespace by `Character.isWhitespace()`, causing it to be trimmed during evaluation of formula triggers, and it was not included as a valid trigger character.
+**Learning:** When checking for CSV formula injection triggers, you must explicitly exclude `\r` (alongside `\t`) from being treated as whitespace and you must consider `\r` as a potential formula trigger. Spreadsheet applications execute formulas following a carriage return.
+**Prevention:** Ensure that `isSpreadsheetTrimmable` explicitly excludes both `\t` and `\r`, and add `\r` to the list of formula trigger characters that cause a field to be escaped with a leading single quote.
