@@ -103,7 +103,9 @@ public class OverviewService {
                         .count();
 
         Map<ReservationStatus, Long> reservationCounts =
-                reservationRepository.getReservationCounts(currentUser, manager.isAdmin());
+                manager.isAdmin()
+                        ? reservationRepository.getReservationCounts()
+                        : reservationRepository.getReservationCountsByManager(currentUser);
 
         long reservationsReserved = reservationCounts.getOrDefault(ReservationStatus.RESERVED, 0L);
         long reservationsBlocked = reservationCounts.getOrDefault(ReservationStatus.BLOCKED, 0L);
@@ -144,8 +146,10 @@ public class OverviewService {
                         : 0;
 
         Map<String, Long> reservedCountByPair =
-                reservationRepository.getReservedSeatCountsByEventAndUser(
-                        currentUser, manager.isAdmin());
+                manager.isAdmin()
+                        ? reservationRepository.getReservedSeatCountsByEventAndUser()
+                        : reservationRepository.getReservedSeatCountsByEventAndUserByManager(
+                                currentUser);
 
         long contingentUsed = 0;
         long contingentGranted = 0;

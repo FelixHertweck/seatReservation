@@ -200,12 +200,12 @@ public class OverviewServiceTest {
     void getOverview_AsManager_Success() {
         when(eventRepository.findByManager(managerUser))
                 .thenReturn(List.of(upcomingEvent, pastEvent));
-        when(reservationRepository.getReservationCounts(managerUser, false))
+        when(reservationRepository.getReservationCountsByManager(managerUser))
                 .thenReturn(Map.of(ReservationStatus.RESERVED, 1L, ReservationStatus.BLOCKED, 1L));
         when(reservationRepository.getReservedSeatCountsByEventIds(
                         org.mockito.ArgumentMatchers.any()))
                 .thenReturn(Map.of(upcomingEvent.id, 1, pastEvent.id, 0));
-        when(reservationRepository.getReservedSeatCountsByEventAndUser(managerUser, false))
+        when(reservationRepository.getReservedSeatCountsByEventAndUserByManager(managerUser))
                 .thenReturn(Map.of(upcomingEvent.id + ":" + regularUser.id, 1L));
         when(eventUserAllowanceRepository.findByEventManager(managerUser))
                 .thenReturn(List.of(allowance));
@@ -247,12 +247,12 @@ public class OverviewServiceTest {
     @Test
     void getOverview_AsAdmin_Success() {
         when(eventRepository.listAll()).thenReturn(List.of(upcomingEvent));
-        when(reservationRepository.getReservationCounts(adminUser, true))
+        when(reservationRepository.getReservationCounts())
                 .thenReturn(Map.of(ReservationStatus.RESERVED, 1L));
         when(reservationRepository.getReservedSeatCountsByEventIds(
                         org.mockito.ArgumentMatchers.any()))
                 .thenReturn(Map.of(upcomingEvent.id, 1));
-        when(reservationRepository.getReservedSeatCountsByEventAndUser(adminUser, true))
+        when(reservationRepository.getReservedSeatCountsByEventAndUser())
                 .thenReturn(Map.of(upcomingEvent.getId() + ":" + regularUser.getId(), 1L));
         when(eventUserAllowanceRepository.listAll()).thenReturn(List.of(allowance));
         when(eventLocationRepository.getSeatCountsByLocationIds(Set.of(location.id)))
