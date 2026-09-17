@@ -37,6 +37,10 @@ import de.felixhertweck.seatreservation.model.entity.Seat;
  */
 public class SvgRenderer {
 
+    private SvgRenderer() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
+
     // Distinct from the seat-status colors below (#2B7FFF/#F0B100/#9CA3AF) and mirroring the
     // palette used for area zones in the web app's seat map, so the same area always looks the
     // same across the UI and the emailed image.

@@ -34,6 +34,11 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
 public class QRCodeImage {
+
+    private QRCodeImage() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
+
     /**
      * Generates a QR code image as a byte array.
      *

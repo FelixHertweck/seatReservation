@@ -35,6 +35,11 @@ import org.jboss.logging.Logger;
  * Utility class for converting SVG graphics to PNG images. Uses Apache Batik for the conversion.
  */
 public class SvgToPngConverter {
+
+    private SvgToPngConverter() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
+
     private static final Logger LOG = Logger.getLogger(SvgToPngConverter.class);
 
     /**

@@ -22,6 +22,11 @@ package de.felixhertweck.seatreservation.model.entity;
 import java.util.List;
 
 public class Roles {
+
+    private Roles() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
+
     public static final String ADMIN = "ADMIN";
     public static final String USER = "USER";
     public static final String MANAGER = "MANAGER";

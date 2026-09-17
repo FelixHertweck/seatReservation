@@ -21,6 +21,10 @@ package de.felixhertweck.seatreservation.utils;
 
 public class CodeGenerator {
 
+    private CodeGenerator() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
+
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int CODE_LENGTH = 8;
 
