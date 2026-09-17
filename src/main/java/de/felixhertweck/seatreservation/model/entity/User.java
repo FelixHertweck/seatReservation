@@ -199,8 +199,8 @@ public class User extends AbstractEntity {
         this.email = email;
     }
 
-    public Boolean isEmailVerified() {
-        return emailVerified;
+    public boolean isEmailVerified() {
+        return Boolean.TRUE.equals(emailVerified);
     }
 
     public void setEmailVerified(Boolean emailVerified) {
@@ -287,7 +287,7 @@ public class User extends AbstractEntity {
         this.loginAttempts = loginAttempts;
     }
 
-    public Boolean isTwoFactorEnabled() {
+    public boolean isTwoFactorEnabled() {
         return twoFactorEnabled != null && twoFactorEnabled;
     }
 
@@ -295,7 +295,7 @@ public class User extends AbstractEntity {
         this.twoFactorEnabled = twoFactorEnabled;
     }
 
-    public Boolean isTotpEnabled() {
+    public boolean isTotpEnabled() {
         return totpEnabled != null && totpEnabled;
     }
 
@@ -303,7 +303,7 @@ public class User extends AbstractEntity {
         this.totpEnabled = totpEnabled;
     }
 
-    public Boolean isEmailEnabled() {
+    public boolean isEmailEnabled() {
         return emailEnabled != null && emailEnabled;
     }
 
@@ -311,7 +311,7 @@ public class User extends AbstractEntity {
         this.emailEnabled = emailEnabled;
     }
 
-    public Boolean isTwoFactorPasskeyEnabled() {
+    public boolean isTwoFactorPasskeyEnabled() {
         return twoFactorPasskeyEnabled != null && twoFactorPasskeyEnabled;
     }
 

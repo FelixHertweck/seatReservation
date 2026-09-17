@@ -107,8 +107,8 @@ public class TwoFactorChallenge extends AbstractEntity {
         this.expiresAt = expiresAt;
     }
 
-    public Boolean isUsed() {
-        return used;
+    public boolean isUsed() {
+        return Boolean.TRUE.equals(used);
     }
 
     public void setUsed(Boolean used) {
