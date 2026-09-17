@@ -49,7 +49,7 @@ import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class EventReservationAllowanceService {
-    private static final Logger LOG = Logger.getLogger(EventService.class);
+    private static final Logger LOG = Logger.getLogger(EventReservationAllowanceService.class);
 
     @Inject EventRepository eventRepository;
 
