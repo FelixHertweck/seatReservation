@@ -401,11 +401,14 @@ public class ReservationEmailContent {
         Map<UUID, Seat> seatById =
                 loadSeatsForReservations(reservations, allUserReservationsForEvent);
 
+        // Reservation.seat is DB-enforced NOT NULL
         Set<UUID> newSeatIds =
-                reservations.stream().map(r -> r.getSeat().getId()).collect(Collectors.toSet());
+                reservations.stream()
+                        .map(r -> r.getSeat().getId()) // NOSONAR java:S2259
+                        .collect(Collectors.toSet());
         Set<UUID> existingSeatIds =
                 allUserReservationsForEvent.stream()
-                        .map(r -> r.getSeat().getId())
+                        .map(r -> r.getSeat().getId()) // NOSONAR java:S2259
                         .collect(Collectors.toSet());
         existingSeatIds.removeAll(newSeatIds);
 
