@@ -21,6 +21,11 @@ package de.felixhertweck.seatreservation.utils;
 
 /** Utility class for generating 6-digit verification codes. */
 public class VerificationCodeGenerator {
+
+    private VerificationCodeGenerator() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
+
     private static final int MIN_CODE = 100000; // 6-digit minimum
     private static final int MAX_CODE = 999999; // 6-digit maximum
 

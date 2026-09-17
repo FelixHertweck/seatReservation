@@ -52,6 +52,10 @@ import org.eclipse.microprofile.config.ConfigProvider;
 
 public class ReservationExporter {
 
+    private ReservationExporter() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
+
     /**
      * Same property as {@link
      * de.felixhertweck.seatreservation.email.template.ExternalEmailTemplateLocator}; this class

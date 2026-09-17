@@ -26,6 +26,11 @@ import java.util.UUID;
  * strings for various purposes.
  */
 public class RandomUUIDString {
+
+    private RandomUUIDString() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
+
     /**
      * Generates a random UUID string.
      *
