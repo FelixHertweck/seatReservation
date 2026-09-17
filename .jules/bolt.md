@@ -1,3 +1,0 @@
-## 2026-09-09 - N+1 Issue during Fetching Users
-**Learning:** Found N+1 queries being triggered in `UserService.getAllUsers()` and `UserService.getUsersAsAdmin()`. Instead of using `.listAll()`, which iterates over the results and triggers lazy loading of `@ElementCollection` like `tags` and `roles`, we should push down the joins using `.find("select distinct u from User u left join fetch u.tags left join fetch u.roles")`.
-**Action:** Always check `listAll().stream()` loops for N+1 vulnerabilities involving associated collections in Panache and fix them by using `left join fetch` where applicable.
