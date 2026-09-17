@@ -141,9 +141,9 @@ public class WebAuthnResource {
     public Response register(String body, @HeaderParam("User-Agent") String userAgent) {
         User user = userSecurityContext.getCurrentUser();
         RoutingContext ctx = currentVertxRequest.getCurrent();
-        WebAuthnCredentialRecord record =
+        WebAuthnCredentialRecord credentialRecord =
                 verifyRegistration(user.getUsername(), parseWebAuthnPayload(body), ctx);
-        webAuthnService.addCredentialToUser(user, record, defaultDeviceLabel(userAgent));
+        webAuthnService.addCredentialToUser(user, credentialRecord, defaultDeviceLabel(userAgent));
         return Response.ok().build();
     }
 
@@ -222,11 +222,11 @@ public class WebAuthnResource {
         altchaService.verifyAndConsume(registration.getAltchaPayload());
 
         RoutingContext ctx = currentVertxRequest.getCurrent();
-        WebAuthnCredentialRecord record =
+        WebAuthnCredentialRecord credentialRecord =
                 verifyRegistration(registration.getUsername(), credential, ctx);
         User user =
                 webAuthnService.createUserWithCredential(
-                        registration, record, defaultDeviceLabel(userAgent));
+                        registration, credentialRecord, defaultDeviceLabel(userAgent));
         LOG.infof("Passkey account created and logged in: user ID %s", user.id);
         return authCookieResponse(user);
     }
@@ -264,9 +264,10 @@ public class WebAuthnResource {
     @APIResponse(responseCode = "401", description = "Invalid assertion")
     public Response login(String body) throws JwtInvalidException {
         RoutingContext ctx = currentVertxRequest.getCurrent();
-        WebAuthnCredentialRecord record;
+        WebAuthnCredentialRecord credentialRecord;
         try {
-            record = webAuthnSecurity.login(parseWebAuthnPayload(body), ctx).await().indefinitely();
+            credentialRecord =
+                    webAuthnSecurity.login(parseWebAuthnPayload(body), ctx).await().indefinitely();
         } catch (RuntimeException e) {
             LOG.debugf("Passkey authentication failed: %s", e.getMessage());
             throw new AuthenticationFailedException("Passkey authentication failed", e);
@@ -274,11 +275,11 @@ public class WebAuthnResource {
 
         // Persist the updated signature counter.
         webAuthnStorage
-                .update(record.getCredentialID(), record.getCounter())
+                .update(credentialRecord.getCredentialID(), credentialRecord.getCounter())
                 .await()
                 .indefinitely();
 
-        User user = userRepository.findByUsername(record.getUsername());
+        User user = userRepository.findByUsername(credentialRecord.getUsername());
         if (user == null) {
             throw new AuthenticationFailedException(
                     "No user associated with the presented passkey");
