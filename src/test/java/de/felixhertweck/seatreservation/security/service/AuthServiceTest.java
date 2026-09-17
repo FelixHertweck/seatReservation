@@ -37,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -377,7 +378,7 @@ public class AuthServiceTest {
         user.setEmail(email);
 
         when(userRepository.findByUsernameOptional(username)).thenReturn(Optional.of(user));
-        Mockito.doThrow(new PersistenceException("duplicate key value violates unique constraint"))
+        doThrow(new PersistenceException("duplicate key value violates unique constraint"))
                 .when(passwordResetTokenRepository)
                 .persistAndFlush(any(PasswordResetToken.class));
 

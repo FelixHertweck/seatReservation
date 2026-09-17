@@ -34,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -99,7 +100,7 @@ public class TwoFactorServiceTest {
         email.challengeRepository = challengeRepository;
         List<SecondFactor> factors = List.of(totp, email);
         @SuppressWarnings("unchecked")
-        Instance<SecondFactor> secondFactorsInstance = Mockito.mock(Instance.class);
+        Instance<SecondFactor> secondFactorsInstance = mock(Instance.class);
         when(secondFactorsInstance.iterator()).thenAnswer(inv -> factors.iterator());
         twoFactorService.secondFactors = secondFactorsInstance;
     }
@@ -374,7 +375,7 @@ public class TwoFactorServiceTest {
         user.id = UUID.randomUUID();
         user.setTwoFactorPasskeyEnabled(false);
 
-        EntityManager entityManager = Mockito.mock(EntityManager.class);
+        EntityManager entityManager = mock(EntityManager.class);
         when(userRepository.getEntityManager()).thenReturn(entityManager);
 
         twoFactorService.updateSettings(user, true);
