@@ -19,17 +19,12 @@
  */
 package de.felixhertweck.seatreservation.management.resource;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
-import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -38,7 +33,6 @@ import jakarta.ws.rs.core.MediaType;
 
 import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
 import de.felixhertweck.seatreservation.common.exception.ValidationException;
-import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.service.MarkerService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
@@ -60,22 +54,6 @@ public class MarkerResource {
     @Inject MarkerService markerService;
 
     @Inject UserSecurityContext userSecurityContext;
-
-    @POST
-    @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content = @Content(schema = @Schema(implementation = EventLocationMakerDTO.class)))
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(
-            responseCode = "403",
-            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    @APIResponse(responseCode = "404", description = "Not Found: Event location not found")
-    public EventLocationMakerDTO createMarker(@Valid MakerRequestDTO markerRequestDTO) {
-        LOG.debugf("Received POST request to /api/manager/markers to create a new marker.");
-        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
-        return markerService.createMarker(markerRequestDTO, currentUser);
-    }
 
     @GET
     @APIResponse(
@@ -120,43 +98,5 @@ public class MarkerResource {
         LOG.debugf("Received GET request to /api/manager/markers/%s.", id);
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return markerService.findMarkerByIdForManager(id, currentUser);
-    }
-
-    @PUT
-    @Path("/{id}")
-    @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content = @Content(schema = @Schema(implementation = EventLocationMakerDTO.class)))
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(
-            responseCode = "403",
-            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    @APIResponse(
-            responseCode = "404",
-            description = "Not Found: Marker with specified ID not found for the current manager")
-    public EventLocationMakerDTO updateManagerMarker(
-            @PathParam("id") UUID id, @Valid MakerRequestDTO markerRequestDTO) {
-        LOG.debugf("Received PUT request to /api/manager/markers/%s to update marker.", id);
-        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
-        return markerService.updateMarker(id, markerRequestDTO, currentUser);
-    }
-
-    @DELETE
-    @APIResponse(responseCode = "204", description = "Marker(s) deleted successfully")
-    @APIResponse(responseCode = "400", description = "Bad Request: Invalid input")
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(
-            responseCode = "403",
-            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    @APIResponse(
-            responseCode = "404",
-            description = "Not Found: Marker with specified ID not found for the current manager")
-    public void deleteManagerMarker(@QueryParam("ids") List<UUID> ids) {
-        LOG.debugf(
-                "Received DELETE request to /api/manager/markers with IDs: %s",
-                ids != null ? ids : Collections.emptyList());
-        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
-        markerService.deleteMarkers(ids, currentUser);
     }
 }

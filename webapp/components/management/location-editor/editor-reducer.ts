@@ -468,6 +468,10 @@ export function editorReducer(
     case "SAVE_SUCCESS":
       return {
         ...state,
+        seats: state.seats.map((s) => ({ ...s, syncState: "synced" })),
+        markers: state.markers.map((m) => ({ ...m, syncState: "synced" })),
+        areas: state.areas.map((a) => ({ ...a, syncState: "synced" })),
+        entrances: state.entrances.map((e) => ({ ...e, syncState: "synced" })),
         metaDirty: false,
         pendingDeletions: emptyPendingDeletions(),
       };

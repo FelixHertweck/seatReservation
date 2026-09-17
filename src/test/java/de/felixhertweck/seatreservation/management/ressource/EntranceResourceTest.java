@@ -27,10 +27,8 @@ import jakarta.transaction.Transactional;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 
-import de.felixhertweck.seatreservation.management.dto.EntranceRequestDTO;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
-import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
@@ -60,9 +58,7 @@ public class EntranceResourceTest {
     @Inject EventRepository eventRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject ReservationRepository reservationRepository;
-
     @Inject CheckInTokenRepository checkInTokenRepository;
-
     @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
     @Inject UserRepository userRepository;
 
@@ -95,8 +91,6 @@ public class EntranceResourceTest {
         cleanUpDatabase();
     }
 
-    // Deletes in FK-safe order; this database is shared across all @QuarkusTest classes in the
-    // run, so leftover rows from another test class' locations must be cleared too.
     private void cleanUpDatabase() {
         emailSeatMapTokenRepository.deleteAll();
         reservationRepository.deleteAll();
@@ -188,146 +182,5 @@ public class EntranceResourceTest {
                             type = ClaimType.STRING))
     void testGetEntranceByIdNotFound() {
         given().when().get("/api/manager/entrances/" + id(999)).then().statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testCreateEntrance() {
-        given().contentType("application/json")
-                .body(new EntranceRequestDTO(testLocation.id, "B"))
-                .when()
-                .post("/api/manager/entrances")
-                .then()
-                .statusCode(200)
-                .body("name", is("B"));
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testCreateEntranceInvalidData() {
-        given().contentType("application/json")
-                .body("{\"name\":\"\"}")
-                .when()
-                .post("/api/manager/entrances")
-                .then()
-                .statusCode(400);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testUpdateEntrance() {
-        given().contentType("application/json")
-                .body(new EntranceRequestDTO(testLocation.id, "C"))
-                .when()
-                .put("/api/manager/entrances/" + testEntrance.id)
-                .then()
-                .statusCode(200)
-                .body("name", is("C"));
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testUpdateEntranceNotFound() {
-        given().contentType("application/json")
-                .body(new EntranceRequestDTO(testLocation.id, "C"))
-                .when()
-                .put("/api/manager/entrances/" + id(999))
-                .then()
-                .statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testDeleteEntrance() {
-        given().when()
-                .queryParam("ids", testEntrance.id)
-                .delete("/api/manager/entrances")
-                .then()
-                .statusCode(204);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testDeleteEntranceNotFound() {
-        given().when()
-                .queryParam("ids", id(999).toString())
-                .delete("/api/manager/entrances")
-                .then()
-                .statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testDeleteEntranceConflictWhenReferencedBySeat() {
-        Seat seat = new Seat("A1", "Row 1", testLocation);
-        seat.setEntrance(testEntrance);
-        persistSeat(seat);
-
-        given().when()
-                .queryParam("ids", testEntrance.id)
-                .delete("/api/manager/entrances")
-                .then()
-                .statusCode(409);
-    }
-
-    @Transactional
-    void persistSeat(Seat seat) {
-        seatRepository.persist(seat);
     }
 }

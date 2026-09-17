@@ -27,8 +27,6 @@ import jakarta.transaction.Transactional;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 
-import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
-import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
@@ -61,9 +59,7 @@ public class MarkerResourceTest {
     @Inject EventRepository eventRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject ReservationRepository reservationRepository;
-
     @Inject CheckInTokenRepository checkInTokenRepository;
-
     @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
     @Inject EventLocationRepository eventLocationRepository;
     @Inject UserRepository userRepository;
@@ -97,8 +93,6 @@ public class MarkerResourceTest {
         cleanUpDatabase();
     }
 
-    // Deletes in FK-safe order; this database is shared across all @QuarkusTest classes in the
-    // run, so leftover rows from another test class' locations must be cleared too.
     private void cleanUpDatabase() {
         emailSeatMapTokenRepository.deleteAll();
         reservationRepository.deleteAll();
@@ -191,119 +185,5 @@ public class MarkerResourceTest {
                             type = ClaimType.STRING))
     void testGetMarkerByIdNotFound() {
         given().when().get("/api/manager/markers/" + id(999)).then().statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testCreateMarker() {
-        given().contentType("application/json")
-                .body(new MakerRequestDTO(testLocation.id, "Stage", new CoordinateDTO(5, 5)))
-                .when()
-                .post("/api/manager/markers")
-                .then()
-                .statusCode(200)
-                .body("label", is("Stage"));
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testCreateMarkerInvalidData() {
-        given().contentType("application/json")
-                .body("{\"label\":\"\"}")
-                .when()
-                .post("/api/manager/markers")
-                .then()
-                .statusCode(400);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testUpdateMarker() {
-        given().contentType("application/json")
-                .body(new MakerRequestDTO(testLocation.id, "Updated", new CoordinateDTO(1, 1)))
-                .when()
-                .put("/api/manager/markers/" + testMarker.id)
-                .then()
-                .statusCode(200)
-                .body("label", is("Updated"));
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testUpdateMarkerNotFound() {
-        given().contentType("application/json")
-                .body(new MakerRequestDTO(testLocation.id, "Updated", new CoordinateDTO(1, 1)))
-                .when()
-                .put("/api/manager/markers/" + id(999))
-                .then()
-                .statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testDeleteMarker() {
-        given().when()
-                .queryParam("ids", testMarker.id)
-                .delete("/api/manager/markers")
-                .then()
-                .statusCode(204);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testDeleteMarkerNotFound() {
-        given().when()
-                .queryParam("ids", id(999).toString())
-                .delete("/api/manager/markers")
-                .then()
-                .statusCode(404);
     }
 }

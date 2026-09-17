@@ -1552,7 +1552,9 @@
       "entrances": {
         "title": "Entrances",
         "addButton": "Add entrance",
+        "editButton": "Edit entrance",
         "dialogDescription": "Name of the new entrance.",
+        "editDialogDescription": "Update the entrance name.",
         "nameLabel": "Name",
         "emptyList": "No entrances yet.",
         "deleteConfirm": "Delete entrance \"{{name}}\"?",

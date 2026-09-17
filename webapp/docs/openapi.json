@@ -113,24 +113,6 @@
           }
         }
       },
-      "AreaRequestDTO" : {
-        "type" : "object",
-        "required" : [ "name", "eventLocationId" ],
-        "properties" : {
-          "name" : {
-            "type" : "string"
-          },
-          "boundary" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/CoordinateDTO"
-            }
-          },
-          "eventLocationId" : {
-            "$ref" : "#/components/schemas/UUID"
-          }
-        }
-      },
       "AreaResponseDTO" : {
         "type" : "object",
         "properties" : {
@@ -371,18 +353,6 @@
           }
         }
       },
-      "EntranceRequestDTO" : {
-        "type" : "object",
-        "required" : [ "eventLocationId", "name" ],
-        "properties" : {
-          "eventLocationId" : {
-            "$ref" : "#/components/schemas/UUID"
-          },
-          "name" : {
-            "type" : "string"
-          }
-        }
-      },
       "EntranceResponseDTO" : {
         "type" : "object",
         "properties" : {
@@ -445,6 +415,161 @@
             "type" : "integer",
             "format" : "int32",
             "description" : "Contingent usage percentage (0-100)"
+          }
+        }
+      },
+      "EventLocationLayoutRequestDTO" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "address" : {
+            "type" : "string"
+          },
+          "managerIds" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
+          },
+          "entrances" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LayoutEntranceDto"
+            }
+          },
+          "areas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LayoutAreaDto"
+            }
+          },
+          "markers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LayoutMarkerDto"
+            }
+          },
+          "seats" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LayoutSeatDto"
+            }
+          },
+          "deletedEntranceIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
+          },
+          "deletedAreaIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
+          },
+          "deletedMarkerIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
+          },
+          "deletedSeatIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
+          }
+        }
+      },
+      "EventLocationLayoutResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "address" : {
+            "type" : "string"
+          },
+          "managerIds" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
+          },
+          "createdEntranceIdMap" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
+          },
+          "createdAreaIdMap" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
+          },
+          "createdMarkerIdMap" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
+          },
+          "createdSeatIdMap" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
+          },
+          "seats" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SeatDTO"
+            }
+          },
+          "markers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EventLocationMakerDTO"
+            }
+          },
+          "areas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AreaResponseDTO"
+            }
+          },
+          "entrances" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EntranceResponseDTO"
+            }
           }
         }
       },
@@ -811,6 +936,98 @@
         "format" : "date-time",
         "examples" : [ "2022-03-10T16:15:50Z" ]
       },
+      "LayoutAreaDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "tempId" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          },
+          "boundary" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CoordinateDTO"
+            }
+          }
+        },
+        "required" : [ "name" ]
+      },
+      "LayoutEntranceDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "tempId" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          }
+        },
+        "required" : [ "name" ]
+      },
+      "LayoutMarkerDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "tempId" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          },
+          "coordinate" : {
+            "$ref" : "#/components/schemas/CoordinateDTO"
+          }
+        },
+        "required" : [ "label", "coordinate" ]
+      },
+      "LayoutSeatDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "tempId" : {
+            "type" : "string"
+          },
+          "seatNumber" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          },
+          "seatRow" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          },
+          "coordinate" : {
+            "$ref" : "#/components/schemas/CoordinateDTO"
+          },
+          "entranceId" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "entranceTempId" : {
+            "type" : "string"
+          },
+          "areaId" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "areaTempId" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "seatNumber", "seatRow", "coordinate" ]
+      },
       "LimitedUserInfoDTO" : {
         "type" : "object",
         "properties" : {
@@ -858,21 +1075,6 @@
           "altchaPayload" : {
             "type" : "string",
             "description" : "ALTCHA proof-of-work verification payload"
-          }
-        }
-      },
-      "MakerRequestDTO" : {
-        "type" : "object",
-        "required" : [ "label", "coordinate", "eventLocationId" ],
-        "properties" : {
-          "label" : {
-            "type" : "string"
-          },
-          "coordinate" : {
-            "$ref" : "#/components/schemas/CoordinateDTO"
-          },
-          "eventLocationId" : {
-            "$ref" : "#/components/schemas/UUID"
           }
         }
       },
@@ -1255,30 +1457,6 @@
             "type" : "string"
           },
           "area" : {
-            "type" : "string"
-          },
-          "entranceId" : {
-            "$ref" : "#/components/schemas/UUID"
-          },
-          "areaId" : {
-            "$ref" : "#/components/schemas/UUID"
-          }
-        }
-      },
-      "SeatRequestDTO" : {
-        "type" : "object",
-        "required" : [ "seatNumber", "eventLocationId", "coordinate", "seatRow" ],
-        "properties" : {
-          "seatNumber" : {
-            "type" : "string"
-          },
-          "eventLocationId" : {
-            "$ref" : "#/components/schemas/UUID"
-          },
-          "coordinate" : {
-            "$ref" : "#/components/schemas/CoordinateDTO"
-          },
-          "seatRow" : {
             "type" : "string"
           },
           "entranceId" : {
@@ -2873,138 +3051,9 @@
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
-      },
-      "delete" : {
-        "parameters" : [ {
-          "name" : "ids",
-          "in" : "query",
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string",
-              "format" : "uuid",
-              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
-            }
-          }
-        } ],
-        "responses" : {
-          "204" : {
-            "description" : "Area(s) deleted successfully"
-          },
-          "400" : {
-            "description" : "Bad Request: Invalid input"
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Area with specified ID not found for the current manager"
-          },
-          "409" : {
-            "description" : "Conflict: Area is still referenced by at least one seat"
-          }
-        },
-        "summary" : "Delete Manager Area",
-        "tags" : [ "Area Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
-      },
-      "post" : {
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/AreaRequestDTO"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/AreaResponseDTO"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Event location not found"
-          },
-          "400" : {
-            "description" : "Bad Request"
-          }
-        },
-        "summary" : "Create Area",
-        "tags" : [ "Area Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
       }
     },
     "/api/manager/areas/{id}" : {
-      "put" : {
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/UUID"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/AreaRequestDTO"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/AreaResponseDTO"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Area with specified ID not found for the current manager"
-          },
-          "400" : {
-            "description" : "Bad Request"
-          }
-        },
-        "summary" : "Update Manager Area",
-        "tags" : [ "Area Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
-      },
       "get" : {
         "parameters" : [ {
           "name" : "id",
@@ -3080,138 +3129,9 @@
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
-      },
-      "delete" : {
-        "parameters" : [ {
-          "name" : "ids",
-          "in" : "query",
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string",
-              "format" : "uuid",
-              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
-            }
-          }
-        } ],
-        "responses" : {
-          "204" : {
-            "description" : "Entrance(s) deleted successfully"
-          },
-          "400" : {
-            "description" : "Bad Request: Invalid input"
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Entrance with specified ID not found for the current manager"
-          },
-          "409" : {
-            "description" : "Conflict: Entrance is still referenced by at least one seat"
-          }
-        },
-        "summary" : "Delete Manager Entrance",
-        "tags" : [ "Entrance Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
-      },
-      "post" : {
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/EntranceRequestDTO"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/EntranceResponseDTO"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Event location not found"
-          },
-          "400" : {
-            "description" : "Bad Request"
-          }
-        },
-        "summary" : "Create Entrance",
-        "tags" : [ "Entrance Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
       }
     },
     "/api/manager/entrances/{id}" : {
-      "put" : {
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/UUID"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/EntranceRequestDTO"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/EntranceResponseDTO"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Entrance with specified ID not found for the current manager"
-          },
-          "400" : {
-            "description" : "Bad Request"
-          }
-        },
-        "summary" : "Update Manager Entrance",
-        "tags" : [ "Entrance Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
-      },
       "get" : {
         "parameters" : [ {
           "name" : "id",
@@ -3407,6 +3327,57 @@
           }
         },
         "summary" : "Update Event Location",
+        "tags" : [ "Event Location Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/manager/eventlocations/{id}/layout" : {
+      "put" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EventLocationLayoutRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EventLocationLayoutResponseDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event location with specified ID not found"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Update Location Layout",
         "tags" : [ "Event Location Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
@@ -3793,135 +3764,9 @@
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
-      },
-      "delete" : {
-        "parameters" : [ {
-          "name" : "ids",
-          "in" : "query",
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string",
-              "format" : "uuid",
-              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
-            }
-          }
-        } ],
-        "responses" : {
-          "204" : {
-            "description" : "Marker(s) deleted successfully"
-          },
-          "400" : {
-            "description" : "Bad Request: Invalid input"
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Marker with specified ID not found for the current manager"
-          }
-        },
-        "summary" : "Delete Manager Marker",
-        "tags" : [ "Marker Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
-      },
-      "post" : {
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/MakerRequestDTO"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/EventLocationMakerDTO"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Event location not found"
-          },
-          "400" : {
-            "description" : "Bad Request"
-          }
-        },
-        "summary" : "Create Marker",
-        "tags" : [ "Marker Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
       }
     },
     "/api/manager/markers/{id}" : {
-      "put" : {
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/UUID"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/MakerRequestDTO"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/EventLocationMakerDTO"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Marker with specified ID not found for the current manager"
-          },
-          "400" : {
-            "description" : "Bad Request"
-          }
-        },
-        "summary" : "Update Manager Marker",
-        "tags" : [ "Marker Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
-      },
       "get" : {
         "parameters" : [ {
           "name" : "id",
@@ -4635,144 +4480,9 @@
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
-      },
-      "delete" : {
-        "parameters" : [ {
-          "name" : "ids",
-          "in" : "query",
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string",
-              "format" : "uuid",
-              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
-            }
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK"
-          },
-          "204" : {
-            "description" : "Seat deleted successfully"
-          },
-          "400" : {
-            "description" : "Bad Request: Invalid input"
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Seat with specified ID not found for the current manager"
-          }
-        },
-        "summary" : "Delete Manager Seat",
-        "tags" : [ "Seat Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
-      },
-      "post" : {
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/SeatRequestDTO"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/SeatDTO"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Event location not found"
-          },
-          "409" : {
-            "description" : "Conflict: Seat with this row and number already exists in this event location"
-          },
-          "400" : {
-            "description" : "Bad Request"
-          }
-        },
-        "summary" : "Create Seat",
-        "tags" : [ "Seat Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
       }
     },
     "/api/manager/seats/{id}" : {
-      "put" : {
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/UUID"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/SeatRequestDTO"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/SeatDTO"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Seat with specified ID not found for the current manager"
-          },
-          "409" : {
-            "description" : "Conflict: Seat with this row and number already exists in this event location"
-          },
-          "400" : {
-            "description" : "Bad Request"
-          }
-        },
-        "summary" : "Update Manager Seat",
-        "tags" : [ "Seat Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
-      },
       "get" : {
         "parameters" : [ {
           "name" : "id",

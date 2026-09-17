@@ -33,16 +33,26 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
+import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
+import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.common.events.EventRescheduledEvent;
 import de.felixhertweck.seatreservation.common.events.EventUpdatedEvent;
 import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.ValidationException;
+import de.felixhertweck.seatreservation.management.dto.AreaResponseDTO;
+import de.felixhertweck.seatreservation.management.dto.EntranceResponseDTO;
+import de.felixhertweck.seatreservation.management.dto.EventLocationLayoutRequestDTO;
+import de.felixhertweck.seatreservation.management.dto.EventLocationLayoutResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationUpdateDTO;
 import de.felixhertweck.seatreservation.management.dto.ImportAreaDto;
 import de.felixhertweck.seatreservation.management.dto.ImportMarkerDto;
 import de.felixhertweck.seatreservation.management.dto.ImportSeatDto;
+import de.felixhertweck.seatreservation.management.dto.LayoutAreaDto;
+import de.felixhertweck.seatreservation.management.dto.LayoutEntranceDto;
+import de.felixhertweck.seatreservation.management.dto.LayoutMarkerDto;
+import de.felixhertweck.seatreservation.management.dto.LayoutSeatDto;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -51,6 +61,9 @@ import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
+import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
+import de.felixhertweck.seatreservation.model.repository.EventLocationMarkerRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
@@ -69,6 +82,13 @@ public class EventLocationService {
     @Inject SeatRepository seatRepository;
     @Inject UserRepository userRepository;
     @Inject EventLocationAccessService eventLocationAccessService;
+    @Inject EventLocationAreaRepository eventLocationAreaRepository;
+    @Inject EventLocationEntranceRepository eventLocationEntranceRepository;
+    @Inject EventLocationMarkerRepository eventLocationMarkerRepository;
+    @Inject SeatService seatService;
+    @Inject AreaService areaService;
+    @Inject EntranceService entranceService;
+    @Inject MarkerService markerService;
     @Inject jakarta.enterprise.event.Event<EventUpdatedEvent> eventUpdatedBus;
     @Inject jakarta.enterprise.event.Event<EventRescheduledEvent> eventRescheduledBus;
     @Inject SeatmapCacheService seatmapCacheService;
@@ -283,6 +303,284 @@ public class EventLocationService {
         }
 
         return new EventLocationResponseDTO(location);
+    }
+
+    /**
+     * Atomically synchronizes the full layout (metadata, entrances, areas, markers, seats, and
+     * deletions) of an event location in a single transaction.
+     */
+    @Transactional
+    public EventLocationLayoutResponseDTO updateLocationLayout(
+            UUID locationId, EventLocationLayoutRequestDTO dto, AuthenticatedUser manager)
+            throws ValidationException, AccessDeniedException {
+        LOG.debugf(
+                "Updating location layout for location ID: %s by manager ID: %s",
+                locationId, manager.id());
+        EventLocation location =
+                eventLocationAccessService.findOwnedEventLocation(locationId, manager);
+
+        // 1. Meta update (name, address, managerIds)
+        String oldName = location.getName();
+        boolean nameChanged = false;
+        if (dto.getName() != null && !dto.getName().isBlank()) {
+            nameChanged = !Objects.equals(location.getName(), dto.getName().trim());
+            location.setName(dto.getName().trim());
+        }
+        if (dto.getAddress() != null && !dto.getAddress().isBlank()) {
+            location.setAddress(dto.getAddress().trim());
+        }
+        if (dto.getManagerIds() != null) {
+            Set<User> newManagers =
+                    ManagerResolutionUtils.resolveManagers(
+                            userRepository, dto.getManagerIds(), "event location");
+            if (location.getCreatedBy() != null) {
+                newManagers.add(location.getCreatedBy());
+            }
+            if (!manager.isAdmin()) {
+                newManagers.add(userRepository.getReference(manager.id()));
+            }
+            location.setManagers(newManagers);
+        }
+        eventLocationRepository.persist(location);
+
+        if (nameChanged) {
+            List<Event> associatedEvents = eventRepository.findByEventLocation(location);
+            for (Event ev : associatedEvents) {
+                eventUpdatedBus.fireAsync(
+                        new EventUpdatedEvent(
+                                ev.getId(),
+                                ev.getName(),
+                                location.getName(),
+                                location.getAddress(),
+                                ev.getStartTime(),
+                                ev.getEndTime(),
+                                ev.getReminderSendDate()));
+                eventRescheduledBus.fireAsync(
+                        new EventRescheduledEvent(
+                                ev.getId(),
+                                ev.getName(),
+                                ev.getStartTime(),
+                                ev.getStartTime(),
+                                ev.getEndTime(),
+                                ev.getEndTime(),
+                                oldName,
+                                location.getName(),
+                                ev.getBookingDeadline(),
+                                ev.getBookingDeadline()));
+            }
+        }
+
+        // 2. Process Deletions (seats first, then markers, areas, entrances)
+        if (dto.getDeletedSeatIds() != null && !dto.getDeletedSeatIds().isEmpty()) {
+            seatService.deleteSeatForManager(dto.getDeletedSeatIds(), manager);
+        }
+        if (dto.getDeletedMarkerIds() != null && !dto.getDeletedMarkerIds().isEmpty()) {
+            markerService.deleteMarkers(dto.getDeletedMarkerIds(), manager);
+        }
+        if (dto.getDeletedAreaIds() != null && !dto.getDeletedAreaIds().isEmpty()) {
+            seatRepository.update("area = null where area.id in ?1", dto.getDeletedAreaIds());
+            areaService.deleteAreas(dto.getDeletedAreaIds(), manager);
+        }
+        if (dto.getDeletedEntranceIds() != null && !dto.getDeletedEntranceIds().isEmpty()) {
+            seatRepository.update(
+                    "entrance = null where entrance.id in ?1", dto.getDeletedEntranceIds());
+            entranceService.deleteEntrances(dto.getDeletedEntranceIds(), manager);
+        }
+
+        // 3. Process Entrances (create & update)
+        Map<String, UUID> createdEntranceIdMap = new LinkedHashMap<>();
+        Map<UUID, EventLocationEntrance> entranceById = new LinkedHashMap<>();
+        List<EventLocationEntrance> currentEntrances =
+                eventLocationEntranceRepository.findByEventLocation(location);
+        for (EventLocationEntrance e : currentEntrances) {
+            entranceById.put(e.id, e);
+        }
+        if (dto.getEntrances() != null) {
+            for (LayoutEntranceDto entranceDto : dto.getEntrances()) {
+                if (entranceDto.getId() != null) {
+                    EventLocationEntrance entrance = entranceById.get(entranceDto.getId());
+                    if (entrance != null) {
+                        entrance.setName(entranceDto.getName().trim());
+                        eventLocationEntranceRepository.persist(entrance);
+                    }
+                } else {
+                    EventLocationEntrance newEntrance =
+                            new EventLocationEntrance(entranceDto.getName().trim());
+                    newEntrance.setEventLocation(location);
+                    eventLocationEntranceRepository.persist(newEntrance);
+                    entranceById.put(newEntrance.id, newEntrance);
+                    if (entranceDto.getTempId() != null) {
+                        createdEntranceIdMap.put(entranceDto.getTempId(), newEntrance.id);
+                    }
+                }
+            }
+        }
+
+        // 4. Process Areas (create & update)
+        Map<String, UUID> createdAreaIdMap = new LinkedHashMap<>();
+        Map<UUID, EventLocationArea> areaById = new LinkedHashMap<>();
+        List<EventLocationArea> currentAreas =
+                eventLocationAreaRepository.findByEventLocation(location);
+        for (EventLocationArea a : currentAreas) {
+            areaById.put(a.id, a);
+        }
+        if (dto.getAreas() != null) {
+            for (LayoutAreaDto areaDto : dto.getAreas()) {
+                if (areaDto.getId() != null) {
+                    EventLocationArea area = areaById.get(areaDto.getId());
+                    if (area != null) {
+                        area.setName(areaDto.getName().trim());
+                        area.setBoundary(
+                                areaDto.getBoundary() == null
+                                        ? new ArrayList<>()
+                                        : areaDto.getBoundary().stream()
+                                                .map(CoordinateDTO::toEntity)
+                                                .collect(Collectors.toCollection(ArrayList::new)));
+                        eventLocationAreaRepository.persist(area);
+                    }
+                } else {
+                    EventLocationArea newArea = new EventLocationArea(areaDto.getName().trim());
+                    newArea.setEventLocation(location);
+                    newArea.setBoundary(
+                            areaDto.getBoundary() == null
+                                    ? new ArrayList<>()
+                                    : areaDto.getBoundary().stream()
+                                            .map(CoordinateDTO::toEntity)
+                                            .collect(Collectors.toCollection(ArrayList::new)));
+                    eventLocationAreaRepository.persist(newArea);
+                    areaById.put(newArea.id, newArea);
+                    if (areaDto.getTempId() != null) {
+                        createdAreaIdMap.put(areaDto.getTempId(), newArea.id);
+                    }
+                }
+            }
+        }
+
+        // 5. Process Markers (create & update)
+        Map<String, UUID> createdMarkerIdMap = new LinkedHashMap<>();
+        Map<UUID, EventLocationMarker> markerById = new LinkedHashMap<>();
+        List<EventLocationMarker> currentMarkers =
+                eventLocationMarkerRepository.findByEventLocation(location);
+        for (EventLocationMarker m : currentMarkers) {
+            markerById.put(m.id, m);
+        }
+        if (dto.getMarkers() != null) {
+            for (LayoutMarkerDto markerDto : dto.getMarkers()) {
+                if (markerDto.getId() != null) {
+                    EventLocationMarker marker = markerById.get(markerDto.getId());
+                    if (marker != null) {
+                        marker.setLabel(markerDto.getLabel().trim());
+                        marker.setCoordinate(markerDto.getCoordinate().toEntity());
+                        eventLocationMarkerRepository.persist(marker);
+                    }
+                } else {
+                    EventLocationMarker newMarker =
+                            new EventLocationMarker(
+                                    markerDto.getLabel().trim(),
+                                    markerDto.getCoordinate().xCoordinate(),
+                                    markerDto.getCoordinate().yCoordinate());
+                    newMarker.setEventLocation(location);
+                    eventLocationMarkerRepository.persist(newMarker);
+                    markerById.put(newMarker.id, newMarker);
+                    if (markerDto.getTempId() != null) {
+                        createdMarkerIdMap.put(markerDto.getTempId(), newMarker.id);
+                    }
+                }
+            }
+        }
+
+        // 6. Process Seats (create & update)
+        Map<String, UUID> createdSeatIdMap = new LinkedHashMap<>();
+        Map<UUID, Seat> seatById = new LinkedHashMap<>();
+        List<Seat> currentSeats = seatRepository.findByEventLocation(location);
+        for (Seat s : currentSeats) {
+            seatById.put(s.id, s);
+        }
+        if (dto.getSeats() != null) {
+            for (LayoutSeatDto seatDto : dto.getSeats()) {
+                UUID resolvedAreaId = seatDto.getAreaId();
+                if (resolvedAreaId == null && seatDto.getAreaTempId() != null) {
+                    resolvedAreaId = createdAreaIdMap.get(seatDto.getAreaTempId());
+                }
+                EventLocationArea seatArea =
+                        resolvedAreaId != null ? areaById.get(resolvedAreaId) : null;
+
+                UUID resolvedEntranceId = seatDto.getEntranceId();
+                if (resolvedEntranceId == null && seatDto.getEntranceTempId() != null) {
+                    resolvedEntranceId = createdEntranceIdMap.get(seatDto.getEntranceTempId());
+                }
+                EventLocationEntrance seatEntrance =
+                        resolvedEntranceId != null ? entranceById.get(resolvedEntranceId) : null;
+
+                if (seatDto.getId() != null) {
+                    Seat seat = seatById.get(seatDto.getId());
+                    if (seat != null) {
+                        seat.setSeatNumber(seatDto.getSeatNumber().trim());
+                        seat.setSeatRow(seatDto.getSeatRow().trim());
+                        seat.setCoordinate(seatDto.getCoordinate().toEntity());
+                        seat.setArea(seatArea);
+                        seat.setEntrance(seatEntrance);
+                        seatRepository.persist(seat);
+                    }
+                } else {
+                    Seat newSeat =
+                            new Seat(
+                                    seatDto.getSeatNumber().trim(),
+                                    location,
+                                    seatDto.getSeatRow().trim(),
+                                    seatDto.getCoordinate().xCoordinate(),
+                                    seatDto.getCoordinate().yCoordinate(),
+                                    seatEntrance,
+                                    seatArea);
+                    seatRepository.persist(newSeat);
+                    seatById.put(newSeat.id, newSeat);
+                    if (seatDto.getTempId() != null) {
+                        createdSeatIdMap.put(seatDto.getTempId(), newSeat.id);
+                    }
+                }
+            }
+        }
+
+        // 7. Invalidate all geometry & caches for this location after commit
+        seatmapCacheService.runAfterSuccessfulCommit(
+                () -> seatmapCacheService.invalidateAllGeometryForLocation(locationId));
+
+        // 8. Build response
+        List<SeatDTO> resultSeats =
+                seatRepository.findByEventLocation(location).stream().map(SeatDTO::new).toList();
+        List<EventLocationMakerDTO> resultMarkers =
+                eventLocationMarkerRepository.findByEventLocation(location).stream()
+                        .map(EventLocationMakerDTO::new)
+                        .toList();
+        List<EntranceResponseDTO> resultEntrances =
+                eventLocationEntranceRepository.findByEventLocation(location).stream()
+                        .map(EntranceResponseDTO::new)
+                        .toList();
+        List<AreaResponseDTO> resultAreas =
+                eventLocationAreaRepository.findByEventLocation(location).stream()
+                        .map(AreaResponseDTO::new)
+                        .toList();
+
+        Set<UUID> managerIds =
+                location.getManagers() != null
+                        ? location.getManagers().stream()
+                                .map(User::getId)
+                                .collect(Collectors.toSet())
+                        : Set.of();
+
+        return new EventLocationLayoutResponseDTO(
+                location.getId(),
+                location.getName(),
+                location.getAddress(),
+                managerIds,
+                createdEntranceIdMap,
+                createdAreaIdMap,
+                createdMarkerIdMap,
+                createdSeatIdMap,
+                resultSeats,
+                resultMarkers,
+                resultAreas,
+                resultEntrances);
     }
 
     /**

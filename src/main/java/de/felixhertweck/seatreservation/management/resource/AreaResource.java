@@ -19,17 +19,12 @@
  */
 package de.felixhertweck.seatreservation.management.resource;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
-import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -37,7 +32,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
 import de.felixhertweck.seatreservation.common.exception.ValidationException;
-import de.felixhertweck.seatreservation.management.dto.AreaRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.AreaResponseDTO;
 import de.felixhertweck.seatreservation.management.service.AreaService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -60,22 +54,6 @@ public class AreaResource {
     @Inject AreaService areaService;
 
     @Inject UserSecurityContext userSecurityContext;
-
-    @POST
-    @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content = @Content(schema = @Schema(implementation = AreaResponseDTO.class)))
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(
-            responseCode = "403",
-            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    @APIResponse(responseCode = "404", description = "Not Found: Event location not found")
-    public AreaResponseDTO createArea(@Valid AreaRequestDTO areaRequestDTO) {
-        LOG.debugf("Received POST request to /api/manager/areas to create a new area.");
-        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
-        return areaService.createArea(areaRequestDTO, currentUser);
-    }
 
     @GET
     @APIResponse(
@@ -120,46 +98,5 @@ public class AreaResource {
         LOG.debugf("Received GET request to /api/manager/areas/%s.", id);
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return areaService.findAreaByIdForManager(id, currentUser);
-    }
-
-    @PUT
-    @Path("/{id}")
-    @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content = @Content(schema = @Schema(implementation = AreaResponseDTO.class)))
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(
-            responseCode = "403",
-            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    @APIResponse(
-            responseCode = "404",
-            description = "Not Found: Area with specified ID not found for the current manager")
-    public AreaResponseDTO updateManagerArea(
-            @PathParam("id") UUID id, @Valid AreaRequestDTO areaRequestDTO) {
-        LOG.debugf("Received PUT request to /api/manager/areas/%s to update area.", id);
-        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
-        return areaService.updateArea(id, areaRequestDTO, currentUser);
-    }
-
-    @DELETE
-    @APIResponse(responseCode = "204", description = "Area(s) deleted successfully")
-    @APIResponse(responseCode = "400", description = "Bad Request: Invalid input")
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(
-            responseCode = "403",
-            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    @APIResponse(
-            responseCode = "404",
-            description = "Not Found: Area with specified ID not found for the current manager")
-    @APIResponse(
-            responseCode = "409",
-            description = "Conflict: Area is still referenced by at least one seat")
-    public void deleteManagerArea(@QueryParam("ids") List<UUID> ids) {
-        LOG.debugf(
-                "Received DELETE request to /api/manager/areas with IDs: %s",
-                ids != null ? ids : Collections.emptyList());
-        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
-        areaService.deleteAreas(ids, currentUser);
     }
 }

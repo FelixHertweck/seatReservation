@@ -36,6 +36,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
+import de.felixhertweck.seatreservation.management.dto.EventLocationLayoutRequestDTO;
+import de.felixhertweck.seatreservation.management.dto.EventLocationLayoutResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationUpdateDTO;
@@ -136,6 +138,29 @@ public class EventLocationResource {
                 eventLocationService.updateEventLocation(id, dto, currentUser);
         LOG.infof("Event location with ID %s updated successfully.", id);
         return result;
+    }
+
+    @PUT
+    @Path("/{id}/layout")
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content =
+                    @Content(
+                            schema =
+                                    @Schema(implementation = EventLocationLayoutResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Event location with specified ID not found")
+    public EventLocationLayoutResponseDTO updateLocationLayout(
+            @PathParam("id") UUID id, @Valid EventLocationLayoutRequestDTO dto) {
+        LOG.debugf("Received PUT request to /api/manager/eventlocations/%s/layout.", id);
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
+        return eventLocationService.updateLocationLayout(id, dto, currentUser);
     }
 
     @DELETE
