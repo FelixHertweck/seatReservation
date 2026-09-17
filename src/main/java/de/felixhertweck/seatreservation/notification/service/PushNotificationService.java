@@ -83,7 +83,7 @@ public class PushNotificationService {
             String metadata) {
         LOG.debugf(
                 "Creating notification for user ID: %s, category: %s, title: %s",
-                (Object) user.id, category, title);
+                user.id, category, title);
 
         UserNotification notification =
                 new UserNotification(
@@ -194,7 +194,7 @@ public class PushNotificationService {
     /** Saves or updates a browser push subscription for a user. */
     @Transactional
     public void registerPushSubscription(User user, PushSubscriptionRequestDTO request) {
-        LOG.debugf("Registering push subscription for user ID: %s", (Object) user.id);
+        LOG.debugf("Registering push subscription for user ID: %s", user.id);
         Optional<UserPushSubscription> existing =
                 pushSubscriptionRepository.findByEndpoint(request.endpoint());
 
@@ -210,7 +210,7 @@ public class PushNotificationService {
                 LOG.warnf(
                         "Push subscription re-registered under user ID: %s; it previously belonged"
                                 + " to user ID: %s",
-                        (Object) user.id, (Object) sub.getUser().id);
+                        user.id, sub.getUser().id);
             }
             sub.setUser(user);
             sub.setP256dh(request.p256dh());
@@ -226,7 +226,7 @@ public class PushNotificationService {
     /** Unregisters a browser push subscription by endpoint. */
     @Transactional
     public void unregisterPushSubscription(User user, String endpoint) {
-        LOG.debugf("Unregistering push subscription for user ID: %s", (Object) user.id);
+        LOG.debugf("Unregistering push subscription for user ID: %s", user.id);
         pushSubscriptionRepository.deleteByEndpointAndUser(endpoint, user);
     }
 
@@ -358,7 +358,7 @@ public class PushNotificationService {
                                         e,
                                         "Failed to create in-app notification for event"
                                                 + " cancellation, user ID: %s",
-                                        (Object) user.id);
+                                        user.id);
                             }
                         });
     }

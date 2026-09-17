@@ -71,7 +71,7 @@ public class PushSubscriptionResource {
     @APIResponse(responseCode = "401", description = "Unauthorized")
     public Response registerSubscription(@Valid PushSubscriptionRequestDTO request) {
         User currentUser = userSecurityContext.getCurrentUser();
-        LOG.debugf("POST /api/push/subscriptions for user ID: %s", (Object) currentUser.id);
+        LOG.debugf("POST /api/push/subscriptions for user ID: %s", currentUser.id);
         notificationService.registerPushSubscription(currentUser, request);
         return Response.status(Response.Status.CREATED).build();
     }
@@ -82,7 +82,7 @@ public class PushSubscriptionResource {
     @APIResponse(responseCode = "401", description = "Unauthorized")
     public Response unregisterSubscription(@QueryParam("endpoint") String endpoint) {
         User currentUser = userSecurityContext.getCurrentUser();
-        LOG.debugf("DELETE /api/push/subscriptions for user ID: %s", (Object) currentUser.id);
+        LOG.debugf("DELETE /api/push/subscriptions for user ID: %s", currentUser.id);
         if (endpoint != null && !endpoint.isBlank()) {
             notificationService.unregisterPushSubscription(currentUser, endpoint);
         }

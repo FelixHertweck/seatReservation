@@ -49,7 +49,7 @@ public class UserPushSubscriptionRepository
     /** Deletes a push subscription by endpoint and user. */
     @Transactional
     public boolean deleteByEndpointAndUser(String endpoint, User user) {
-        LOG.debugf("Deleting push subscription for user ID: %s", (Object) user.id);
+        LOG.debugf("Deleting push subscription for user ID: %s", user.id);
         return delete("endpoint = ?1 and user = ?2", endpoint, user) > 0;
     }
 }

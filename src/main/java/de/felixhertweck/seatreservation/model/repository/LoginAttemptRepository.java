@@ -79,9 +79,7 @@ public class LoginAttemptRepository implements PanacheRepositoryBase<LoginAttemp
      */
     @Transactional
     public void recordAttempt(User user, boolean successful) {
-        LOG.debugf(
-                "Recording login attempt for user ID: %s, successful: %s",
-                (Object) user.id, successful);
+        LOG.debugf("Recording login attempt for user ID: %s, successful: %s", user.id, successful);
         LoginAttempt attempt = new LoginAttempt(user, Instant.now(), successful);
         persist(attempt);
     }

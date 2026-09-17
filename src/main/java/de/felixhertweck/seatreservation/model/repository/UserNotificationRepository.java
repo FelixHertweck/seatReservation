@@ -47,7 +47,7 @@ public class UserNotificationRepository implements PanacheRepositoryBase<UserNot
             int pageSize) {
         LOG.debugf(
                 "Finding notifications for user ID: %s, unreadOnly: %s, category: %s, page: %d",
-                (Object) user.id, unreadOnly, category, pageIndex);
+                user.id, unreadOnly, category, pageIndex);
 
         StringBuilder queryStr = new StringBuilder("user = ?1");
         if (Boolean.TRUE.equals(unreadOnly)) {
@@ -104,7 +104,7 @@ public class UserNotificationRepository implements PanacheRepositoryBase<UserNot
     /** Marks all notifications as read for a user. */
     @Transactional
     public long markAllAsReadByUser(User user) {
-        LOG.debugf("Marking all notifications as read for user ID: %s", (Object) user.id);
+        LOG.debugf("Marking all notifications as read for user ID: %s", user.id);
         return update("isRead = true where user = ?1 and isRead = false", user);
     }
 
