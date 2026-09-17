@@ -91,8 +91,7 @@ public class UserResource {
         LOG.debugf(
                 "Received POST request to /api/users/admin/import for %d users.",
                 userCreationDTOs.size());
-        Set<UserDTO> importedUsers = userService.importUsers(userCreationDTOs);
-        return importedUsers;
+        return userService.importUsers(userCreationDTOs);
     }
 
     /**
