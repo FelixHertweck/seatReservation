@@ -391,7 +391,6 @@ public class User extends AbstractEntity {
                 tags,
                 roles,
                 eventAllowances,
-                reservations,
                 emailVerification,
                 refreshTokens);
     }
