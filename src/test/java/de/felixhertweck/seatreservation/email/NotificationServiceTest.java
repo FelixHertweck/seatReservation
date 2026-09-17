@@ -511,14 +511,8 @@ class NotificationServiceTest {
 
         notificationService.onEventCancelled(cancelledEvent);
 
-        verify(emailService)
-                .sendEventCancelledNotification(
-                        org.mockito.ArgumentMatchers.eq(testUser),
-                        org.mockito.ArgumentMatchers.eq(cancelledEvent));
-        verify(emailService)
-                .sendEventCancelledNotification(
-                        org.mockito.ArgumentMatchers.eq(user2),
-                        org.mockito.ArgumentMatchers.eq(cancelledEvent));
+        verify(emailService).sendEventCancelledNotification(testUser, cancelledEvent);
+        verify(emailService).sendEventCancelledNotification(user2, cancelledEvent);
     }
 
     @Test

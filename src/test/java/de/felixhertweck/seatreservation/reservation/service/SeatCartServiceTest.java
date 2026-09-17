@@ -330,7 +330,7 @@ class SeatCartServiceTest {
 
         seatCartService.releaseSeats(eventId, List.of(seatId, seat2));
 
-        verify(keyCommands, times(1)).del(eq(key()), eq(key(seat2)));
+        verify(keyCommands, times(1)).del(key(), key(seat2));
         verify(setCommands, times(1)).srem(indexKey(), seatId.toString(), seat2.toString());
     }
 

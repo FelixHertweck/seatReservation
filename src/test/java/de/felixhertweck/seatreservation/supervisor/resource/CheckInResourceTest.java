@@ -115,12 +115,12 @@ class CheckInResourceTest {
         // event20 has no manager and supervisorUser is not supervisor for it
 
         // Set the authorization matrix
-        when(eventRepository.isUserSupervisor(eq(id(10)), eq(id(1)))).thenReturn(true);
-        when(eventRepository.isUserSupervisor(eq(id(20)), eq(id(1)))).thenReturn(false);
+        when(eventRepository.isUserSupervisor(id(10), id(1))).thenReturn(true);
+        when(eventRepository.isUserSupervisor(id(20), id(1))).thenReturn(false);
         when(eventRepository.isUserSupervisor(any(UUID.class), eq(id(2)))).thenReturn(false);
         when(eventRepository.isUserSupervisor(any(UUID.class), eq(id(3)))).thenReturn(false);
         when(eventRepository.isUserSupervisor(any(UUID.class), eq(id(4)))).thenReturn(false);
-        when(eventRepository.isUserManager(eq(id(10)), eq(id(3)))).thenReturn(true);
+        when(eventRepository.isUserManager(id(10), id(3))).thenReturn(true);
 
         // eventRepository.findById to allow manager checks
         when(eventRepository.findById(id(10))).thenReturn(event10);

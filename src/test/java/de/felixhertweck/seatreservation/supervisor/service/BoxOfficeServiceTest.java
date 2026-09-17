@@ -425,7 +425,7 @@ class BoxOfficeServiceTest {
                 new de.felixhertweck.seatreservation.model.entity.CheckInToken(
                         boxofficeUser, pastDeadlineEvent, "TOKEN_GUEST_2");
 
-        when(checkInTokenService.createFresh(eq(boxofficeUser), eq(pastDeadlineEvent)))
+        when(checkInTokenService.createFresh(boxofficeUser, pastDeadlineEvent))
                 .thenReturn(tokenGuest1)
                 .thenReturn(tokenGuest2);
 

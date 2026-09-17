@@ -487,7 +487,7 @@ class CheckInServiceTest {
         User user = new User();
         user.id = id(1);
         user.setRoles(Set.of(Roles.SUPERVISOR));
-        when(eventRepository.isUserSupervisor(eq(eventId), eq(id(1)))).thenReturn(false);
+        when(eventRepository.isUserSupervisor(eventId, id(1))).thenReturn(false);
         assertThrows(
                 AccessDeniedException.class,
                 () -> checkInService.getUsernamesWithReservations(auth(user), eventId));

@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import de.felixhertweck.seatreservation.common.events.EventDeletedEvent;
@@ -96,7 +95,7 @@ public class EventServiceDeleteEventTest {
         event2.setName("Event 2");
         event2.setManager(managerUser);
 
-        when(eventRepository.findByIdsWithManager(eq(List.of(id(101), id(102)))))
+        when(eventRepository.findByIdsWithManager(List.of(id(101), id(102))))
                 .thenReturn(List.of(event1, event2));
         stubIsUserManager(event1, event2);
 
@@ -116,8 +115,7 @@ public class EventServiceDeleteEventTest {
         event1.setManager(managerUser);
         event1.getManagers().add(coManagerUser);
 
-        when(eventRepository.findByIdsWithManager(eq(List.of(id(101)))))
-                .thenReturn(List.of(event1));
+        when(eventRepository.findByIdsWithManager(List.of(id(101)))).thenReturn(List.of(event1));
         stubIsUserManager(event1);
 
         eventService.deleteEvent(List.of(id(101)), coManagerUser);
@@ -132,7 +130,7 @@ public class EventServiceDeleteEventTest {
         event1.setName("Event 1");
         event1.setManager(managerUser);
 
-        when(eventRepository.findByIdsWithManager(eq(List.of(id(101), id(999)))))
+        when(eventRepository.findByIdsWithManager(List.of(id(101), id(999))))
                 .thenReturn(List.of(event1));
         stubIsUserManager(event1);
 
@@ -150,8 +148,7 @@ public class EventServiceDeleteEventTest {
         event1.setName("Event 1");
         event1.setManager(managerUser);
 
-        when(eventRepository.findByIdsWithManager(eq(List.of(id(101)))))
-                .thenReturn(List.of(event1));
+        when(eventRepository.findByIdsWithManager(List.of(id(101)))).thenReturn(List.of(event1));
 
         assertThrows(
                 AccessDeniedException.class,
@@ -167,8 +164,7 @@ public class EventServiceDeleteEventTest {
         event1.setName("Event 1");
         event1.setManager(managerUser);
 
-        when(eventRepository.findByIdsWithManager(eq(List.of(id(101)))))
-                .thenReturn(List.of(event1));
+        when(eventRepository.findByIdsWithManager(List.of(id(101)))).thenReturn(List.of(event1));
         stubIsUserManager(event1);
         when(reservationRepository.countActiveByEvent(event1)).thenReturn(3L);
 

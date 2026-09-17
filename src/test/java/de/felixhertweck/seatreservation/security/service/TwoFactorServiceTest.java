@@ -582,7 +582,7 @@ public class TwoFactorServiceTest {
         assertEquals(6, challenge.getEmailCode().length());
         verify(challengeRepository, times(1)).deleteByUser(user);
         verify(challengeRepository, times(1)).persist(challenge);
-        verify(emailService, times(1)).sendTwoFactorCode(eq(user), eq(challenge.getEmailCode()));
+        verify(emailService, times(1)).sendTwoFactorCode(user, challenge.getEmailCode());
     }
 
     @Test
@@ -611,7 +611,7 @@ public class TwoFactorServiceTest {
         TwoFactorChallenge challenge = twoFactorService.createChallenge(user);
 
         assertNotNull(challenge.getEmailCode());
-        verify(emailService, times(1)).sendTwoFactorCode(eq(user), eq(challenge.getEmailCode()));
+        verify(emailService, times(1)).sendTwoFactorCode(user, challenge.getEmailCode());
     }
 
     @Test
