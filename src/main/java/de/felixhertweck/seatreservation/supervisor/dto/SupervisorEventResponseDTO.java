@@ -33,16 +33,6 @@ public record SupervisorEventResponseDTO(
         Instant startTime,
         Instant endTime,
         Instant bookingDeadline) {
-    public SupervisorEventResponseDTO(Event event, Integer reservationsAllowed) {
-        this(
-                event.getId(),
-                event.getName(),
-                event.getDescription(),
-                event.getStartTime(),
-                event.getEndTime(),
-                event.getBookingDeadline());
-    }
-
     public SupervisorEventResponseDTO(Event event) {
         this(
                 event.getId(),
