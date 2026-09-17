@@ -34,6 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,6 +56,7 @@ import de.felixhertweck.seatreservation.reservation.service.CheckInTokenService;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeGuestReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.service.LiveViewService;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -100,8 +102,13 @@ class BoxOfficeResourceTest {
         boxofficeUser.id = id(5);
         boxofficeUser.setUsername("boxoffice");
         when(userRepository.findByUsername("boxoffice")).thenReturn(boxofficeUser);
-        when(userRepository.listAll())
-                .thenReturn(List.of(supervisorUser, targetUser, boxofficeUser));
+        PanacheQuery<User> mockUserQuery = mock(PanacheQuery.class);
+        when(mockUserQuery.stream())
+                .thenReturn(List.of(supervisorUser, targetUser, boxofficeUser).stream());
+        when(userRepository.find(
+                        "select distinct u from User u left join fetch u.tags left join fetch"
+                                + " u.roles"))
+                .thenReturn(mockUserQuery);
 
         EventLocation location = new EventLocation();
         location.id = id(1);

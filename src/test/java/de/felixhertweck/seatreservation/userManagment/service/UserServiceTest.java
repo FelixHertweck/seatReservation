@@ -1038,7 +1038,9 @@ public class UserServiceTest {
                         Collections.emptySet());
         PanacheQuery<User> mockQuery = mock(PanacheQuery.class);
         when(mockQuery.stream()).thenReturn(Arrays.asList(user1, user2).stream());
-        when(userRepository.find("select distinct u from User u left join fetch u.tags"))
+        when(userRepository.find(
+                        "select distinct u from User u left join fetch u.tags left join fetch"
+                                + " u.roles"))
                 .thenReturn(mockQuery);
 
         List<LimitedUserInfoDTO> users = userService.getAllUsers();
@@ -1053,7 +1055,9 @@ public class UserServiceTest {
     void getAllUsers_Success_NoUsers() {
         PanacheQuery<User> mockQuery = mock(PanacheQuery.class);
         when(mockQuery.stream()).thenReturn(Collections.<User>emptyList().stream());
-        when(userRepository.find("select distinct u from User u left join fetch u.tags"))
+        when(userRepository.find(
+                        "select distinct u from User u left join fetch u.tags left join fetch"
+                                + " u.roles"))
                 .thenReturn(mockQuery);
 
         List<LimitedUserInfoDTO> users = userService.getAllUsers();
