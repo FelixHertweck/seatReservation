@@ -128,12 +128,13 @@ public class WebAuthnService {
      * Persists a freshly registered passkey for an existing user.
      *
      * @param user the owner
-     * @param record the verified credential produced by the WebAuthn ceremony
+     * @param credentialRecord the verified credential produced by the WebAuthn ceremony
      * @param label an optional user-facing name for the passkey (a sensible default)
      */
     @Transactional
-    public void addCredentialToUser(User user, WebAuthnCredentialRecord record, String label) {
-        persistCredential(user, record, label);
+    public void addCredentialToUser(
+            User user, WebAuthnCredentialRecord credentialRecord, String label) {
+        persistCredential(user, credentialRecord, label);
         LOG.infof("Registered new passkey for user ID: %s", user.id);
     }
 
@@ -162,14 +163,14 @@ public class WebAuthnService {
      * set.
      *
      * @param registration the account details (username, name and email required)
-     * @param record the verified credential produced by the WebAuthn ceremony
+     * @param credentialRecord the verified credential produced by the WebAuthn ceremony
      * @param label an optional user-facing name for the passkey (a sensible default)
      * @return the newly created user
      */
     @Transactional
     public User createUserWithCredential(
             WebAuthnRegistrationStartDTO registration,
-            WebAuthnCredentialRecord record,
+            WebAuthnCredentialRecord credentialRecord,
             String label)
             throws DuplicateUserException, InvalidUserException, RegistrationDisabledException {
         if (!authService.isRegistrationEnabled()) {
@@ -193,7 +194,7 @@ public class WebAuthnService {
                     "User not found after creation: " + registration.getUsername());
         }
 
-        persistCredential(user, record, label);
+        persistCredential(user, credentialRecord, label);
         LOG.infof("Created passkey account for user ID: %s", user.id);
         return user;
     }
@@ -204,8 +205,9 @@ public class WebAuthnService {
         loginAttemptRepository.recordAttempt(user, true);
     }
 
-    private void persistCredential(User user, WebAuthnCredentialRecord record, String label) {
-        RequiredPersistedData data = record.getRequiredPersistedData();
+    private void persistCredential(
+            User user, WebAuthnCredentialRecord credentialRecord, String label) {
+        RequiredPersistedData data = credentialRecord.getRequiredPersistedData();
         String trimmedLabel = label != null && !label.isBlank() ? label.trim() : null;
         WebAuthnCredential credential =
                 new WebAuthnCredential(
