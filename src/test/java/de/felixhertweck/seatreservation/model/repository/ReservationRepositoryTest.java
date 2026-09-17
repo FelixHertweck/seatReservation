@@ -32,8 +32,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
+import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterEach;
@@ -53,13 +55,17 @@ class ReservationRepositoryTest {
     @Inject ReservationRepository reservationRepository;
     @Inject UserRepository userRepository;
     @Inject EventRepository eventRepository;
+    @Inject EventLocationRepository eventLocationRepository;
+    @Inject SeatRepository seatRepository;
 
     private User managerA;
     private User managerB;
     private User regularUser;
     private Event eventA;
     private Event eventB;
+    private EventLocation location;
     private List<UUID> reservationIds;
+    private List<Seat> seats;
 
     @BeforeEach
     @Transactional
@@ -68,18 +74,30 @@ class ReservationRepositoryTest {
         managerB = userRepository.findByUsernameOptional("supervisor").orElseThrow();
         regularUser = userRepository.findByUsernameOptional("user").orElseThrow();
 
+        location = new EventLocation();
+        location.setName("Reservation Repository Test Location");
+        eventLocationRepository.persist(location);
+
         eventA = newTestEvent("Reservation Repository Test Event A", Set.of(managerA));
         eventRepository.persist(eventA);
 
         eventB = newTestEvent("Reservation Repository Test Event B", Set.of(managerB));
         eventRepository.persist(eventB);
 
+        // Each reservation needs its own seat: the (event_id, seat_id) unique constraint would
+        // otherwise reject the two RESERVED rows for regularUser/eventA below.
+        seats = List.of(newSeat("A1"), newSeat("A2"), newSeat("A3"), newSeat("B1"));
+        seatRepository.persist(seats);
+
         List<Reservation> reservations =
                 List.of(
-                        newReservation(regularUser, eventA, ReservationStatus.RESERVED),
-                        newReservation(regularUser, eventA, ReservationStatus.RESERVED),
-                        newReservation(managerA, eventA, ReservationStatus.BLOCKED),
-                        newReservation(regularUser, eventB, ReservationStatus.RESERVED));
+                        newReservation(
+                                regularUser, eventA, seats.get(0), ReservationStatus.RESERVED),
+                        newReservation(
+                                regularUser, eventA, seats.get(1), ReservationStatus.RESERVED),
+                        newReservation(managerA, eventA, seats.get(2), ReservationStatus.BLOCKED),
+                        newReservation(
+                                regularUser, eventB, seats.get(3), ReservationStatus.RESERVED));
         reservationRepository.persistAll(reservations);
         reservationIds = reservations.stream().map(r -> r.id).toList();
     }
@@ -88,8 +106,14 @@ class ReservationRepositoryTest {
     @Transactional
     void tearDown() {
         reservationRepository.deleteByIds(reservationIds);
+        seats.forEach(seatRepository::delete);
         eventRepository.delete(eventA);
         eventRepository.delete(eventB);
+        eventLocationRepository.delete(location);
+    }
+
+    private Seat newSeat(String seatNumber) {
+        return new Seat(seatNumber, "A", location);
     }
 
     @Test
@@ -148,7 +172,8 @@ class ReservationRepositoryTest {
         return event;
     }
 
-    private static Reservation newReservation(User user, Event event, ReservationStatus status) {
-        return new Reservation(user, event, null, Instant.now(), status, null);
+    private static Reservation newReservation(
+            User user, Event event, Seat seat, ReservationStatus status) {
+        return new Reservation(user, event, seat, Instant.now(), status, null);
     }
 }
