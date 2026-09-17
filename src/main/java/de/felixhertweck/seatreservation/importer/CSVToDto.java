@@ -85,9 +85,9 @@ public class CSVToDto {
             }
 
             while (it.hasNext()) {
-                CSVRecord record = it.next();
+                CSVRecord csvRecord = it.next();
                 // Expecting at least firstname, lastname, password; optional email
-                processRecord(record, users);
+                processRecord(csvRecord, users);
             }
 
         } catch (IOException e) {
@@ -109,30 +109,31 @@ public class CSVToDto {
         }
     }
 
-    private static String safeGet(CSVRecord record, String header, int index) {
+    private static String safeGet(CSVRecord csvRecord, String header, int index) {
         try {
-            if (record.isMapped(header)) {
-                String v = record.get(header);
+            if (csvRecord.isMapped(header)) {
+                String v = csvRecord.get(header);
                 return v == null ? "" : v;
             }
         } catch (IllegalArgumentException ignored) {
+            // Header not mapped in this CSV - fall through to lookup by column index instead.
         }
         // Fallback by index
-        if (index < record.size()) {
-            String v = record.get(index);
+        if (index < csvRecord.size()) {
+            String v = csvRecord.get(index);
             return v == null ? "" : v;
         }
         return "";
     }
 
-    private static void processRecord(CSVRecord record, List<AdminUserCreationDto> users) {
-        String firstname = safeGet(record, "firstname", 0);
-        String lastname = safeGet(record, "lastname", 1);
-        String password = safeGet(record, "password", 2);
-        String email = safeGet(record, "email", 3);
+    private static void processRecord(CSVRecord csvRecord, List<AdminUserCreationDto> users) {
+        String firstname = safeGet(csvRecord, "firstname", 0);
+        String lastname = safeGet(csvRecord, "lastname", 1);
+        String password = safeGet(csvRecord, "password", 2);
+        String email = safeGet(csvRecord, "email", 3);
 
         if (firstname.isBlank() || lastname.isBlank() || password.isBlank()) {
-            LOG.warnf("Skipping record due missing mandatory fields: %s", record);
+            LOG.warnf("Skipping record due missing mandatory fields: %s", csvRecord);
             return;
         }
 
@@ -152,20 +153,23 @@ public class CSVToDto {
         users.add(dto);
     }
 
-    private static boolean looksLikeHeader(CSVRecord record) {
+    private static boolean looksLikeHeader(CSVRecord csvRecord) {
         // simple heuristic: if any column name contains non-letter characters or matches known
         // headers
-        for (String v : toList(record)) {
+        for (String v : toList(csvRecord)) {
             String lower = v.toLowerCase(Locale.ROOT).trim();
             if (lower.isEmpty()) return false;
-            if (lower.matches(".*(firstname|lastname|password|email).*")) return true;
+            if (lower.contains("firstname")
+                    || lower.contains("lastname")
+                    || lower.contains("password")
+                    || lower.contains("email")) return true;
         }
         return false;
     }
 
-    private static List<String> toList(CSVRecord record) {
-        List<String> l = new ArrayList<>(record.size());
-        for (int i = 0; i < record.size(); i++) l.add(record.get(i));
+    private static List<String> toList(CSVRecord csvRecord) {
+        List<String> l = new ArrayList<>(csvRecord.size());
+        for (int i = 0; i < csvRecord.size(); i++) l.add(csvRecord.get(i));
         return l;
     }
 
