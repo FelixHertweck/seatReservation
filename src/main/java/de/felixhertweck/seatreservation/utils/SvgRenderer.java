@@ -193,9 +193,8 @@ public class SvgRenderer {
                             .append(markerY)
                             .append("\" font-size=\"")
                             .append(markerTextHeight)
-                            .append(
-                                    "\" text-anchor=\"middle\" dominant-baseline=\"central\""
-                                            + " fill=\"#333333\" font-weight=\"bold\">")
+                            .append("\" text-anchor=\"middle\" dominant-baseline=\"central\"")
+                            .append(" fill=\"#333333\" font-weight=\"bold\">")
                             .append(escapeXml(label))
                             .append("</text>\n");
                 }
