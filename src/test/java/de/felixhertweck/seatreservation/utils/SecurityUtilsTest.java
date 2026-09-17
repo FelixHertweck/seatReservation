@@ -139,23 +139,24 @@ class SecurityUtilsTest {
     }
 
     @Test
-    void constructor_ThrowsException() {
-        try {
-            var constructor = SecurityUtils.class.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            constructor.newInstance();
-            fail("Constructor should throw UnsupportedOperationException");
-        } catch (Exception e) {
-            // InvocationTargetException wraps the actual exception
-            Throwable cause = e.getCause();
-            assertNotNull(cause, "Exception should have a cause");
-            assertTrue(
-                    cause instanceof UnsupportedOperationException,
-                    "Cause should be UnsupportedOperationException");
-            assertEquals(
-                    "Utility class cannot be instantiated",
-                    cause.getMessage(),
-                    "Exception message should match");
-        }
+    void constructor_ThrowsException() throws Exception {
+        var constructor = SecurityUtils.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+
+        // InvocationTargetException wraps the actual exception
+        var invocationException =
+                assertThrows(
+                        java.lang.reflect.InvocationTargetException.class,
+                        constructor::newInstance);
+
+        Throwable cause = invocationException.getCause();
+        assertNotNull(cause, "Exception should have a cause");
+        assertTrue(
+                cause instanceof UnsupportedOperationException,
+                "Cause should be UnsupportedOperationException");
+        assertEquals(
+                "Utility class cannot be instantiated",
+                cause.getMessage(),
+                "Exception message should match");
     }
 }
