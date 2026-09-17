@@ -590,7 +590,8 @@ public class GoogleWalletPassGenerator extends AbstractWalletPassGenerator {
      * documented way to revoke a pass a user may already have saved. A 404 response means no pass
      * was ever saved for this reservation, which is the common case and not an error.
      */
-    private void expireEventTicketObject(UUID reservationId) throws Exception {
+    private void expireEventTicketObject(UUID reservationId)
+            throws IOException, InterruptedException, GeneralSecurityException {
         String safeReservationId = reservationId.toString().replace("-", "_");
         String objectId = String.format("%s.reservation_%s", issuerId, safeReservationId);
 
@@ -608,7 +609,8 @@ public class GoogleWalletPassGenerator extends AbstractWalletPassGenerator {
      * (partial update). If the class does not exist yet on Google's API (404), falls back to a POST
      * (insert) with the full class payload so that the update is not silently lost.
      */
-    private void patchEventTicketClass(EventUpdatedEvent event) throws Exception {
+    private void patchEventTicketClass(EventUpdatedEvent event)
+            throws IOException, InterruptedException, GeneralSecurityException {
         String safeEventId = event.eventId().toString().replace("-", "_");
         String fullClassId = String.format(EVENT_CLASS_ID_FORMAT, issuerId, safeEventId);
 
