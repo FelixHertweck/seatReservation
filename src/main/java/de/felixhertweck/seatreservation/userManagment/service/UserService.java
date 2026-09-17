@@ -313,7 +313,7 @@ public class UserService {
             LOG.debugf(
                     "Updating emailVerified for user ID %s from %s to %s",
                     existingUser.id,
-                    existingUser.isEmailVerified().toString(),
+                    Boolean.toString(existingUser.isEmailVerified()),
                     Boolean.toString(markEmailAsVerified));
             existingUser.setEmailVerified(markEmailAsVerified);
         }
