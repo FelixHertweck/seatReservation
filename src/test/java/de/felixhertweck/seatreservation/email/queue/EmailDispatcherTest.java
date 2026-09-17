@@ -249,6 +249,8 @@ class EmailDispatcherTest {
 
         // This should run without throwing any NullPointerException or error
         emailDispatcher.markSent(emailId);
+
+        verify(outboundEmailRepository, never()).persist(any(OutboundEmail.class));
     }
 
     @Test
@@ -322,5 +324,7 @@ class EmailDispatcherTest {
 
         // This should run without throwing any Exception
         emailDispatcher.markFailure(emailId, new RuntimeException("Error"));
+
+        verify(outboundEmailRepository, never()).persist(any(OutboundEmail.class));
     }
 }
