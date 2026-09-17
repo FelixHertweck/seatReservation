@@ -106,6 +106,13 @@ public abstract class AbstractPkpassGenerator extends AbstractWalletPassGenerato
                         .filter(s -> !s.isBlank())
                         .collect(Collectors.joining(", "));
 
+        String seatValue;
+        if (!combinedSeats.isBlank()) {
+            seatValue = combinedSeats;
+        } else {
+            seatValue = first.seatLabel() != null ? first.seatLabel() : "";
+        }
+
         eventTicket.put(
                 "secondaryFields",
                 List.of(
@@ -122,9 +129,7 @@ public abstract class AbstractPkpassGenerator extends AbstractWalletPassGenerato
                                 KEY_LABEL,
                                 passes.size() > 1 ? "SEATS" : "SEAT",
                                 KEY_VALUE,
-                                !combinedSeats.isBlank()
-                                        ? combinedSeats
-                                        : (first.seatLabel() != null ? first.seatLabel() : ""))));
+                                seatValue)));
 
         List<Map<String, Object>> auxiliaryFields = new ArrayList<>();
         if (first.userName() != null && !first.userName().isBlank()) {
@@ -191,7 +196,7 @@ public abstract class AbstractPkpassGenerator extends AbstractWalletPassGenerato
             for (int i = 0; i < passes.size(); i++) {
                 WalletPassData p = passes.get(i);
                 if (p.seatLabel() != null && !p.seatLabel().isBlank()) {
-                    sb.append(String.format("Seat %d: %s\n", i + 1, p.seatLabel()));
+                    sb.append(String.format("Seat %d: %s%n", i + 1, p.seatLabel()));
                 }
             }
             if (!sb.isEmpty()) {
