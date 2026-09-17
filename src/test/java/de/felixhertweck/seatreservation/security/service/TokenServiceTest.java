@@ -40,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.model.entity.RefreshToken;
@@ -125,8 +126,8 @@ public class TokenServiceTest {
             tokenService.generateToken(user);
 
             mockedJwt.verify(() -> Jwt.upn(user.getUsername()));
-            Mockito.verify(claimsBuilder).groups(user.getRoles());
-            Mockito.verify(claimsBuilder).claim(Claims.email, user.getEmail());
+            verify(claimsBuilder).groups(user.getRoles());
+            verify(claimsBuilder).claim(Claims.email, user.getEmail());
         }
     }
 
@@ -152,7 +153,7 @@ public class TokenServiceTest {
             tokenService.generateToken(user);
 
             // Verify that empty string is used when email is null
-            Mockito.verify(claimsBuilder).claim(Claims.email, "");
+            verify(claimsBuilder).claim(Claims.email, "");
         }
     }
 
@@ -177,7 +178,7 @@ public class TokenServiceTest {
 
             tokenService.generateToken(user);
 
-            Mockito.verify(claimsBuilder).groups(user.getRoles());
+            verify(claimsBuilder).groups(user.getRoles());
         }
     }
 
