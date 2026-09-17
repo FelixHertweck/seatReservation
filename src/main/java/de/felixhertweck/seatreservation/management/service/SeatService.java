@@ -417,19 +417,19 @@ public class SeatService {
 
         Map<UUID, EventUserAllowance> updatedAllowancesByUserId = new java.util.LinkedHashMap<>();
         for (Reservation reservation : deletedReservations) {
-            if (reservation.getUser() == null) {
-                continue;
-            }
-            EventUserAllowance allowance = allowanceByUserId.get(reservation.getUser().id);
+            User user = reservation.getUser();
+            EventUserAllowance allowance = user == null ? null : allowanceByUserId.get(user.id);
             if (allowance == null) {
-                LOG.debugf(
-                        "No allowance found for user ID %s and event ID %s, skipping allowance"
-                                + " increment.",
-                        reservation.getUser().getId(), event.getId());
+                if (user != null) {
+                    LOG.debugf(
+                            "No allowance found for user ID %s and event ID %s, skipping"
+                                    + " allowance increment.",
+                            user.getId(), event.getId());
+                }
                 continue;
             }
             allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() + 1);
-            updatedAllowancesByUserId.put(reservation.getUser().id, allowance);
+            updatedAllowancesByUserId.put(user.id, allowance);
         }
         if (!updatedAllowancesByUserId.isEmpty()) {
             eventUserAllowanceRepository.persist(
