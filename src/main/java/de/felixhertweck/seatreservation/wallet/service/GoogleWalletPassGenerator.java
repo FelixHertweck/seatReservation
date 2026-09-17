@@ -29,6 +29,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -696,7 +697,7 @@ public class GoogleWalletPassGenerator extends AbstractWalletPassGenerator {
             Instant startTime,
             Instant endTime,
             String accessToken)
-            throws Exception {
+            throws IOException, InterruptedException {
         Map<String, Object> insertPayload = new HashMap<>();
         insertPayload.put("id", fullClassId);
         insertPayload.put("issuerName", "SeatReservation");
@@ -772,7 +773,8 @@ public class GoogleWalletPassGenerator extends AbstractWalletPassGenerator {
     }
 
     /** Requests an OAuth2 access token for the Google Service Account via jwt-bearer assertion. */
-    private String fetchAccessToken() throws Exception {
+    private String fetchAccessToken()
+            throws IOException, InterruptedException, GeneralSecurityException {
         long now = Instant.now().getEpochSecond();
         Map<String, Object> claims = new HashMap<>();
         claims.put("iss", serviceAccountEmail);
@@ -826,7 +828,8 @@ public class GoogleWalletPassGenerator extends AbstractWalletPassGenerator {
      * Builds a minimal RS256 JWT manually so we can supply an arbitrary private key rather than
      * being tied to the application's SmallRye JWT signing key.
      */
-    private String buildSignedJwt(Map<String, Object> claims) throws Exception {
+    private String buildSignedJwt(Map<String, Object> claims)
+            throws IOException, GeneralSecurityException {
         PrivateKey privateKey = loadServiceAccountKey();
 
         // Header
