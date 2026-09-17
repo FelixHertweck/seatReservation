@@ -129,6 +129,89 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
     }
 
     /**
+     * Retrieves reservation counts grouped by status, across all reservations in the system.
+     *
+     * @return map of reservation status to count
+     */
+    public Map<ReservationStatus, Long> getReservationCounts() {
+        List<Object[]> results =
+                getEntityManager()
+                        .createQuery(
+                                "SELECT r.status, COUNT(r) FROM Reservation r GROUP BY r.status",
+                                Object[].class)
+                        .getResultList();
+
+        return results.stream()
+                .collect(Collectors.toMap(row -> (ReservationStatus) row[0], row -> (Long) row[1]));
+    }
+
+    /**
+     * Retrieves reservation counts grouped by status, limited to reservations for events managed by
+     * the given manager.
+     *
+     * @param manager the manager user to scope the query to
+     * @return map of reservation status to count
+     */
+    public Map<ReservationStatus, Long> getReservationCountsByManager(User manager) {
+        List<Object[]> results =
+                getEntityManager()
+                        .createQuery(
+                                "SELECT r.status, COUNT(r) FROM Reservation r JOIN r.event e JOIN"
+                                        + " e.managers m WHERE m = ?1 GROUP BY r.status",
+                                Object[].class)
+                        .setParameter(1, manager)
+                        .getResultList();
+
+        return results.stream()
+                .collect(Collectors.toMap(row -> (ReservationStatus) row[0], row -> (Long) row[1]));
+    }
+
+    /**
+     * Retrieves reserved seat counts grouped by event and user, across all reservations in the
+     * system.
+     *
+     * @return map of "eventId:userId" to reserved seat count
+     */
+    public Map<String, Long> getReservedSeatCountsByEventAndUser() {
+        List<Object[]> results =
+                getEntityManager()
+                        .createQuery(
+                                "SELECT r.event.id, r.user.id, COUNT(r) FROM Reservation r WHERE"
+                                    + " r.status ="
+                                    + " de.felixhertweck.seatreservation.model.entity.ReservationStatus.RESERVED"
+                                    + " AND r.event IS NOT NULL AND r.user IS NOT NULL GROUP BY"
+                                    + " r.event.id, r.user.id",
+                                Object[].class)
+                        .getResultList();
+
+        return results.stream()
+                .collect(Collectors.toMap(row -> row[0] + ":" + row[1], row -> (Long) row[2]));
+    }
+
+    /**
+     * Retrieves reserved seat counts grouped by event and user, limited to reservations for events
+     * managed by the given manager.
+     *
+     * @param manager the manager user to scope the query to
+     * @return map of "eventId:userId" to reserved seat count
+     */
+    public Map<String, Long> getReservedSeatCountsByEventAndUserByManager(User manager) {
+        List<Object[]> results =
+                getEntityManager()
+                        .createQuery(
+                                "SELECT r.event.id, r.user.id, COUNT(r) FROM Reservation r JOIN"
+                                    + " r.event e JOIN e.managers m WHERE m = ?1 AND r.status ="
+                                    + " de.felixhertweck.seatreservation.model.entity.ReservationStatus.RESERVED"
+                                    + " AND r.user IS NOT NULL GROUP BY r.event.id, r.user.id",
+                                Object[].class)
+                        .setParameter(1, manager)
+                        .getResultList();
+
+        return results.stream()
+                .collect(Collectors.toMap(row -> row[0] + ":" + row[1], row -> (Long) row[2]));
+    }
+
+    /**
      * Finds all reservations for a given user that are not blocked.
      *
      * @param user the user to search for

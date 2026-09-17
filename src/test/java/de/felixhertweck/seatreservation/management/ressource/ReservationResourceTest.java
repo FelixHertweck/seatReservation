@@ -36,6 +36,7 @@ import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
@@ -127,6 +128,7 @@ public class ReservationResourceTest {
         testReservation.setEvent(testEvent);
         testReservation.setSeat(testSeat);
         testReservation.setUser(testUser);
+        testReservation.setStatus(ReservationStatus.RESERVED);
         reservationRepository.persist(testReservation);
 
         var allowance = new EventUserAllowance(testUser, testEvent, 1);
@@ -292,6 +294,7 @@ public class ReservationResourceTest {
         reservation2.setEvent(testEvent);
         reservation2.setSeat(anotherSeat);
         reservation2.setUser(testUser);
+        reservation2.setStatus(ReservationStatus.RESERVED);
 
         var user2 = userRepository.findByUsernameOptional("user").orElseThrow();
         var seat3 = new Seat("A3", "", testSeat.getLocation());
@@ -300,6 +303,7 @@ public class ReservationResourceTest {
         reservation3.setEvent(testEvent);
         reservation3.setSeat(seat3);
         reservation3.setUser(user2);
+        reservation3.setStatus(ReservationStatus.RESERVED);
 
         seedAdditionalReservations(seat3, reservation2, reservation3);
 
