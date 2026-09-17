@@ -453,10 +453,8 @@ public class TwoFactorService {
         // valid code for either completes the challenge.
         boolean verified = false;
 
-        if (user.isTotpEnabled() && user.getTotpSecret() != null) {
-            if (verifyTotpCode(user, code)) {
-                verified = true;
-            }
+        if (user.isTotpEnabled() && user.getTotpSecret() != null && verifyTotpCode(user, code)) {
+            verified = true;
         }
 
         if (!verified
@@ -466,10 +464,8 @@ public class TwoFactorService {
             verified = true;
         }
 
-        if (!verified) {
-            if (verifyAndConsumeBackupCode(user, code)) {
-                verified = true;
-            }
+        if (!verified && verifyAndConsumeBackupCode(user, code)) {
+            verified = true;
         }
 
         twoFactorAttemptRepository.recordAttempt(user, verified);
