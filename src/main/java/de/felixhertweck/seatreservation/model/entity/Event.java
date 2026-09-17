@@ -220,8 +220,8 @@ public class Event extends AbstractEntity {
         return event_location;
     }
 
-    public void setEventLocation(EventLocation event_location) {
-        this.event_location = event_location;
+    public void setEventLocation(EventLocation eventLocation) {
+        this.event_location = eventLocation;
     }
 
     public void setUserAllowances(Set<EventUserAllowance> userAllowances) {
