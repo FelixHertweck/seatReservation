@@ -190,11 +190,10 @@ class AdminUserInitializerTest {
 
         // Assert
         @SuppressWarnings("unchecked")
-        ArgumentCaptor<Set<Roles>> rolesCaptor = ArgumentCaptor.forClass(Set.class);
-        verify(userService).createUser(any(UserCreationDTO.class), anySet(), anyBoolean());
-
-        // We verify the roles indirectly by checking the admin user was created
-        // The roles argument is passed as Set.of(Roles.ADMIN) in the actual code
+        ArgumentCaptor<Set<String>> rolesCaptor = ArgumentCaptor.forClass(Set.class);
+        verify(userService)
+                .createUser(any(UserCreationDTO.class), rolesCaptor.capture(), anyBoolean());
+        assertEquals(Set.of(Roles.ADMIN), rolesCaptor.getValue());
     }
 
     @Test
