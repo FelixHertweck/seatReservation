@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.model.entity;
 
 import java.time.Instant;
 import java.util.Objects;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -53,6 +54,7 @@ public class Reservation extends AbstractEntity {
     private Instant reservationDate;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ReservationStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
