@@ -54,8 +54,11 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
-/** Generates an Apple Wallet {@code .pkpass} archive with optional PKCS#7 digital signature. */
-/** This is not tested as a payed Apple Developer Account is required. */
+/**
+ * Generates an Apple Wallet {@code .pkpass} archive with optional PKCS#7 digital signature.
+ *
+ * <p>This is not tested as a payed Apple Developer Account is required.
+ */
 @ApplicationScoped
 public class AppleWalletPassGenerator extends AbstractPkpassGenerator {
 
