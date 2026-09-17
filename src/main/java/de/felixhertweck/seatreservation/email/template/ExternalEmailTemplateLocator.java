@@ -28,8 +28,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Optional;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 
 import io.quarkus.qute.TemplateLocator;
 import io.quarkus.qute.Variant;
@@ -55,7 +55,7 @@ import org.jboss.logging.Logger;
  *
  * <p>Leaving the property unset (the default) disables the locator entirely, so it is a safe no-op.
  */
-@Singleton
+@ApplicationScoped
 public class ExternalEmailTemplateLocator implements TemplateLocator {
 
     private static final Logger LOG = Logger.getLogger(ExternalEmailTemplateLocator.class);
