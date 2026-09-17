@@ -555,14 +555,8 @@ public class UserService {
     }
 
     public List<LimitedUserInfoDTO> getAllUsers() {
-        // Optimize: Use left join fetch to eagerly load the tags collection and prevent N+1 queries
-        // during mapping
         List<LimitedUserInfoDTO> users =
-                userRepository
-                        .find(
-                                "select distinct u from User u left join fetch u.tags left join"
-                                        + " fetch u.roles")
-                        .stream()
+                userRepository.findAllWithTagsAndRoles().stream()
                         .map(LimitedUserInfoDTO::new)
                         .toList();
         LOG.debugf("Returning %d limited user info DTOs.", users.size());
@@ -570,16 +564,8 @@ public class UserService {
     }
 
     public List<UserDTO> getUsersAsAdmin() {
-        // Optimize: Use left join fetch to eagerly load tags and roles to prevent N+1 queries when
-        // mapping all users
         List<UserDTO> users =
-                userRepository
-                        .find(
-                                "select distinct u from User u left join fetch u.tags left join"
-                                        + " fetch u.roles")
-                        .stream()
-                        .map(UserDTO::new)
-                        .toList();
+                userRepository.findAllWithTagsAndRoles().stream().map(UserDTO::new).toList();
         LOG.debugf("Returning %d user DTOs for admin view.", users.size());
         return users;
     }

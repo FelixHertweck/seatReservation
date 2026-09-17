@@ -152,6 +152,16 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
     }
 
     /**
+     * Finds all users, eagerly loading their {@code tags} and {@code roles} collection
+     *
+     * @return all users with tags and roles pre-fetched
+     */
+    public List<User> findAllWithTagsAndRoles() {
+        return find("select distinct u from User u left join fetch u.tags left join fetch u.roles")
+                .list();
+    }
+
+    /**
      * Finds which of the given usernames already exist, used to batch-check duplicates for a bulk
      * user import instead of querying once per username.
      *
