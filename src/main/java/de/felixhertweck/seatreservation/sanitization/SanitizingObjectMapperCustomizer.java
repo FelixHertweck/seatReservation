@@ -19,14 +19,14 @@
  */
 package de.felixhertweck.seatreservation.sanitization;
 
-import jakarta.inject.Singleton;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.quarkus.jackson.ObjectMapperCustomizer;
 import org.jboss.logging.Logger;
 
-@Singleton
+@ApplicationScoped
 public class SanitizingObjectMapperCustomizer implements ObjectMapperCustomizer {
 
     private static final Logger LOG = Logger.getLogger(SanitizingObjectMapperCustomizer.class);
