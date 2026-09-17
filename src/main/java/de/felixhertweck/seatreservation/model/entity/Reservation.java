@@ -48,7 +48,8 @@ public class Reservation extends AbstractEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Event event;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(nullable = false)
     private Seat seat;
 
     private Instant reservationDate;
