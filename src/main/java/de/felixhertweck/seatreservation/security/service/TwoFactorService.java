@@ -322,12 +322,12 @@ public class TwoFactorService {
         }
     }
 
-    private void saveUser(User user) {
+    private User saveUser(User user) {
         if (user.id == null) {
             userRepository.persist(user);
-        } else {
-            userRepository.getEntityManager().merge(user);
+            return user;
         }
+        return userRepository.getEntityManager().merge(user);
     }
 
     /**
@@ -478,8 +478,7 @@ public class TwoFactorService {
             challenge.setUsed(true);
             challengeRepository.persist(challenge);
             // Persists the advanced lastTotpStep (if verification went through TOTP).
-            saveUser(user);
-            return Optional.of(user);
+            return Optional.of(saveUser(user));
         }
 
         return Optional.empty();
