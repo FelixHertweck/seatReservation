@@ -21,7 +21,6 @@ package de.felixhertweck.seatreservation.userManagment.service;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
@@ -571,7 +570,7 @@ public class UserService {
     }
 
     public List<String> getAvailableRoles() {
-        List<String> roles = Arrays.asList(Roles.ALL_ROLES);
+        List<String> roles = Roles.ALL_ROLES;
         LOG.debugf("Returning %d available roles.", roles.size());
         return roles;
     }

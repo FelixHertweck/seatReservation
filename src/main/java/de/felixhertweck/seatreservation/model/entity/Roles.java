@@ -19,11 +19,13 @@
  */
 package de.felixhertweck.seatreservation.model.entity;
 
+import java.util.List;
+
 public class Roles {
     public static final String ADMIN = "ADMIN";
     public static final String USER = "USER";
     public static final String MANAGER = "MANAGER";
     public static final String SUPERVISOR = "SUPERVISOR";
 
-    public static final String[] ALL_ROLES = {ADMIN, USER, MANAGER, SUPERVISOR};
+    public static final List<String> ALL_ROLES = List.of(ADMIN, USER, MANAGER, SUPERVISOR);
 }
