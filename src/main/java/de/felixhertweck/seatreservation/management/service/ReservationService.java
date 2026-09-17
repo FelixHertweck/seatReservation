@@ -600,7 +600,7 @@ public class ReservationService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         String reservedUntilValue =
                 event.getStartTime()
-                        .minusSeconds(EXPORTER_PDF_MINUTES_BEFORE_EVENT_START * 60)
+                        .minusSeconds((long) EXPORTER_PDF_MINUTES_BEFORE_EVENT_START * 60)
                         .atZone(ZoneId.systemDefault())
                         .format(formatter);
 
