@@ -100,7 +100,7 @@ class BoxOfficeResourceTest {
         boxofficeUser.id = id(5);
         boxofficeUser.setUsername("boxoffice");
         when(userRepository.findByUsername("boxoffice")).thenReturn(boxofficeUser);
-        when(userRepository.listAll())
+        when(userRepository.findAllWithTagsAndRoles())
                 .thenReturn(List.of(supervisorUser, targetUser, boxofficeUser));
 
         EventLocation location = new EventLocation();

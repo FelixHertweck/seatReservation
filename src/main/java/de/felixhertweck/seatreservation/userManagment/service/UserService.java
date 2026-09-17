@@ -556,13 +556,16 @@ public class UserService {
 
     public List<LimitedUserInfoDTO> getAllUsers() {
         List<LimitedUserInfoDTO> users =
-                userRepository.listAll().stream().map(LimitedUserInfoDTO::new).toList();
+                userRepository.findAllWithTagsAndRoles().stream()
+                        .map(LimitedUserInfoDTO::new)
+                        .toList();
         LOG.debugf("Returning %d limited user info DTOs.", users.size());
         return users;
     }
 
     public List<UserDTO> getUsersAsAdmin() {
-        List<UserDTO> users = userRepository.listAll().stream().map(UserDTO::new).toList();
+        List<UserDTO> users =
+                userRepository.findAllWithTagsAndRoles().stream().map(UserDTO::new).toList();
         LOG.debugf("Returning %d user DTOs for admin view.", users.size());
         return users;
     }

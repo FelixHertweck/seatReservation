@@ -1034,7 +1034,7 @@ public class UserServiceTest {
                         "L2",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        when(userRepository.listAll()).thenReturn(Arrays.asList(user1, user2));
+        when(userRepository.findAllWithTagsAndRoles()).thenReturn(Arrays.asList(user1, user2));
 
         List<LimitedUserInfoDTO> users = userService.getAllUsers();
 
@@ -1046,7 +1046,7 @@ public class UserServiceTest {
 
     @Test
     void getAllUsers_Success_NoUsers() {
-        when(userRepository.listAll()).thenReturn(Collections.emptyList());
+        when(userRepository.findAllWithTagsAndRoles()).thenReturn(Collections.emptyList());
 
         List<LimitedUserInfoDTO> users = userService.getAllUsers();
 
