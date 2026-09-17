@@ -73,9 +73,7 @@ public class TwoFactorAttemptRepository implements PanacheRepositoryBase<TwoFact
      */
     @Transactional
     public void recordAttempt(User user, boolean successful) {
-        LOG.debugf(
-                "Recording 2FA attempt for user ID: %s, successful: %s",
-                (Object) user.id, successful);
+        LOG.debugf("Recording 2FA attempt for user ID: %s, successful: %s", user.id, successful);
         persist(new TwoFactorAttempt(user, Instant.now(), successful));
     }
 

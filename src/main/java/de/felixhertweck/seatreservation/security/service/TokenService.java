@@ -78,7 +78,7 @@ public class TokenService {
     public String generateToken(User user) {
         LOG.debugf(
                 "User ID: %s, Roles: %s, Email: [HIDDEN], Expiration: %d minutes",
-                user.id, user.getRoles(), (Object) expirationMinutes);
+                user.id, user.getRoles(), expirationMinutes);
 
         String token =
                 Jwt.upn(user.getUsername())

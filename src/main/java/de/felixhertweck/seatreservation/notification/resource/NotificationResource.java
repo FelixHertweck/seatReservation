@@ -69,7 +69,7 @@ public class NotificationResource {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
                 "GET /api/notifications requested for user ID: %s, unreadOnly: %s, category: %s",
-                (Object) currentUser.id, unreadOnly, category);
+                currentUser.id, unreadOnly, category);
         return notificationService.getUserNotifications(
                 currentUser, unreadOnly, category, page, size);
     }
@@ -96,8 +96,7 @@ public class NotificationResource {
     public Response markAsRead(@PathParam("id") UUID id) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
-                "PATCH /api/notifications/%s/read requested for user ID: %s",
-                id, (Object) currentUser.id);
+                "PATCH /api/notifications/%s/read requested for user ID: %s", id, currentUser.id);
         notificationService.markAsRead(id, currentUser);
         return Response.noContent().build();
     }
@@ -111,9 +110,7 @@ public class NotificationResource {
     @APIResponse(responseCode = "401", description = "Unauthorized")
     public Response markAllAsRead() {
         User currentUser = userSecurityContext.getCurrentUser();
-        LOG.debugf(
-                "PATCH /api/notifications/read-all requested for user ID: %s",
-                (Object) currentUser.id);
+        LOG.debugf("PATCH /api/notifications/read-all requested for user ID: %s", currentUser.id);
         notificationService.markAllAsRead(currentUser);
         return Response.ok(new UnreadCountDTO(0)).build();
     }
@@ -126,9 +123,7 @@ public class NotificationResource {
     @APIResponse(responseCode = "404", description = "Notification not found")
     public Response deleteNotification(@PathParam("id") UUID id) {
         User currentUser = userSecurityContext.getCurrentUser();
-        LOG.debugf(
-                "DELETE /api/notifications/%s requested for user ID: %s",
-                id, (Object) currentUser.id);
+        LOG.debugf("DELETE /api/notifications/%s requested for user ID: %s", id, currentUser.id);
         notificationService.deleteNotification(id, currentUser);
         return Response.noContent().build();
     }
