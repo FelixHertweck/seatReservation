@@ -35,7 +35,9 @@ public class WebAuthnCredentialUpdateDTO {
     @Size(max = 64, message = "Label must be at most 64 characters long")
     private String label;
 
-    public WebAuthnCredentialUpdateDTO() {}
+    public WebAuthnCredentialUpdateDTO() {
+        // required for JSON deserialization
+    }
 
     public String getLabel() {
         return label;
