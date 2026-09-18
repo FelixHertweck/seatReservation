@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.userManagment.service;
+package de.felixhertweck.seatreservation.usermanagement.service;
 
 import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
@@ -66,12 +66,12 @@ import de.felixhertweck.seatreservation.model.repository.TwoFactorBackupCodeRepo
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.exceptions.InvalidTwoFactorCodeException;
 import de.felixhertweck.seatreservation.security.service.TwoFactorService;
-import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
-import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
-import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
-import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
-import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
+import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserCreationDto;
+import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserUpdateDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserCreationDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserProfileUpdateDTO;
+import de.felixhertweck.seatreservation.usermanagement.exceptions.VerificationCodeNotFoundException;
+import de.felixhertweck.seatreservation.usermanagement.exceptions.VerifyTokenExpiredException;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.test.InjectMock;

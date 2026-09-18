@@ -17,19 +17,19 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.userManagment.exceptions;
+package de.felixhertweck.seatreservation.usermanagement.exceptions;
 
 /**
- * Exception thrown when an error occurs while sending an email. This is a runtime exception that
- * indicates email sending failures.
+ * Exception thrown when a verification code is not found. This is a runtime exception that
+ * indicates an invalid or missing verification code.
  */
-public class SendEmailException extends RuntimeException {
+public class VerificationCodeNotFoundException extends RuntimeException {
     /**
-     * Constructs a SendEmailException with the specified detail message.
+     * Constructs a VerificationCodeNotFoundException with the specified detail message.
      *
      * @param message the detail message
      */
-    public SendEmailException(String message) {
+    public VerificationCodeNotFoundException(String message) {
         super(message);
     }
 }

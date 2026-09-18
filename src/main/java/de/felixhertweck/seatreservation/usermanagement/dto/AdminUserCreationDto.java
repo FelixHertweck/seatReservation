@@ -17,27 +17,35 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.userManagment.dto;
+package de.felixhertweck.seatreservation.usermanagement.dto;
 
 import java.util.Set;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public class AdminUserUpdateDTO {
+public class AdminUserCreationDto {
+
+    @NotNull(message = "Username cannot be null")
+    @Pattern(
+            regexp = "^[a-zA-Z0-9._-]{3,64}$",
+            message =
+                    "Username must be 3-32 characters long and contain only letters, numbers, dots,"
+                            + " underscores and hyphens")
+    private final String username;
+
     @NoHtmlSanitize
-    @Email(regexp = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", message = "Invalid email format")
+    @Email(message = "Invalid email format")
     private final String email;
 
-    @NotNull(message = "emailVerified cannot be null")
-    private final Boolean emailVerified;
-
-    @NotNull(message = "sendEmailVerification cannot be null")
-    private final Boolean sendEmailVerification;
+    @NotNull(message = "Password cannot be null")
+    @NoHtmlSanitize
+    private final String password;
 
     @NotNull(message = "Firstname cannot be null")
     private final String firstname;
@@ -45,37 +53,25 @@ public class AdminUserUpdateDTO {
     @NotNull(message = "Lastname cannot be null")
     private final String lastname;
 
-    @NoHtmlSanitize private final String password;
+    @NotNull(message = "sendEmailVerification cannot be null")
+    private final Boolean sendEmailVerification;
+
+    @NotNull(message = "emailVerified cannot be null")
+    private final Boolean emailVerified;
+
+    @NotNull(message = "roles cannot be null")
+    @NotEmpty(message = "roles cannot be empty")
+    private Set<String> roles;
 
     @NotNull(message = "tags cannot be null")
     private final Set<String> tags;
 
-    @NotNull(message = "roles cannot be null")
-    @NotEmpty(message = "roles cannot be empty")
-    private final Set<String> roles;
+    public String getUsername() {
+        return username;
+    }
 
     public String getEmail() {
         return email;
-    }
-
-    public String getFirstname() {
-        return firstname;
-    }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public Set<String> getRoles() {
-        return roles;
-    }
-
-    public Set<String> getTags() {
-        return tags;
     }
 
     public Boolean getSendEmailVerification() {
@@ -86,21 +82,43 @@ public class AdminUserUpdateDTO {
         return emailVerified;
     }
 
-    public AdminUserUpdateDTO(
-            String firstname,
-            String lastname,
-            String password,
+    public String getPassword() {
+        return password;
+    }
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public Set<String> getRoles() {
+        return roles;
+    }
+
+    public Set<String> getTags() {
+        return tags;
+    }
+
+    public AdminUserCreationDto(
+            String username,
             String email,
             Boolean sendEmailVerification,
             Boolean emailVerified,
+            String password,
+            String firstname,
+            String lastname,
             Set<String> roles,
             Set<String> tags) {
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.password = password;
+        this.username = username;
         this.email = email;
         this.sendEmailVerification = sendEmailVerification;
         this.emailVerified = emailVerified;
+        this.password = password;
+        this.firstname = firstname;
+        this.lastname = lastname;
         this.roles = roles;
         this.tags = tags;
     }

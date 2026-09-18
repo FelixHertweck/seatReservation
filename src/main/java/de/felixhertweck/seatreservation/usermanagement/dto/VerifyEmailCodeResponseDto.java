@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.userManagment.dto;
+package de.felixhertweck.seatreservation.usermanagement.dto;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 

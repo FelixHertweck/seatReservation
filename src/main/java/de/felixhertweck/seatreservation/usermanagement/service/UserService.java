@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.userManagment.service;
+package de.felixhertweck.seatreservation.usermanagement.service;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -51,13 +51,13 @@ import de.felixhertweck.seatreservation.security.exceptions.EmailCooldownExcepti
 import de.felixhertweck.seatreservation.security.exceptions.InvalidTwoFactorCodeException;
 import de.felixhertweck.seatreservation.security.service.EmailCooldownService;
 import de.felixhertweck.seatreservation.security.service.TwoFactorService;
-import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
-import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
-import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
-import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
-import de.felixhertweck.seatreservation.userManagment.exceptions.SendEmailException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
+import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserCreationDto;
+import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserUpdateDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserCreationDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserProfileUpdateDTO;
+import de.felixhertweck.seatreservation.usermanagement.exceptions.SendEmailException;
+import de.felixhertweck.seatreservation.usermanagement.exceptions.VerificationCodeNotFoundException;
+import de.felixhertweck.seatreservation.usermanagement.exceptions.VerifyTokenExpiredException;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.SecurityUtils;
 import io.quarkus.elytron.security.common.BcryptUtil;

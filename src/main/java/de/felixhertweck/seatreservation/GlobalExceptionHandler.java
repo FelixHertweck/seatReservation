@@ -67,8 +67,8 @@ import de.felixhertweck.seatreservation.security.service.TokenService;
 import de.felixhertweck.seatreservation.supervisor.exception.BookingDeadlineNotPassedException;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInException;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInTokenNotFoundException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
+import de.felixhertweck.seatreservation.usermanagement.exceptions.VerificationCodeNotFoundException;
+import de.felixhertweck.seatreservation.usermanagement.exceptions.VerifyTokenExpiredException;
 import org.jboss.logging.Logger;
 
 /**

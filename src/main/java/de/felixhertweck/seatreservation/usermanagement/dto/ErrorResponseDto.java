@@ -17,19 +17,32 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.userManagment.exceptions;
+package de.felixhertweck.seatreservation.usermanagement.dto;
 
-/**
- * Exception thrown when a verification token has expired. This is a runtime exception that
- * indicates an expired verification code or token.
- */
-public class VerifyTokenExpiredException extends RuntimeException {
-    /**
-     * Constructs a VerifyTokenExpiredException with the specified detail message.
-     *
-     * @param message the detail message
-     */
-    public VerifyTokenExpiredException(String message) {
-        super(message);
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+/** DTO for error responses */
+@RegisterForReflection
+public class ErrorResponseDto {
+
+    private String error;
+
+    public ErrorResponseDto() {}
+
+    public ErrorResponseDto(String error) {
+        this.error = error;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
+    }
+
+    @Override
+    public String toString() {
+        return "ErrorResponseDto{" + "error='" + error + '\'' + '}';
     }
 }

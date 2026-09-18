@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.userManagment.dto;
+package de.felixhertweck.seatreservation.usermanagement.dto;
 
 import java.util.Set;
 import jakarta.validation.constraints.Email;

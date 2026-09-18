@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.userManagment.resource;
+package de.felixhertweck.seatreservation.usermanagement.resource;
 
 import java.io.IOException;
 import jakarta.annotation.security.PermitAll;
@@ -32,9 +32,9 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 
 import de.felixhertweck.seatreservation.security.dto.EmailCooldownDTO;
-import de.felixhertweck.seatreservation.userManagment.dto.VerifyEmailCodeRequestDto;
-import de.felixhertweck.seatreservation.userManagment.dto.VerifyEmailCodeResponseDto;
-import de.felixhertweck.seatreservation.userManagment.service.UserService;
+import de.felixhertweck.seatreservation.usermanagement.dto.VerifyEmailCodeRequestDto;
+import de.felixhertweck.seatreservation.usermanagement.dto.VerifyEmailCodeResponseDto;
+import de.felixhertweck.seatreservation.usermanagement.service.UserService;
 import io.quarkus.security.Authenticated;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;

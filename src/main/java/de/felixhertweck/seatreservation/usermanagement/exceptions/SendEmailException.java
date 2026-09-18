@@ -17,32 +17,19 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.userManagment.dto;
+package de.felixhertweck.seatreservation.usermanagement.exceptions;
 
-import io.quarkus.runtime.annotations.RegisterForReflection;
-
-/** DTO for error responses */
-@RegisterForReflection
-public class ErrorResponseDto {
-
-    private String error;
-
-    public ErrorResponseDto() {}
-
-    public ErrorResponseDto(String error) {
-        this.error = error;
-    }
-
-    public String getError() {
-        return error;
-    }
-
-    public void setError(String error) {
-        this.error = error;
-    }
-
-    @Override
-    public String toString() {
-        return "ErrorResponseDto{" + "error='" + error + '\'' + '}';
+/**
+ * Exception thrown when an error occurs while sending an email. This is a runtime exception that
+ * indicates email sending failures.
+ */
+public class SendEmailException extends RuntimeException {
+    /**
+     * Constructs a SendEmailException with the specified detail message.
+     *
+     * @param message the detail message
+     */
+    public SendEmailException(String message) {
+        super(message);
     }
 }
