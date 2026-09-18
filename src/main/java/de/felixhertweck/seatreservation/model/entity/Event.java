@@ -59,7 +59,8 @@ public class Event extends AbstractEntity {
     private String cancellationReason;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private EventLocation event_location;
+    @JoinColumn(name = "event_location_id")
+    private EventLocation eventLocation;
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EventUserAllowance> userAllowances = new HashSet<>();
@@ -136,7 +137,7 @@ public class Event extends AbstractEntity {
         this.endTime = endTime;
         this.bookingDeadline = bookingDeadline;
         this.bookingStartTime = bookingStartTime;
-        this.event_location = location;
+        this.eventLocation = location;
         this.createdBy = creator;
         this.reminderSendDate = reminderSendDate;
         this.reminderSent = false;
@@ -217,11 +218,11 @@ public class Event extends AbstractEntity {
     }
 
     public EventLocation getEventLocation() {
-        return event_location;
+        return eventLocation;
     }
 
     public void setEventLocation(EventLocation eventLocation) {
-        this.event_location = eventLocation;
+        this.eventLocation = eventLocation;
     }
 
     public void setUserAllowances(Set<EventUserAllowance> userAllowances) {
@@ -303,7 +304,7 @@ public class Event extends AbstractEntity {
                 && Objects.equals(bookingStartTime, event.bookingStartTime)
                 && Objects.equals(reminderSendDate, event.reminderSendDate)
                 && Objects.equals(reminderSent, event.reminderSent)
-                && Objects.equals(event_location, event.event_location)
+                && Objects.equals(eventLocation, event.eventLocation)
                 && Objects.equals(userAllowances, event.userAllowances)
                 && Objects.equals(createdBy, event.createdBy)
                 && Objects.equals(reservations, event.reservations);
@@ -323,7 +324,7 @@ public class Event extends AbstractEntity {
                 bookingStartTime,
                 reminderSendDate,
                 reminderSent,
-                event_location,
+                eventLocation,
                 userAllowances,
                 createdBy,
                 reservations);
@@ -366,8 +367,8 @@ public class Event extends AbstractEntity {
                 + reminderSendDate
                 + ", reminderSent="
                 + reminderSent
-                + ", event_location="
-                + event_location
+                + ", eventLocation="
+                + eventLocation
                 + ", userAllowances="
                 + userAllowances
                 + ", createdBy="

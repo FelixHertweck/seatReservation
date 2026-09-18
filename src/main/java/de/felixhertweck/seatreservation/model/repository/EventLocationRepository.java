@@ -44,7 +44,7 @@ public class EventLocationRepository implements PanacheRepositoryBase<EventLocat
         return find(
                         "SELECT DISTINCT el FROM EventLocation el WHERE el.createdBy = ?1 OR ?1"
                                 + " MEMBER OF el.managers OR EXISTS (SELECT 1 FROM Event ev WHERE"
-                                + " ev.event_location = el AND ?1 MEMBER OF ev.managers)",
+                                + " ev.eventLocation = el AND ?1 MEMBER OF ev.managers)",
                         manager)
                 .list();
     }
@@ -66,7 +66,7 @@ public class EventLocationRepository implements PanacheRepositoryBase<EventLocat
                         "SELECT el FROM EventLocation el WHERE el.id = ?1 AND (el.createdBy.id ="
                                 + " ?2 OR EXISTS (SELECT 1 FROM EventLocation el2 JOIN"
                                 + " el2.managers m WHERE el2 = el AND m.id = ?2) OR EXISTS (SELECT"
-                                + " 1 FROM Event ev JOIN ev.managers m WHERE ev.event_location = el"
+                                + " 1 FROM Event ev JOIN ev.managers m WHERE ev.eventLocation = el"
                                 + " AND m.id = ?2))",
                         locationId,
                         userId)

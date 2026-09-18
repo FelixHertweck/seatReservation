@@ -43,7 +43,7 @@ public class EventRepository implements PanacheRepositoryBase<Event, UUID> {
      * @return a list of events taking place at the given location
      */
     public List<Event> findByEventLocation(EventLocation location) {
-        return list("event_location", location);
+        return list("eventLocation", location);
     }
 
     /**
@@ -172,8 +172,8 @@ public class EventRepository implements PanacheRepositoryBase<Event, UUID> {
         List<UUID> activeLocationIds =
                 getEntityManager()
                         .createQuery(
-                                "SELECT DISTINCT e.event_location.id FROM Event e WHERE"
-                                        + " e.event_location.id IN ?1 AND e.bookingStartTime IS NOT"
+                                "SELECT DISTINCT e.eventLocation.id FROM Event e WHERE"
+                                        + " e.eventLocation.id IN ?1 AND e.bookingStartTime IS NOT"
                                         + " NULL AND e.bookingStartTime <= ?2",
                                 UUID.class)
                         .setParameter(1, locationIds)
@@ -196,8 +196,8 @@ public class EventRepository implements PanacheRepositoryBase<Event, UUID> {
         List<UUID> linkedLocationIds =
                 getEntityManager()
                         .createQuery(
-                                "SELECT DISTINCT e.event_location.id FROM Event e WHERE"
-                                        + " e.event_location.id IN ?1",
+                                "SELECT DISTINCT e.eventLocation.id FROM Event e WHERE"
+                                        + " e.eventLocation.id IN ?1",
                                 UUID.class)
                         .setParameter(1, locationIds)
                         .getResultList();
