@@ -328,9 +328,7 @@ public class ReservationService {
 
         reservationCreatedBus.fire(new ReservationCreatedEvent(currentUser, newReservations));
 
-        return newReservations.stream()
-                .map(UserReservationResponseDTO::new)
-                .collect(Collectors.toList());
+        return newReservations.stream().map(UserReservationResponseDTO::new).toList();
     }
 
     /**

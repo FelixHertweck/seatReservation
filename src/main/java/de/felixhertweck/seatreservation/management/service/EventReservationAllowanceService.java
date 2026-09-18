@@ -257,7 +257,7 @@ public class EventReservationAllowanceService {
         LOG.debugf(
                 "Retrieved %d reservation allowances for user ID: %s",
                 allowances.size(), currentUser.id());
-        return allowances.stream().map(EventUserAllowancesDto::new).collect(Collectors.toList());
+        return allowances.stream().map(EventUserAllowancesDto::new).toList();
     }
 
     /**
@@ -282,7 +282,7 @@ public class EventReservationAllowanceService {
         List<EventUserAllowancesDto> result =
                 eventUserAllowanceRepository.findByEventId(eventId).stream()
                         .map(EventUserAllowancesDto::new)
-                        .collect(Collectors.toList());
+                        .toList();
         LOG.debugf(
                 "Retrieved %d reservation allowances for event ID %s by user ID: %s (ID: %s)",
                 result.size(), eventId, currentUser.id, currentUser.getId());
