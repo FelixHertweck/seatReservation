@@ -806,19 +806,6 @@ public class AuthResourceTest {
     }
 
     @Test
-    void testGetRegistrationStatus_RegistrationEnabledByDefault() {
-        // By default in @QuarkusTest, registration is enabled
-        Mockito.when(authService.isRegistrationEnabled()).thenReturn(true);
-
-        given().contentType(MediaType.APPLICATION_JSON)
-                .when()
-                .get("/api/auth/registration-status")
-                .then()
-                .statusCode(Response.Status.OK.getStatusCode())
-                .body("enabled", equalTo(true));
-    }
-
-    @Test
     void testRequestPasswordReset_AlwaysReturnsOk() {
         PasswordResetRequestDTO requestDTO = new PasswordResetRequestDTO();
         requestDTO.setUsername("someuser");

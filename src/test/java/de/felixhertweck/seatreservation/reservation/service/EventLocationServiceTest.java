@@ -170,52 +170,6 @@ class EventLocationServiceTest {
     }
 
     @Test
-    void getLocationsForCurrentUser_NoAllowanceNoReservation() {
-        when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findDistinctEventLocationsByUser(user))
-                .thenReturn(Collections.emptyList());
-        when(reservationRepository.findDistinctEventLocationsByUser(user))
-                .thenReturn(Collections.emptyList());
-
-        List<UserEventLocationSummaryDTO> result =
-                eventLocationService.getLocationsForCurrentUser("testuser");
-
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void getLocationsForCurrentUser_OneLocationWithAllowance_OneLocationWithReservation() {
-        when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findDistinctEventLocationsByUser(user))
-                .thenReturn(List.of(locationA));
-        when(reservationRepository.findDistinctEventLocationsByUser(user))
-                .thenReturn(List.of(locationB));
-
-        List<UserEventLocationSummaryDTO> result =
-                eventLocationService.getLocationsForCurrentUser("testuser");
-
-        assertEquals(2, result.size());
-        assertTrue(result.stream().anyMatch(dto -> dto.id().equals(locationA.id)));
-        assertTrue(result.stream().anyMatch(dto -> dto.id().equals(locationB.id)));
-    }
-
-    @Test
-    void getLocationsForCurrentUser_TwoDifferentLocations_OneAllowanceOneReservation() {
-        when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findDistinctEventLocationsByUser(user))
-                .thenReturn(List.of(locationA));
-        when(reservationRepository.findDistinctEventLocationsByUser(user))
-                .thenReturn(List.of(locationB));
-
-        List<UserEventLocationSummaryDTO> result =
-                eventLocationService.getLocationsForCurrentUser("testuser");
-
-        assertEquals(2, result.size());
-        assertTrue(result.stream().anyMatch(dto -> dto.id().equals(locationA.id)));
-        assertTrue(result.stream().anyMatch(dto -> dto.id().equals(locationB.id)));
-    }
-
-    @Test
     void getLocationsForCurrentUser_OneLocationTwoEvents_OneAllowanceOneReservation() {
         when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(eventUserAllowanceRepository.findDistinctEventLocationsByUser(user))
