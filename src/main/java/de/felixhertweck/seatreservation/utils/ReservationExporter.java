@@ -272,12 +272,7 @@ public class ReservationExporter {
             AcroFields form = stamper.getAcroFields();
 
             if (reservation.getStatus() == ReservationStatus.BLOCKED) {
-                String seatInfo =
-                        String.format(
-                                "%s (%s)",
-                                reservation.getSeat().getSeatNumber(),
-                                reservation.getSeat().getSeatRow());
-                form.setField("seatInfo", seatInfo);
+                form.setField("seatInfo", formatSeatInfo(reservation));
             } else {
                 if (reservedUntilValue != null) {
                     form.setField("reservedUntil", reservedUntilValue);
@@ -285,12 +280,7 @@ public class ReservationExporter {
                 User user = reservation.getUser();
                 String userName = user.getFirstname() + " " + user.getLastname();
                 form.setField("userName", userName);
-                String seatInfo =
-                        String.format(
-                                "%s (%s)",
-                                reservation.getSeat().getSeatNumber(),
-                                reservation.getSeat().getSeatRow());
-                form.setField("seatInfo", seatInfo);
+                form.setField("seatInfo", formatSeatInfo(reservation));
             }
 
             stamper.setFormFlattening(true);
@@ -305,6 +295,23 @@ public class ReservationExporter {
             filledReader.close();
             reader.close();
         }
+    }
+
+    private static String formatSeatInfo(Reservation reservation) {
+        String areaName =
+                reservation.getSeat().getArea() == null
+                        ? null
+                        : reservation.getSeat().getArea().getName();
+        if (areaName == null || areaName.isEmpty()) {
+            return String.format(
+                    "%s (%s)",
+                    reservation.getSeat().getSeatNumber(), reservation.getSeat().getSeatRow());
+        }
+        return String.format(
+                "%s (%s, %s)",
+                reservation.getSeat().getSeatNumber(),
+                reservation.getSeat().getSeatRow(),
+                areaName);
     }
 
     private static void addStandardBlockedPage(
@@ -322,11 +329,7 @@ public class ReservationExporter {
         ColumnText.showTextAligned(
                 canvas, Element.ALIGN_CENTER, blockedText, centerX, pageHeight - 100, 0);
 
-        String seatInfo =
-                String.format(
-                        "%s (%s)",
-                        reservation.getSeat().getSeatNumber(), reservation.getSeat().getSeatRow());
-        Phrase seat = new Phrase(seatInfo, seatFont);
+        Phrase seat = new Phrase(formatSeatInfo(reservation), seatFont);
         ColumnText.showTextAligned(canvas, Element.ALIGN_CENTER, seat, centerX, pageHeight / 2, 0);
     }
 
@@ -389,12 +392,13 @@ public class ReservationExporter {
                 pageHeight / 2,
                 0);
 
-        String seatInfo =
-                String.format(
-                        "%s (%s)",
-                        reservation.getSeat().getSeatNumber(), reservation.getSeat().getSeatRow());
         ColumnText.showTextAligned(
-                canvas, Element.ALIGN_CENTER, new Phrase(seatInfo, seatFont), centerX, 100, 0);
+                canvas,
+                Element.ALIGN_CENTER,
+                new Phrase(formatSeatInfo(reservation), seatFont),
+                centerX,
+                100,
+                0);
     }
 
     private static void addNoReservationsPage(PdfWriter writer, Document document) {
