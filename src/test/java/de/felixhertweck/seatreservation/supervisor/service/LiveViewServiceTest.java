@@ -52,7 +52,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 @QuarkusTest
-public class LiveViewServiceTest {
+class LiveViewServiceTest {
 
     @Inject LiveViewService webSocketService;
 
@@ -65,7 +65,7 @@ public class LiveViewServiceTest {
     private final UUID eventId = id(1);
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Mockito.reset(reservationRepository);
         Mockito.reset(eventRepository);
         Mockito.reset(boxOfficeGuestInfoRepository);
