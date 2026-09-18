@@ -519,6 +519,7 @@
   },
   "seatMap": {
     "seatTitle": "Platz {{seatNumber}} ({{seatRow}})",
+    "seatTitleWithArea": "Platz {{seatNumber}} ({{seatRow}}) – {{area}}",
     "resetButton": "Zurücksetzen",
     "stageText": "BÜHNE",
     "loading": "Sitzplan wird geladen...",

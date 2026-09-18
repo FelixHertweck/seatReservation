@@ -683,6 +683,7 @@
   },
   "seatMap": {
     "seatTitle": "Seat {{seatNumber}} ({{seatRow}})",
+    "seatTitleWithArea": "Seat {{seatNumber}} ({{seatRow}}) – {{area}}",
     "resetButton": "Reset",
     "stageText": "STAGE",
     "loading": "Loading seat map...",

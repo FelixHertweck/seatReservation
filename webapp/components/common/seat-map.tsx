@@ -73,6 +73,17 @@ const SeatComponent = React.memo(
 
     if (!seat) return <div className="w-8 h-8" />;
 
+    const title = seat.area
+      ? t("seatMap.seatTitleWithArea", {
+          seatNumber: seat.seatNumber,
+          seatRow: seat.seatRow,
+          area: seat.area,
+        })
+      : t("seatMap.seatTitle", {
+          seatNumber: seat.seatNumber,
+          seatRow: seat.seatRow,
+        });
+
     return (
       <div
         className={cn(
@@ -84,10 +95,7 @@ const SeatComponent = React.memo(
         )}
         style={{ animationDelay: `${popDelayMs}ms` }}
         onClick={handleClick}
-        title={t("seatMap.seatTitle", {
-          seatNumber: seat.seatNumber,
-          seatRow: seat.seatRow,
-        })}
+        title={title}
       >
         <div
           className={cn(
