@@ -191,12 +191,23 @@ services:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
       - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/provisioning/alerting:/etc/grafana/provisioning/alerting
       - ./grafana/dashboards:/var/lib/grafana/dashboards
 
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_SERVER_ROOT_URL=${APP_URL}/grafana
+
+      # Email alerting: reuses the same SMTP account the backend uses for its own mails
+      - GF_SMTP_ENABLED=true
+      - GF_SMTP_HOST=${MAIL_HOST}:${MAIL_PORT}
+      - GF_SMTP_USER=${MAIL_USERNAME}
+      - GF_SMTP_PASSWORD=${MAIL_PASSWORD}
+      - GF_SMTP_FROM_ADDRESS=${MAIL_FROM}
+      - GF_SMTP_FROM_NAME=Grafana Alerting
+      # recipient address(es) for critical alerts, e.g. contact-points.yaml; semicolon-separated for multiple
+      - ALERT_EMAIL_TO=${ALERT_EMAIL_TO}
 
     # ports:
     #   - "3000:3000"

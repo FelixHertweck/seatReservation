@@ -1,0 +1,11 @@
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: critical-email
+    receivers:
+      - uid: critical-email-receiver
+        type: email
+        settings:
+          addresses: $ALERT_EMAIL_TO
+          singleEmail: true
