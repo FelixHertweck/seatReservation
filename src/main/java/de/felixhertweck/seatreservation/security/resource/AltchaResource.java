@@ -39,7 +39,12 @@ public class AltchaResource {
 
     private static final Logger LOG = Logger.getLogger(AltchaResource.class);
 
-    @Inject AltchaService altchaService;
+    private final AltchaService altchaService;
+
+    @Inject
+    public AltchaResource(AltchaService altchaService) {
+        this.altchaService = altchaService;
+    }
 
     /**
      * Gets a fresh ALTCHA Proof-of-Work challenge.

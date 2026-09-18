@@ -28,7 +28,12 @@ import de.felixhertweck.seatreservation.model.entity.User;
 @ApplicationScoped
 public class TotpSecondFactor implements SecondFactor {
 
-    @Inject TwoFactorService twoFactorService;
+    private final TwoFactorService twoFactorService;
+
+    @Inject
+    public TotpSecondFactor(TwoFactorService twoFactorService) {
+        this.twoFactorService = twoFactorService;
+    }
 
     @Override
     public TwoFactorMethod method() {

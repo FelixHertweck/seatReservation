@@ -73,6 +73,26 @@ public class ReservationEmailContent {
 
     private static final Logger LOG = Logger.getLogger(ReservationEmailContent.class);
 
+    private final SeatRepository seatRepository;
+    private final ReservationRepository reservationRepository;
+    private final EmailSeatMapService emailSeatMapService;
+    private final EmailSender emailSender;
+    private final WalletPassService walletPassService;
+
+    @Inject
+    public ReservationEmailContent(
+            SeatRepository seatRepository,
+            ReservationRepository reservationRepository,
+            EmailSeatMapService emailSeatMapService,
+            EmailSender emailSender,
+            WalletPassService walletPassService) {
+        this.seatRepository = seatRepository;
+        this.reservationRepository = reservationRepository;
+        this.emailSeatMapService = emailSeatMapService;
+        this.emailSender = emailSender;
+        this.walletPassService = walletPassService;
+    }
+
     private static final String KEY_USER_NAME = "userName";
     private static final String KEY_FULL_NAME = "fullName";
     private static final String KEY_EVENT_NAME = "eventName";
@@ -87,16 +107,6 @@ public class ReservationEmailContent {
     private static final String KEY_GOOGLE_WALLET_LINK = "googleWalletLink";
     private static final String KEY_APPLE_WALLET_LINK = "appleWalletLink";
     private static final String KEY_FRONTEND_BASE_URL = "frontendBaseUrl";
-
-    @Inject SeatRepository seatRepository;
-
-    @Inject ReservationRepository reservationRepository;
-
-    @Inject EmailSeatMapService emailSeatMapService;
-
-    @Inject EmailSender emailSender;
-
-    @Inject WalletPassService walletPassService;
 
     @ConfigProperty(name = "email.frontend-base-url", defaultValue = "")
     String frontendBaseUrl;

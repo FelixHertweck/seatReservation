@@ -57,9 +57,14 @@ public class EventResource {
 
     private static final Logger LOG = Logger.getLogger(EventResource.class);
 
-    @Inject EventService eventService;
+    private final EventService eventService;
+    private final UserSecurityContext userSecurityContext;
 
-    @Inject UserSecurityContext userSecurityContext;
+    @Inject
+    public EventResource(EventService eventService, UserSecurityContext userSecurityContext) {
+        this.eventService = eventService;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     @POST
     @APIResponse(

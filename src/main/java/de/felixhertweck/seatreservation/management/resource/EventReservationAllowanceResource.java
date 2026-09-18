@@ -59,9 +59,16 @@ public class EventReservationAllowanceResource {
 
     private static final Logger LOG = Logger.getLogger(EventReservationAllowanceResource.class);
 
-    @Inject EventReservationAllowanceService eventReservationAllowanceService;
+    private final EventReservationAllowanceService eventReservationAllowanceService;
+    private final UserSecurityContext userSecurityContext;
 
-    @Inject UserSecurityContext userSecurityContext;
+    @Inject
+    public EventReservationAllowanceResource(
+            EventReservationAllowanceService eventReservationAllowanceService,
+            UserSecurityContext userSecurityContext) {
+        this.eventReservationAllowanceService = eventReservationAllowanceService;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     @POST
     @APIResponse(

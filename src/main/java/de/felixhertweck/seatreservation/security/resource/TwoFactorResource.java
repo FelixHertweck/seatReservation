@@ -55,8 +55,15 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Tag(name = "Two-Factor Authentication", description = "Endpoints for managing 2FA settings")
 public class TwoFactorResource {
 
-    @Inject UserSecurityContext userSecurityContext;
-    @Inject TwoFactorService twoFactorService;
+    private final UserSecurityContext userSecurityContext;
+    private final TwoFactorService twoFactorService;
+
+    @Inject
+    public TwoFactorResource(
+            UserSecurityContext userSecurityContext, TwoFactorService twoFactorService) {
+        this.userSecurityContext = userSecurityContext;
+        this.twoFactorService = twoFactorService;
+    }
 
     private User getCurrentUser() {
         return userSecurityContext.getCurrentUser();

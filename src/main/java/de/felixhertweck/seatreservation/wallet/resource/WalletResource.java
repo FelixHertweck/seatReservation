@@ -49,9 +49,15 @@ public class WalletResource {
 
     private static final Logger LOG = Logger.getLogger(WalletResource.class);
 
-    @Inject WalletPassService walletPassService;
+    private final WalletPassService walletPassService;
+    private final UserSecurityContext userSecurityContext;
 
-    @Inject UserSecurityContext userSecurityContext;
+    @Inject
+    public WalletResource(
+            WalletPassService walletPassService, UserSecurityContext userSecurityContext) {
+        this.walletPassService = walletPassService;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     @GET
     @Path("/config")

@@ -45,9 +45,15 @@ public class SeatCartResource {
 
     private static final Logger LOG = Logger.getLogger(SeatCartResource.class);
 
-    @Inject SeatCartService seatCartService;
+    private final SeatCartService seatCartService;
+    private final UserSecurityContext userSecurityContext;
 
-    @Inject UserSecurityContext userSecurityContext;
+    @Inject
+    public SeatCartResource(
+            SeatCartService seatCartService, UserSecurityContext userSecurityContext) {
+        this.seatCartService = seatCartService;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     @POST
     @Path("/{eventId}/{seatId}")

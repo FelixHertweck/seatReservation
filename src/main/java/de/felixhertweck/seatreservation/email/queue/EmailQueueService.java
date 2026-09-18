@@ -46,9 +46,16 @@ public class EmailQueueService {
 
     private static final Logger LOG = Logger.getLogger(EmailQueueService.class);
 
-    @Inject OutboundEmailRepository outboundEmailRepository;
+    private final OutboundEmailRepository outboundEmailRepository;
+    private final Event<EmailEnqueuedEvent> emailEnqueuedEvent;
 
-    @Inject Event<EmailEnqueuedEvent> emailEnqueuedEvent;
+    @Inject
+    public EmailQueueService(
+            OutboundEmailRepository outboundEmailRepository,
+            Event<EmailEnqueuedEvent> emailEnqueuedEvent) {
+        this.outboundEmailRepository = outboundEmailRepository;
+        this.emailEnqueuedEvent = emailEnqueuedEvent;
+    }
 
     @ConfigProperty(name = "email.queue.max-attempts", defaultValue = "5")
     int maxAttempts;

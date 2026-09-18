@@ -41,7 +41,12 @@ public class EventUserAllowanceRepository
 
     private static final Logger LOG = Logger.getLogger(EventUserAllowanceRepository.class);
 
-    @Inject SeatCartAccessGrantStore accessGrantStore;
+    private final SeatCartAccessGrantStore accessGrantStore;
+
+    @Inject
+    public EventUserAllowanceRepository(SeatCartAccessGrantStore accessGrantStore) {
+        this.accessGrantStore = accessGrantStore;
+    }
 
     /**
      * Persists the allowance, then invalidates any cached seat-cart access grant for this

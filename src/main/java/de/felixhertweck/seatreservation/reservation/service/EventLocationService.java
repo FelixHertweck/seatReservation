@@ -52,11 +52,25 @@ import org.jboss.logging.Logger;
 public class EventLocationService {
     private static final Logger LOG = Logger.getLogger(EventLocationService.class);
 
-    @Inject UserRepository userRepository;
-    @Inject EventLocationRepository eventLocationRepository;
-    @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
-    @Inject ReservationRepository reservationRepository;
-    @Inject SeatmapCacheService seatmapCacheService;
+    private final UserRepository userRepository;
+    private final EventLocationRepository eventLocationRepository;
+    private final EventUserAllowanceRepository eventUserAllowanceRepository;
+    private final ReservationRepository reservationRepository;
+    private final SeatmapCacheService seatmapCacheService;
+
+    @Inject
+    public EventLocationService(
+            UserRepository userRepository,
+            EventLocationRepository eventLocationRepository,
+            EventUserAllowanceRepository eventUserAllowanceRepository,
+            ReservationRepository reservationRepository,
+            SeatmapCacheService seatmapCacheService) {
+        this.userRepository = userRepository;
+        this.eventLocationRepository = eventLocationRepository;
+        this.eventUserAllowanceRepository = eventUserAllowanceRepository;
+        this.reservationRepository = reservationRepository;
+        this.seatmapCacheService = seatmapCacheService;
+    }
 
     /**
      * Retrieves all event locations for which the specified user has event allowances or active

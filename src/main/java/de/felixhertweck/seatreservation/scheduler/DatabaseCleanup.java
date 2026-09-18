@@ -47,19 +47,31 @@ public class DatabaseCleanup {
 
     private static final Logger LOG = Logger.getLogger(DatabaseCleanup.class);
 
-    @Inject EmailVerificationRepository emailVerificationRepository;
+    private final EmailVerificationRepository emailVerificationRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final EmailSeatMapTokenRepository emailSeatMapTokenRepository;
+    private final LoginAttemptRepository loginAttemptRepository;
+    private final TwoFactorAttemptRepository twoFactorAttemptRepository;
+    private final OutboundEmailRepository outboundEmailRepository;
+    private final EmailCooldownRepository emailCooldownRepository;
 
-    @Inject RefreshTokenRepository refreshTokenRepository;
-
-    @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
-
-    @Inject LoginAttemptRepository loginAttemptRepository;
-
-    @Inject TwoFactorAttemptRepository twoFactorAttemptRepository;
-
-    @Inject OutboundEmailRepository outboundEmailRepository;
-
-    @Inject EmailCooldownRepository emailCooldownRepository;
+    @Inject
+    public DatabaseCleanup(
+            EmailVerificationRepository emailVerificationRepository,
+            RefreshTokenRepository refreshTokenRepository,
+            EmailSeatMapTokenRepository emailSeatMapTokenRepository,
+            LoginAttemptRepository loginAttemptRepository,
+            TwoFactorAttemptRepository twoFactorAttemptRepository,
+            OutboundEmailRepository outboundEmailRepository,
+            EmailCooldownRepository emailCooldownRepository) {
+        this.emailVerificationRepository = emailVerificationRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.emailSeatMapTokenRepository = emailSeatMapTokenRepository;
+        this.loginAttemptRepository = loginAttemptRepository;
+        this.twoFactorAttemptRepository = twoFactorAttemptRepository;
+        this.outboundEmailRepository = outboundEmailRepository;
+        this.emailCooldownRepository = emailCooldownRepository;
+    }
 
     @ConfigProperty(name = "email.queue.retention-days", defaultValue = "30")
     long outboundEmailRetentionDays;

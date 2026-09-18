@@ -57,9 +57,14 @@ public class SeatResource {
 
     private static final Logger LOG = Logger.getLogger(SeatResource.class);
 
-    @Inject SeatService seatService;
+    private final SeatService seatService;
+    private final UserSecurityContext userSecurityContext;
 
-    @Inject UserSecurityContext userSecurityContext;
+    @Inject
+    public SeatResource(SeatService seatService, UserSecurityContext userSecurityContext) {
+        this.seatService = seatService;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     @POST
     @APIResponse(

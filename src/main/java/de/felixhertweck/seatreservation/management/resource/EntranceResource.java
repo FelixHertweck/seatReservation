@@ -57,9 +57,15 @@ public class EntranceResource {
 
     private static final Logger LOG = Logger.getLogger(EntranceResource.class);
 
-    @Inject EntranceService entranceService;
+    private final EntranceService entranceService;
+    private final UserSecurityContext userSecurityContext;
 
-    @Inject UserSecurityContext userSecurityContext;
+    @Inject
+    public EntranceResource(
+            EntranceService entranceService, UserSecurityContext userSecurityContext) {
+        this.entranceService = entranceService;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     @POST
     @APIResponse(

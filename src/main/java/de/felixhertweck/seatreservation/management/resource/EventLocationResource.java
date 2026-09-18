@@ -57,9 +57,15 @@ public class EventLocationResource {
 
     private static final Logger LOG = Logger.getLogger(EventLocationResource.class);
 
-    @Inject EventLocationService eventLocationService;
+    private final EventLocationService eventLocationService;
+    private final UserSecurityContext userSecurityContext;
 
-    @Inject UserSecurityContext userSecurityContext;
+    @Inject
+    public EventLocationResource(
+            EventLocationService eventLocationService, UserSecurityContext userSecurityContext) {
+        this.eventLocationService = eventLocationService;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     @GET
     @APIResponse(

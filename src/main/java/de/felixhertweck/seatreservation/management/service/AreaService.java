@@ -50,13 +50,22 @@ public class AreaService {
 
     private static final Logger LOG = Logger.getLogger(AreaService.class);
 
-    @Inject EventLocationAreaRepository areaRepository;
+    private final EventLocationAreaRepository areaRepository;
+    private final EventLocationAccessService eventLocationAccessService;
+    private final SeatRepository seatRepository;
+    private final SeatmapCacheService seatmapCacheService;
 
-    @Inject EventLocationAccessService eventLocationAccessService;
-
-    @Inject SeatRepository seatRepository;
-
-    @Inject SeatmapCacheService seatmapCacheService;
+    @Inject
+    public AreaService(
+            EventLocationAreaRepository areaRepository,
+            EventLocationAccessService eventLocationAccessService,
+            SeatRepository seatRepository,
+            SeatmapCacheService seatmapCacheService) {
+        this.areaRepository = areaRepository;
+        this.eventLocationAccessService = eventLocationAccessService;
+        this.seatRepository = seatRepository;
+        this.seatmapCacheService = seatmapCacheService;
+    }
 
     /**
      * Finds all areas of an event location, verifying the manager owns that location, with each

@@ -52,8 +52,15 @@ public class NotificationResource {
 
     private static final Logger LOG = Logger.getLogger(NotificationResource.class);
 
-    @Inject PushNotificationService notificationService;
-    @Inject UserSecurityContext userSecurityContext;
+    private final PushNotificationService notificationService;
+    private final UserSecurityContext userSecurityContext;
+
+    @Inject
+    public NotificationResource(
+            PushNotificationService notificationService, UserSecurityContext userSecurityContext) {
+        this.notificationService = notificationService;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     /** Gets paginated notifications for current user. */
     @GET

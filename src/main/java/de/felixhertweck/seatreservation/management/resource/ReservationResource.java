@@ -60,9 +60,15 @@ public class ReservationResource {
 
     private static final Logger LOG = Logger.getLogger(ReservationResource.class);
 
-    @Inject ReservationService reservationService;
+    private final ReservationService reservationService;
+    private final UserSecurityContext userSecurityContext;
 
-    @Inject UserSecurityContext userSecurityContext;
+    @Inject
+    public ReservationResource(
+            ReservationService reservationService, UserSecurityContext userSecurityContext) {
+        this.reservationService = reservationService;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     @GET
     @Path("/{id}")

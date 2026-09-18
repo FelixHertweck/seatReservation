@@ -44,11 +44,19 @@ public class MarkerService {
 
     private static final Logger LOG = Logger.getLogger(MarkerService.class);
 
-    @Inject EventLocationMarkerRepository markerRepository;
+    private final EventLocationMarkerRepository markerRepository;
+    private final EventLocationAccessService eventLocationAccessService;
+    private final SeatmapCacheService seatmapCacheService;
 
-    @Inject EventLocationAccessService eventLocationAccessService;
-
-    @Inject SeatmapCacheService seatmapCacheService;
+    @Inject
+    public MarkerService(
+            EventLocationMarkerRepository markerRepository,
+            EventLocationAccessService eventLocationAccessService,
+            SeatmapCacheService seatmapCacheService) {
+        this.markerRepository = markerRepository;
+        this.eventLocationAccessService = eventLocationAccessService;
+        this.seatmapCacheService = seatmapCacheService;
+    }
 
     /**
      * Finds all markers of an event location, verifying the manager owns that location.

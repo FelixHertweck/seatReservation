@@ -57,9 +57,14 @@ public class AreaResource {
 
     private static final Logger LOG = Logger.getLogger(AreaResource.class);
 
-    @Inject AreaService areaService;
+    private final AreaService areaService;
+    private final UserSecurityContext userSecurityContext;
 
-    @Inject UserSecurityContext userSecurityContext;
+    @Inject
+    public AreaResource(AreaService areaService, UserSecurityContext userSecurityContext) {
+        this.areaService = areaService;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     @POST
     @APIResponse(

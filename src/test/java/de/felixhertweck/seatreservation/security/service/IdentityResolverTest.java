@@ -44,8 +44,8 @@ public class IdentityResolverTest {
 
         when(userRepository.findByEmail("local@example.com")).thenReturn(expectedUser);
 
-        LocalCredentialIdentityResolver resolver = new LocalCredentialIdentityResolver();
-        resolver.userRepository = userRepository;
+        LocalCredentialIdentityResolver resolver =
+                new LocalCredentialIdentityResolver(userRepository);
 
         assertEquals("local", resolver.providerId());
 
@@ -66,8 +66,8 @@ public class IdentityResolverTest {
 
         when(userRepository.findByUsername("user123")).thenReturn(expectedUser);
 
-        LocalCredentialIdentityResolver resolver = new LocalCredentialIdentityResolver();
-        resolver.userRepository = userRepository;
+        LocalCredentialIdentityResolver resolver =
+                new LocalCredentialIdentityResolver(userRepository);
 
         ExternalIdentity identity =
                 new ExternalIdentity("local", "user123", null, false, "Name", null, null);
@@ -85,8 +85,7 @@ public class IdentityResolverTest {
 
         when(userRepository.findByEmail("oidc@example.com")).thenReturn(existingUser);
 
-        OidcIdentityResolver resolver = new OidcIdentityResolver();
-        resolver.userRepository = userRepository;
+        OidcIdentityResolver resolver = new OidcIdentityResolver(userRepository);
 
         assertEquals("oidc", resolver.providerId());
 
@@ -107,8 +106,7 @@ public class IdentityResolverTest {
 
         when(userRepository.findByEmail("victim@example.com")).thenReturn(existingUser);
 
-        OidcIdentityResolver resolver = new OidcIdentityResolver();
-        resolver.userRepository = userRepository;
+        OidcIdentityResolver resolver = new OidcIdentityResolver(userRepository);
 
         ExternalIdentity identity =
                 new ExternalIdentity(
@@ -130,8 +128,7 @@ public class IdentityResolverTest {
         UserRepository userRepository = mock(UserRepository.class);
         when(userRepository.findByEmail("new@example.com")).thenReturn(null);
 
-        OidcIdentityResolver resolver = new OidcIdentityResolver();
-        resolver.userRepository = userRepository;
+        OidcIdentityResolver resolver = new OidcIdentityResolver(userRepository);
 
         ExternalIdentity identity =
                 new ExternalIdentity(
@@ -158,8 +155,7 @@ public class IdentityResolverTest {
         UserRepository userRepository = mock(UserRepository.class);
         when(userRepository.findByEmail("unverified@example.com")).thenReturn(null);
 
-        OidcIdentityResolver resolver = new OidcIdentityResolver();
-        resolver.userRepository = userRepository;
+        OidcIdentityResolver resolver = new OidcIdentityResolver(userRepository);
 
         ExternalIdentity identity =
                 new ExternalIdentity(

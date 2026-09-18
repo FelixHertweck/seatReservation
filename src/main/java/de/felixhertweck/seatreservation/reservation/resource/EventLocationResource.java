@@ -46,9 +46,15 @@ import org.jboss.logging.Logger;
 public class EventLocationResource {
     private static final Logger LOG = Logger.getLogger(EventLocationResource.class);
 
-    @Inject EventLocationService eventLocationService;
+    private final EventLocationService eventLocationService;
+    private final SecurityIdentity securityIdentity;
 
-    @Inject SecurityIdentity securityIdentity;
+    @Inject
+    public EventLocationResource(
+            EventLocationService eventLocationService, SecurityIdentity securityIdentity) {
+        this.eventLocationService = eventLocationService;
+        this.securityIdentity = securityIdentity;
+    }
 
     /**
      * Retrieves lightweight summaries of all event locations accessible to the current user.

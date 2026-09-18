@@ -68,20 +68,30 @@ public class UserService {
 
     private static final Logger LOG = Logger.getLogger(UserService.class);
 
+    private final UserRepository userRepository;
+    private final EmailService emailService;
+    private final EmailVerificationRepository emailVerificationRepository;
+    private final TwoFactorService twoFactorService;
+    private final EmailCooldownService emailCooldownService;
+
+    @Inject
+    public UserService(
+            UserRepository userRepository,
+            EmailService emailService,
+            EmailVerificationRepository emailVerificationRepository,
+            TwoFactorService twoFactorService,
+            EmailCooldownService emailCooldownService) {
+        this.userRepository = userRepository;
+        this.emailService = emailService;
+        this.emailVerificationRepository = emailVerificationRepository;
+        this.twoFactorService = twoFactorService;
+        this.emailCooldownService = emailCooldownService;
+    }
+
     // Usernames that must never be chosen by self-registration, admin creation, import, or
     // passkey registration -- "boxoffice" is the shared system account reservations at the box
     // office are booked under (see supervisor.service.BoxOfficeService).
     private static final Set<String> RESERVED_USERNAMES = Set.of("boxoffice");
-
-    @Inject UserRepository userRepository;
-
-    @Inject EmailService emailService;
-
-    @Inject EmailVerificationRepository emailVerificationRepository;
-
-    @Inject TwoFactorService twoFactorService;
-
-    @Inject EmailCooldownService emailCooldownService;
 
     /**
      * Imports a set of users from the provided DTOs. Send directly email verification if email is

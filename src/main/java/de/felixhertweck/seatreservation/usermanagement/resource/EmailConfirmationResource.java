@@ -50,9 +50,14 @@ public class EmailConfirmationResource {
 
     private static final Logger LOG = Logger.getLogger(EmailConfirmationResource.class);
 
-    @Inject UserService userService;
+    private final UserService userService;
+    private final SecurityContext securityContext;
 
-    @Inject SecurityContext securityContext;
+    @Inject
+    public EmailConfirmationResource(UserService userService, SecurityContext securityContext) {
+        this.userService = userService;
+        this.securityContext = securityContext;
+    }
 
     /**
      * Resends the email confirmation for the authenticated user and extends the token's lifetime.

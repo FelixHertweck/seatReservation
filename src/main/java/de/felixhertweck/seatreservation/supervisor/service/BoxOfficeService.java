@@ -66,24 +66,47 @@ public class BoxOfficeService {
 
     private static final Logger LOG = Logger.getLogger(BoxOfficeService.class);
 
+    private final ReservationRepository reservationRepository;
+    private final EventRepository eventRepository;
+    private final UserRepository userRepository;
+    private final SeatRepository seatRepository;
+    private final EventUserAllowanceRepository eventUserAllowanceRepository;
+    private final EmailService emailService;
+    private final LiveViewService liveViewService;
+    private final UserService userService;
+    private final CheckInTokenService checkInTokenService;
+    private final BoxOfficeGuestInfoRepository boxOfficeGuestInfoRepository;
+    private final EventAuthorizationService eventAuthorizationService;
+
+    @Inject
+    public BoxOfficeService(
+            ReservationRepository reservationRepository,
+            EventRepository eventRepository,
+            UserRepository userRepository,
+            SeatRepository seatRepository,
+            EventUserAllowanceRepository eventUserAllowanceRepository,
+            EmailService emailService,
+            LiveViewService liveViewService,
+            UserService userService,
+            CheckInTokenService checkInTokenService,
+            BoxOfficeGuestInfoRepository boxOfficeGuestInfoRepository,
+            EventAuthorizationService eventAuthorizationService) {
+        this.reservationRepository = reservationRepository;
+        this.eventRepository = eventRepository;
+        this.userRepository = userRepository;
+        this.seatRepository = seatRepository;
+        this.eventUserAllowanceRepository = eventUserAllowanceRepository;
+        this.emailService = emailService;
+        this.liveViewService = liveViewService;
+        this.userService = userService;
+        this.checkInTokenService = checkInTokenService;
+        this.boxOfficeGuestInfoRepository = boxOfficeGuestInfoRepository;
+        this.eventAuthorizationService = eventAuthorizationService;
+    }
+
     // Shared, passwordless system user reservations are booked under when there is no real
     // account (see db/migration/V8__add_boxoffice_user.sql and import.sql/import-test.sql).
     public static final String BOXOFFICE_USERNAME = "boxoffice";
-
-    @Inject ReservationRepository reservationRepository;
-    @Inject EventRepository eventRepository;
-    @Inject UserRepository userRepository;
-    @Inject SeatRepository seatRepository;
-    @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
-    @Inject EmailService emailService;
-    @Inject LiveViewService liveViewService;
-    @Inject UserService userService;
-
-    @Inject CheckInTokenService checkInTokenService;
-
-    @Inject BoxOfficeGuestInfoRepository boxOfficeGuestInfoRepository;
-
-    @Inject EventAuthorizationService eventAuthorizationService;
 
     /**
      * Returns all users a box office reservation can be created for, excluding the shared {@code

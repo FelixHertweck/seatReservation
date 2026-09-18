@@ -45,8 +45,15 @@ public class OverviewResource {
 
     private static final Logger LOG = Logger.getLogger(OverviewResource.class);
 
-    @Inject OverviewService overviewService;
-    @Inject UserSecurityContext userSecurityContext;
+    private final OverviewService overviewService;
+    private final UserSecurityContext userSecurityContext;
+
+    @Inject
+    public OverviewResource(
+            OverviewService overviewService, UserSecurityContext userSecurityContext) {
+        this.overviewService = overviewService;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     /**
      * Retrieves aggregated statistics and lists for the manager overview dashboard.

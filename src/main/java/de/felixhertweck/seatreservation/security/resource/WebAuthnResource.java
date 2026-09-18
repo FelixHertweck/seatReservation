@@ -85,6 +85,47 @@ public class WebAuthnResource {
 
     private static final Logger LOG = Logger.getLogger(WebAuthnResource.class);
 
+    private final WebAuthnSecurity webAuthnSecurity;
+    private final WebAuthnAuthenticatorStorage webAuthnStorage;
+    private final WebAuthnService webAuthnService;
+    private final AuthService authService;
+    private final TokenService tokenService;
+    private final TwoFactorService twoFactorService;
+    private final UserSecurityContext userSecurityContext;
+    private final UserRepository userRepository;
+    private final CurrentVertxRequest currentVertxRequest;
+    private final Validator validator;
+    private final ObjectMapper objectMapper;
+    private final AltchaService altchaService;
+
+    @Inject
+    public WebAuthnResource(
+            WebAuthnSecurity webAuthnSecurity,
+            WebAuthnAuthenticatorStorage webAuthnStorage,
+            WebAuthnService webAuthnService,
+            AuthService authService,
+            TokenService tokenService,
+            TwoFactorService twoFactorService,
+            UserSecurityContext userSecurityContext,
+            UserRepository userRepository,
+            CurrentVertxRequest currentVertxRequest,
+            Validator validator,
+            ObjectMapper objectMapper,
+            AltchaService altchaService) {
+        this.webAuthnSecurity = webAuthnSecurity;
+        this.webAuthnStorage = webAuthnStorage;
+        this.webAuthnService = webAuthnService;
+        this.authService = authService;
+        this.tokenService = tokenService;
+        this.twoFactorService = twoFactorService;
+        this.userSecurityContext = userSecurityContext;
+        this.userRepository = userRepository;
+        this.currentVertxRequest = currentVertxRequest;
+        this.validator = validator;
+        this.objectMapper = objectMapper;
+        this.altchaService = altchaService;
+    }
+
     /**
      * A plain mapper used to parse the raw WebAuthn payloads. The application's CDI ObjectMapper
      * registers an XSS-sanitizing String deserializer (see {@code
@@ -93,19 +134,6 @@ public class WebAuthnResource {
      * passed through verbatim.
      */
     private static final ObjectMapper RAW_JSON_MAPPER = new ObjectMapper();
-
-    @Inject WebAuthnSecurity webAuthnSecurity;
-    @Inject WebAuthnAuthenticatorStorage webAuthnStorage;
-    @Inject WebAuthnService webAuthnService;
-    @Inject AuthService authService;
-    @Inject TokenService tokenService;
-    @Inject TwoFactorService twoFactorService;
-    @Inject UserSecurityContext userSecurityContext;
-    @Inject UserRepository userRepository;
-    @Inject CurrentVertxRequest currentVertxRequest;
-    @Inject Validator validator;
-    @Inject ObjectMapper objectMapper;
-    @Inject AltchaService altchaService;
 
     /**
      * Returns creation options for adding a passkey to the currently authenticated account.

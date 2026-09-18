@@ -35,7 +35,12 @@ public class EmailSender {
 
     private static final Logger LOG = Logger.getLogger(EmailSender.class);
 
-    @Inject EmailQueueService emailQueueService;
+    private final EmailQueueService emailQueueService;
+
+    @Inject
+    public EmailSender(EmailQueueService emailQueueService) {
+        this.emailQueueService = emailQueueService;
+    }
 
     @ConfigProperty(name = "email.bcc-address")
     Optional<String> bccAddress;

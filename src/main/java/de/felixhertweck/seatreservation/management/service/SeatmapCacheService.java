@@ -53,17 +53,33 @@ public class SeatmapCacheService {
 
     private static final Logger LOG = Logger.getLogger(SeatmapCacheService.class);
 
+    private final SeatRepository seatRepository;
+    private final EventLocationAreaRepository areaRepository;
+    private final EventLocationMarkerRepository markerRepository;
+    private final EventLocationEntranceRepository entranceRepository;
+    private final EventLocationRepository eventLocationRepository;
+    private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
+
+    @Inject
+    public SeatmapCacheService(
+            SeatRepository seatRepository,
+            EventLocationAreaRepository areaRepository,
+            EventLocationMarkerRepository markerRepository,
+            EventLocationEntranceRepository entranceRepository,
+            EventLocationRepository eventLocationRepository,
+            TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
+        this.seatRepository = seatRepository;
+        this.areaRepository = areaRepository;
+        this.markerRepository = markerRepository;
+        this.entranceRepository = entranceRepository;
+        this.eventLocationRepository = eventLocationRepository;
+        this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
+    }
+
     public static final String CACHE_SEATS = "seatmap-seats-by-location";
     public static final String CACHE_AREAS = "seatmap-areas-by-location";
     public static final String CACHE_MARKERS = "seatmap-markers-by-location";
     public static final String CACHE_ENTRANCES = "seatmap-entrances-by-location";
-
-    @Inject SeatRepository seatRepository;
-    @Inject EventLocationAreaRepository areaRepository;
-    @Inject EventLocationMarkerRepository markerRepository;
-    @Inject EventLocationEntranceRepository entranceRepository;
-    @Inject EventLocationRepository eventLocationRepository;
-    @Inject TransactionSynchronizationRegistry transactionSynchronizationRegistry;
 
     /**
      * Runs the given action after the enclosing transaction commits successfully, so that cache

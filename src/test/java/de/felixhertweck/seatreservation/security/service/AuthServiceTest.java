@@ -90,13 +90,15 @@ public class AuthServiceTest {
                 passwordResetTokenRepository,
                 emailService,
                 emailCooldownService);
-        authService = new AuthService();
-        authService.userRepository = userRepository;
-        authService.loginAttemptRepository = loginAttemptRepository;
-        authService.passwordResetTokenRepository = passwordResetTokenRepository;
-        authService.emailService = emailService;
-        authService.tokenService = tokenService;
-        authService.emailCooldownService = emailCooldownService;
+        authService =
+                new AuthService(
+                        userRepository,
+                        null,
+                        passwordResetTokenRepository,
+                        emailService,
+                        loginAttemptRepository,
+                        tokenService,
+                        emailCooldownService);
         authService.init();
 
         // Mock loginAttemptRepository to return 0 failed attempts by default

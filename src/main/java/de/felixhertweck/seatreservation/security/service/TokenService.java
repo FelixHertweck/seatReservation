@@ -47,6 +47,15 @@ public class TokenService {
 
     private static final Logger LOG = Logger.getLogger(TokenService.class);
 
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final JWTParser parser;
+
+    @Inject
+    public TokenService(RefreshTokenRepository refreshTokenRepository, JWTParser parser) {
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.parser = parser;
+    }
+
     @ConfigProperty(name = "smallrye.jwt.token.expiration.minutes", defaultValue = "60")
     long expirationMinutes;
 
@@ -55,10 +64,6 @@ public class TokenService {
 
     @ConfigProperty(name = "jwt.cookie.secure", defaultValue = "true")
     boolean cookieSecure;
-
-    @Inject RefreshTokenRepository refreshTokenRepository;
-
-    @Inject JWTParser parser;
 
     /**
      * Gets the expiration time for JWT tokens in minutes.

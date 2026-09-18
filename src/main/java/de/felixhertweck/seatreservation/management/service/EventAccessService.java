@@ -42,7 +42,12 @@ public class EventAccessService {
 
     private static final Logger LOG = Logger.getLogger(EventAccessService.class);
 
-    @Inject EventRepository eventRepository;
+    private final EventRepository eventRepository;
+
+    @Inject
+    public EventAccessService(EventRepository eventRepository) {
+        this.eventRepository = eventRepository;
+    }
 
     /**
      * Finds an event by ID and verifies that the given user may manage it, i.e. is either an ADMIN

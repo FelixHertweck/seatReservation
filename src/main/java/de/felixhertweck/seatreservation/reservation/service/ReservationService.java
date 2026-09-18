@@ -64,14 +64,34 @@ public class ReservationService {
 
     private static final Logger LOG = Logger.getLogger(ReservationService.class);
 
-    @Inject ReservationRepository reservationRepository;
-    @Inject EventRepository eventRepository;
-    @Inject SeatRepository seatRepository;
-    @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
-    @Inject SeatCartService seatCartService;
-    @Inject CheckInTokenService checkInTokenService;
-    @Inject jakarta.enterprise.event.Event<ReservationCreatedEvent> reservationCreatedBus;
-    @Inject jakarta.enterprise.event.Event<ReservationCancelledEvent> reservationCancelledBus;
+    private final ReservationRepository reservationRepository;
+    private final EventRepository eventRepository;
+    private final SeatRepository seatRepository;
+    private final EventUserAllowanceRepository eventUserAllowanceRepository;
+    private final SeatCartService seatCartService;
+    private final CheckInTokenService checkInTokenService;
+    private final jakarta.enterprise.event.Event<ReservationCreatedEvent> reservationCreatedBus;
+    private final jakarta.enterprise.event.Event<ReservationCancelledEvent> reservationCancelledBus;
+
+    @Inject
+    public ReservationService(
+            ReservationRepository reservationRepository,
+            EventRepository eventRepository,
+            SeatRepository seatRepository,
+            EventUserAllowanceRepository eventUserAllowanceRepository,
+            SeatCartService seatCartService,
+            CheckInTokenService checkInTokenService,
+            jakarta.enterprise.event.Event<ReservationCreatedEvent> reservationCreatedBus,
+            jakarta.enterprise.event.Event<ReservationCancelledEvent> reservationCancelledBus) {
+        this.reservationRepository = reservationRepository;
+        this.eventRepository = eventRepository;
+        this.seatRepository = seatRepository;
+        this.eventUserAllowanceRepository = eventUserAllowanceRepository;
+        this.seatCartService = seatCartService;
+        this.checkInTokenService = checkInTokenService;
+        this.reservationCreatedBus = reservationCreatedBus;
+        this.reservationCancelledBus = reservationCancelledBus;
+    }
 
     /**
      * Retrieves all reservations for the currently authenticated user.

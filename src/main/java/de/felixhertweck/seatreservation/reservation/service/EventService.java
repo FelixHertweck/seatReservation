@@ -48,9 +48,19 @@ public class EventService {
 
     private static final Logger LOG = Logger.getLogger(EventService.class);
 
-    @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
-    @Inject ReservationRepository reservationRepository;
-    @Inject SeatCartService seatCartService;
+    private final EventUserAllowanceRepository eventUserAllowanceRepository;
+    private final ReservationRepository reservationRepository;
+    private final SeatCartService seatCartService;
+
+    @Inject
+    public EventService(
+            EventUserAllowanceRepository eventUserAllowanceRepository,
+            ReservationRepository reservationRepository,
+            SeatCartService seatCartService) {
+        this.eventUserAllowanceRepository = eventUserAllowanceRepository;
+        this.reservationRepository = reservationRepository;
+        this.seatCartService = seatCartService;
+    }
 
     /**
      * Retrieves lightweight event metadata summaries for all events accessible to the current user.

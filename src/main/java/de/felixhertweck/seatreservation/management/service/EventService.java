@@ -62,27 +62,43 @@ public class EventService {
 
     private static final Logger LOG = Logger.getLogger(EventService.class);
 
-    @Inject EventRepository eventRepository;
+    private final EventRepository eventRepository;
+    private final EventLocationRepository eventLocationRepository;
+    private final UserRepository userRepository;
+    private final ReservationRepository reservationRepository;
+    private final EventUserAllowanceRepository eventUserAllowanceRepository;
+    private final EventAccessService eventAccessService;
+    private final jakarta.enterprise.event.Event<EventCreatedEvent> eventCreatedBus;
+    private final jakarta.enterprise.event.Event<EventUpdatedEvent> eventUpdatedBus;
+    private final jakarta.enterprise.event.Event<EventDeletedEvent> eventDeletedBus;
+    private final jakarta.enterprise.event.Event<EventRescheduledEvent> eventRescheduledBus;
+    private final jakarta.enterprise.event.Event<EventCancelledEvent> eventCancelledBus;
 
-    @Inject EventLocationRepository eventLocationRepository;
-
-    @Inject UserRepository userRepository;
-
-    @Inject ReservationRepository reservationRepository;
-
-    @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
-
-    @Inject EventAccessService eventAccessService;
-
-    @Inject jakarta.enterprise.event.Event<EventCreatedEvent> eventCreatedBus;
-
-    @Inject jakarta.enterprise.event.Event<EventUpdatedEvent> eventUpdatedBus;
-
-    @Inject jakarta.enterprise.event.Event<EventDeletedEvent> eventDeletedBus;
-
-    @Inject jakarta.enterprise.event.Event<EventRescheduledEvent> eventRescheduledBus;
-
-    @Inject jakarta.enterprise.event.Event<EventCancelledEvent> eventCancelledBus;
+    @Inject
+    public EventService(
+            EventRepository eventRepository,
+            EventLocationRepository eventLocationRepository,
+            UserRepository userRepository,
+            ReservationRepository reservationRepository,
+            EventUserAllowanceRepository eventUserAllowanceRepository,
+            EventAccessService eventAccessService,
+            jakarta.enterprise.event.Event<EventCreatedEvent> eventCreatedBus,
+            jakarta.enterprise.event.Event<EventUpdatedEvent> eventUpdatedBus,
+            jakarta.enterprise.event.Event<EventDeletedEvent> eventDeletedBus,
+            jakarta.enterprise.event.Event<EventRescheduledEvent> eventRescheduledBus,
+            jakarta.enterprise.event.Event<EventCancelledEvent> eventCancelledBus) {
+        this.eventRepository = eventRepository;
+        this.eventLocationRepository = eventLocationRepository;
+        this.userRepository = userRepository;
+        this.reservationRepository = reservationRepository;
+        this.eventUserAllowanceRepository = eventUserAllowanceRepository;
+        this.eventAccessService = eventAccessService;
+        this.eventCreatedBus = eventCreatedBus;
+        this.eventUpdatedBus = eventUpdatedBus;
+        this.eventDeletedBus = eventDeletedBus;
+        this.eventRescheduledBus = eventRescheduledBus;
+        this.eventCancelledBus = eventCancelledBus;
+    }
 
     /**
      * Creates a new Event and assigns the currently authenticated manager as its creator. Access

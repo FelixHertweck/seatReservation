@@ -51,9 +51,16 @@ public class WebAuthnUserProviderImpl implements WebAuthnUserProvider {
 
     private static final Logger LOG = Logger.getLogger(WebAuthnUserProviderImpl.class);
 
-    @Inject UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final WebAuthnCredentialRepository webAuthnCredentialRepository;
 
-    @Inject WebAuthnCredentialRepository webAuthnCredentialRepository;
+    @Inject
+    public WebAuthnUserProviderImpl(
+            UserRepository userRepository,
+            WebAuthnCredentialRepository webAuthnCredentialRepository) {
+        this.userRepository = userRepository;
+        this.webAuthnCredentialRepository = webAuthnCredentialRepository;
+    }
 
     @Override
     @Transactional

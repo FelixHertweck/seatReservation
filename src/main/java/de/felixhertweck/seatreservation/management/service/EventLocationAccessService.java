@@ -40,7 +40,12 @@ public class EventLocationAccessService {
 
     private static final Logger LOG = Logger.getLogger(EventLocationAccessService.class);
 
-    @Inject EventLocationRepository eventLocationRepository;
+    private final EventLocationRepository eventLocationRepository;
+
+    @Inject
+    public EventLocationAccessService(EventLocationRepository eventLocationRepository) {
+        this.eventLocationRepository = eventLocationRepository;
+    }
 
     /**
      * Finds an event location by ID and verifies that the given user may write to it, i.e. is

@@ -51,9 +51,19 @@ public class PushSubscriptionResource {
 
     private static final Logger LOG = Logger.getLogger(PushSubscriptionResource.class);
 
-    @Inject PushNotificationService notificationService;
-    @Inject WebPushService webPushService;
-    @Inject UserSecurityContext userSecurityContext;
+    private final PushNotificationService notificationService;
+    private final WebPushService webPushService;
+    private final UserSecurityContext userSecurityContext;
+
+    @Inject
+    public PushSubscriptionResource(
+            PushNotificationService notificationService,
+            WebPushService webPushService,
+            UserSecurityContext userSecurityContext) {
+        this.notificationService = notificationService;
+        this.webPushService = webPushService;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     /** Returns the server's VAPID public key for Web Push subscription. */
     @GET

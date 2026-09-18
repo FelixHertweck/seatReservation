@@ -64,17 +64,28 @@ public class CheckInService {
 
     private static final Logger LOG = Logger.getLogger(CheckInService.class);
 
-    @Inject ReservationRepository reservationRepository;
+    private final ReservationRepository reservationRepository;
+    private final CheckInTokenRepository checkInTokenRepository;
+    private final UserRepository userRepository;
+    private final EventRepository eventRepository;
+    private final LiveViewService webSocketService;
+    private final EventAuthorizationService eventAuthorizationService;
 
-    @Inject CheckInTokenRepository checkInTokenRepository;
-
-    @Inject UserRepository userRepository;
-
-    @Inject EventRepository eventRepository;
-
-    @Inject LiveViewService webSocketService;
-
-    @Inject EventAuthorizationService eventAuthorizationService;
+    @Inject
+    public CheckInService(
+            ReservationRepository reservationRepository,
+            CheckInTokenRepository checkInTokenRepository,
+            UserRepository userRepository,
+            EventRepository eventRepository,
+            LiveViewService webSocketService,
+            EventAuthorizationService eventAuthorizationService) {
+        this.reservationRepository = reservationRepository;
+        this.checkInTokenRepository = checkInTokenRepository;
+        this.userRepository = userRepository;
+        this.eventRepository = eventRepository;
+        this.webSocketService = webSocketService;
+        this.eventAuthorizationService = eventAuthorizationService;
+    }
 
     /**
      * Validates and processes check-in/cancel requests based on a check-in token.
