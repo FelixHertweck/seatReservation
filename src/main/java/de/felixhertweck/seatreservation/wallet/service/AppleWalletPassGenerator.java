@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.wallet.dto.WalletPassData;
@@ -117,7 +118,7 @@ public class AppleWalletPassGenerator extends AbstractPkpassGenerator {
             try {
                 byte[] passJsonBytes = buildPassJson(first, passTypeIdentifier, teamId);
                 byte[] manifestBytes = buildManifest(Map.of("pass.json", passJsonBytes));
-                byte[] signatureBytes = signIfPossible(manifestBytes);
+                byte[] signatureBytes = signIfPossible(manifestBytes).orElse(null);
                 byte[] pkpass = buildZip(passJsonBytes, manifestBytes, signatureBytes);
                 String filename = String.format("ticket_%s.pkpass", first.reservationId());
                 return WalletPassResponseDTO.forApple(pkpass, filename);
@@ -139,7 +140,7 @@ public class AppleWalletPassGenerator extends AbstractPkpassGenerator {
                     WalletPassData seatData = allSeatReservations.get(i);
                     byte[] passJsonBytes = buildPassJson(seatData, passTypeIdentifier, teamId);
                     byte[] manifestBytes = buildManifest(Map.of("pass.json", passJsonBytes));
-                    byte[] signatureBytes = signIfPossible(manifestBytes);
+                    byte[] signatureBytes = signIfPossible(manifestBytes).orElse(null);
                     byte[] singlePkpass = buildZip(passJsonBytes, manifestBytes, signatureBytes);
                     bundleEntries.put(
                             String.format("pass_%d_%s.pkpass", i + 1, seatData.reservationId()),
@@ -158,21 +159,21 @@ public class AppleWalletPassGenerator extends AbstractPkpassGenerator {
         }
     }
 
-    private byte[] signIfPossible(byte[] manifestBytes) {
+    private Optional<byte[]> signIfPossible(byte[] manifestBytes) {
         if (certificatePath == null || !Files.exists(Path.of(certificatePath))) {
             LOG.info(
                     "Apple Pass signing certificate file not found. Generating unsigned PKPASS"
                             + " archive.");
-            return null;
+            return Optional.empty();
         }
         try {
-            return sign(manifestBytes);
+            return Optional.of(sign(manifestBytes));
         } catch (Exception e) {
             LOG.warnf(
                     "Could not sign Apple Wallet pass (certificate missing or invalid: %s)."
                             + " Generating unsigned PKPASS archive.",
                     e.getMessage());
-            return null;
+            return Optional.empty();
         }
     }
 

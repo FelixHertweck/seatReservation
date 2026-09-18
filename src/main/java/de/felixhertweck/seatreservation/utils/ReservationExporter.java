@@ -30,6 +30,7 @@ import java.nio.file.Files;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -189,24 +190,24 @@ public class ReservationExporter {
                 } else {
                     for (Reservation reservation : reservations) {
                         if (reservation.getStatus() == ReservationStatus.BLOCKED) {
-                            byte[] templateBytes =
+                            Optional<byte[]> templateBytes =
                                     loadTemplatePdf(TEMPLATE_PATH_BLOCKED, "blocked.pdf");
-                            if (templateBytes != null) {
+                            if (templateBytes.isPresent()) {
                                 addPageFromTemplate(
-                                        writer, document, reservation, null, templateBytes);
+                                        writer, document, reservation, null, templateBytes.get());
                             } else {
                                 addStandardBlockedPage(writer, document, reservation);
                             }
                         } else { // RESERVED or other statuses
-                            byte[] templateBytes =
+                            Optional<byte[]> templateBytes =
                                     loadTemplatePdf(TEMPLATE_PATH_RESERVED, "reserved.pdf");
-                            if (templateBytes != null) {
+                            if (templateBytes.isPresent()) {
                                 addPageFromTemplate(
                                         writer,
                                         document,
                                         reservation,
                                         reservedUntilValue,
-                                        templateBytes);
+                                        templateBytes.get());
                             } else {
                                 addStandardReservedPage(
                                         writer, document, reservation, reservedUntilValue);
@@ -229,24 +230,24 @@ public class ReservationExporter {
      *     /export-template/reserved.pdf})
      * @param overrideFileName the file name looked up under {@code <template.override-dir>/export/}
      *     (e.g. {@code reserved.pdf})
-     * @return the template bytes, or {@code null} if neither source has it
+     * @return the template bytes, or {@link Optional#empty()} if neither source has it
      */
-    private static byte[] loadTemplatePdf(String classpathPath, String overrideFileName)
+    private static Optional<byte[]> loadTemplatePdf(String classpathPath, String overrideFileName)
             throws IOException {
-        byte[] overrideBytes = loadOverrideTemplatePdf(overrideFileName);
-        if (overrideBytes != null) {
+        Optional<byte[]> overrideBytes = loadOverrideTemplatePdf(overrideFileName);
+        if (overrideBytes.isPresent()) {
             return overrideBytes;
         }
         InputStream resourceStream = ReservationExporter.class.getResourceAsStream(classpathPath);
         if (resourceStream != null) {
             try (InputStream is = resourceStream) {
-                return is.readAllBytes();
+                return Optional.of(is.readAllBytes());
             }
         }
-        return null;
+        return Optional.empty();
     }
 
-    private static byte[] loadOverrideTemplatePdf(String fileName) throws IOException {
+    private static Optional<byte[]> loadOverrideTemplatePdf(String fileName) throws IOException {
         String overrideDir =
                 ConfigProvider.getConfig()
                         .getOptionalValue(TEMPLATE_OVERRIDE_DIR_PROPERTY, String.class)
@@ -254,13 +255,13 @@ public class ReservationExporter {
                         .filter(dir -> !dir.isEmpty())
                         .orElse(null);
         if (overrideDir == null) {
-            return null;
+            return Optional.empty();
         }
         File templateFile = new File(new File(overrideDir, EXPORT_OVERRIDE_SUBDIR), fileName);
         if (templateFile.isFile() && templateFile.canRead()) {
-            return Files.readAllBytes(templateFile.toPath());
+            return Optional.of(Files.readAllBytes(templateFile.toPath()));
         }
-        return null;
+        return Optional.empty();
     }
 
     private static void addPageFromTemplate(
