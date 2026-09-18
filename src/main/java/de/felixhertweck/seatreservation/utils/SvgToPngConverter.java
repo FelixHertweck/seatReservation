@@ -25,9 +25,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import de.felixhertweck.seatreservation.common.exception.ValidationException;
+import org.apache.batik.transcoder.SVGAbstractTranscoder;
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.ImageTranscoder;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.jboss.logging.Logger;
 
@@ -65,11 +67,12 @@ public class SvgToPngConverter {
             PNGTranscoder transcoder = new PNGTranscoder();
 
             // Set desired image dimensions
-            transcoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, 800f);
-            transcoder.addTranscodingHint(PNGTranscoder.KEY_HEIGHT, 800f);
+            transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_WIDTH, 800f);
+            transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_HEIGHT, 800f);
 
             // Set white background color
-            transcoder.addTranscodingHint(PNGTranscoder.KEY_BACKGROUND_COLOR, java.awt.Color.WHITE);
+            transcoder.addTranscodingHint(
+                    ImageTranscoder.KEY_BACKGROUND_COLOR, java.awt.Color.WHITE);
 
             // Use indexed color with higher bit depth for smaller file size
             // 256 colors (8-bit) provides good quality with significant compression
