@@ -118,7 +118,7 @@ public class EventLocationService {
                                         areaCounts.getOrDefault(loc.getId(), 0),
                                         activeBookingMap.getOrDefault(loc.getId(), false),
                                         linkedEventsMap.getOrDefault(loc.getId(), false)))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
