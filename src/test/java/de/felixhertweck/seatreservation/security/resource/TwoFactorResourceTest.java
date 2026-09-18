@@ -42,7 +42,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-public class TwoFactorResourceTest {
+class TwoFactorResourceTest {
 
     @Inject UserRepository userRepository;
 
@@ -62,13 +62,13 @@ public class TwoFactorResourceTest {
     }
 
     @Test
-    public void getStatus_Unauthorized() {
+    void getStatus_Unauthorized() {
         given().when().get("/api/users/me/2fa").then().statusCode(401);
     }
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void getStatus_Success() {
+    void getStatus_Success() {
         given().when()
                 .get("/api/users/me/2fa")
                 .then()
@@ -80,7 +80,7 @@ public class TwoFactorResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void setupTotp_Success() {
+    void setupTotp_Success() {
         given().contentType(MediaType.APPLICATION_JSON)
                 .when()
                 .post("/api/users/me/2fa/setup-totp")
@@ -90,7 +90,7 @@ public class TwoFactorResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void sendSetupEmail_Success() {
+    void sendSetupEmail_Success() {
         given().contentType(MediaType.APPLICATION_JSON)
                 .when()
                 .post("/api/users/me/2fa/send-setup-email")
@@ -100,7 +100,7 @@ public class TwoFactorResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void enableTwoFactor_InvalidCode_BadRequest() {
+    void enableTwoFactor_InvalidCode_BadRequest() {
         TwoFactorEnableDTO dto = new TwoFactorEnableDTO(TwoFactorMethod.TOTP, "000000");
 
         given().contentType(MediaType.APPLICATION_JSON)
@@ -113,7 +113,7 @@ public class TwoFactorResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void enableTwoFactor_Success() throws Exception {
+    void enableTwoFactor_Success() throws Exception {
         String secret =
                 given().contentType(MediaType.APPLICATION_JSON)
                         .when()
@@ -145,7 +145,7 @@ public class TwoFactorResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void updateSettings_Success() {
+    void updateSettings_Success() {
         TwoFactorSettingsUpdateDTO dto = new TwoFactorSettingsUpdateDTO(true);
 
         given().contentType(MediaType.APPLICATION_JSON)
@@ -163,7 +163,7 @@ public class TwoFactorResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void disableTwoFactor_NotEnabled_IsIdempotentNoOp() {
+    void disableTwoFactor_NotEnabled_IsIdempotentNoOp() {
         TwoFactorDisableDTO dto = new TwoFactorDisableDTO(TwoFactorMethod.TOTP, "000000");
 
         given().contentType(MediaType.APPLICATION_JSON)
@@ -177,7 +177,7 @@ public class TwoFactorResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void disableTwoFactor_Enabled_WrongCode_BadRequest() throws Exception {
+    void disableTwoFactor_Enabled_WrongCode_BadRequest() throws Exception {
         enableTotpForCurrentUser();
 
         TwoFactorDisableDTO dto = new TwoFactorDisableDTO(TwoFactorMethod.TOTP, "000000");
@@ -192,7 +192,7 @@ public class TwoFactorResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void disableTwoFactor_Enabled_ValidCode_Success() throws Exception {
+    void disableTwoFactor_Enabled_ValidCode_Success() throws Exception {
         long enableTotpStep = currentTotpStep();
         String secret = enableTotpForCurrentUser();
 
@@ -220,7 +220,7 @@ public class TwoFactorResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void enableTwoFactor_Email_VerifiedAccount_EnablesInstantlyWithBackupCodes() {
+    void enableTwoFactor_Email_VerifiedAccount_EnablesInstantlyWithBackupCodes() {
         // The seeded admin user already has a verified email (import-test.sql), so no setup code
         // is needed at all -- possession was already proven via account email verification.
         TwoFactorEnableDTO dto = new TwoFactorEnableDTO(TwoFactorMethod.EMAIL, null);
@@ -238,7 +238,7 @@ public class TwoFactorResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void enableTwoFactor_Email_UnverifiedAccount_Forbidden() {
+    void enableTwoFactor_Email_UnverifiedAccount_Forbidden() {
         setEmailVerified(false);
 
         TwoFactorEnableDTO dto = new TwoFactorEnableDTO(TwoFactorMethod.EMAIL, null);
@@ -301,7 +301,7 @@ public class TwoFactorResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void regenerateBackupCodes_ValidCode_Success() throws Exception {
+    void regenerateBackupCodes_ValidCode_Success() throws Exception {
         long enableTotpStep = currentTotpStep();
         String secret = enableTotpForCurrentUser();
 
@@ -330,7 +330,7 @@ public class TwoFactorResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void regenerateBackupCodes_InvalidCode_BadRequest() throws Exception {
+    void regenerateBackupCodes_InvalidCode_BadRequest() throws Exception {
         enableTotpForCurrentUser();
 
         TwoFactorRegenerateBackupCodesDTO dto = new TwoFactorRegenerateBackupCodesDTO("000000");
@@ -345,7 +345,7 @@ public class TwoFactorResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void regenerateBackupCodes_NoTwoFactorEnabled_BadRequest() {
+    void regenerateBackupCodes_NoTwoFactorEnabled_BadRequest() {
         TwoFactorRegenerateBackupCodesDTO dto = new TwoFactorRegenerateBackupCodesDTO("000000");
 
         given().contentType(MediaType.APPLICATION_JSON)

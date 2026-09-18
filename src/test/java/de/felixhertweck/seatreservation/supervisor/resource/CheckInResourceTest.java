@@ -64,7 +64,7 @@ class CheckInResourceTest {
 
     @BeforeEach
     @SuppressWarnings("unchecked")
-    public void setupUserRepositoryMock() {
+    void setupUserRepositoryMock() {
         // Supervisor user
         User supervisorUser = new User();
         supervisorUser.id = id(1);

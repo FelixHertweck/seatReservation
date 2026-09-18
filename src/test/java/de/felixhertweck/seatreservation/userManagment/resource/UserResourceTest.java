@@ -35,11 +35,11 @@ import io.quarkus.test.security.TestSecurity;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-public class UserResourceTest {
+class UserResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void testGetAllUsersAsAdmin() {
+    void testGetAllUsersAsAdmin() {
         given().when()
                 .get("/api/users/admin")
                 .then()
@@ -49,18 +49,18 @@ public class UserResourceTest {
 
     @Test
     @TestSecurity(user = "testuser", roles = "USER")
-    public void testGetAllUsersAsAdminForbidden() {
+    void testGetAllUsersAsAdminForbidden() {
         given().when().get("/api/users/admin").then().statusCode(403);
     }
 
     @Test
-    public void testGetAllUsersAsAdminUnauthorized() {
+    void testGetAllUsersAsAdminUnauthorized() {
         given().when().get("/api/users/admin").then().statusCode(401);
     }
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void importUsers_Success_AdminRole() {
+    void importUsers_Success_AdminRole() {
         Set<AdminUserCreationDto> dtos = new HashSet<>();
         dtos.add(
                 new AdminUserCreationDto(
@@ -96,7 +96,7 @@ public class UserResourceTest {
 
     @Test
     @TestSecurity(user = "testuser", roles = "USER")
-    public void importUsers_Forbidden_UserRole() {
+    void importUsers_Forbidden_UserRole() {
         Set<AdminUserCreationDto> dtos = new HashSet<>();
         dtos.add(
                 new AdminUserCreationDto(
@@ -119,7 +119,7 @@ public class UserResourceTest {
     }
 
     @Test
-    public void importUsers_Unauthorized() {
+    void importUsers_Unauthorized() {
         Set<AdminUserCreationDto> dtos = new HashSet<>();
         dtos.add(
                 new AdminUserCreationDto(
@@ -143,7 +143,7 @@ public class UserResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void importUsers_InvalidInput() {
+    void importUsers_InvalidInput() {
         Set<AdminUserCreationDto> dtos = new HashSet<>();
         // Invalid DTO: empty username
         dtos.add(
@@ -168,7 +168,7 @@ public class UserResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    public void importUsers_DuplicateUser() {
+    void importUsers_DuplicateUser() {
         Set<AdminUserCreationDto> dtos = new HashSet<>();
         dtos.add(
                 new AdminUserCreationDto(
@@ -229,7 +229,7 @@ public class UserResourceTest {
     de.felixhertweck.seatreservation.userManagment.service.UserService userService;
 
     @Test
-    public void testDeleteUser_WithAssociatedEntities_Success() {
+    void testDeleteUser_WithAssociatedEntities_Success() {
         de.felixhertweck.seatreservation.model.entity.User user =
                 new de.felixhertweck.seatreservation.model.entity.User(
                         "cascadeuser",
