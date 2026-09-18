@@ -20,6 +20,7 @@
 
 package de.felixhertweck.seatreservation.usermanagement.resource;
 
+import java.util.stream.Stream;
 import jakarta.ws.rs.core.Response;
 
 import static io.restassured.RestAssured.given;
@@ -35,6 +36,8 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @QuarkusTest
 class EmailConfirmationResourceTest {
@@ -100,29 +103,16 @@ class EmailConfirmationResourceTest {
         verify(userService, times(1)).verifyEmailWithCode("123456");
     }
 
-    @Test
-    void verifyEmailWithCode_BadRequest_InvalidFormat() throws Exception {
-        // Given - 5 digits instead of 6
-        VerifyEmailCodeRequestDto request = new VerifyEmailCodeRequestDto("12345");
-
-        // When & Then
-        given().contentType(ContentType.JSON)
-                .body(objectMapper.writeValueAsString(request))
-                .when()
-                .post("/api/user/verify-email-code")
-                .then()
-                .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
-
-        // UserService should not be called for invalid format
-        verify(userService, never()).verifyEmailWithCode(anyString());
+    private static Stream<String> invalidVerificationCodes() {
+        // 5 digits instead of 6, empty, and null - all rejected before reaching the service
+        return Stream.of("12345", "", null);
     }
 
-    @Test
-    void verifyEmailWithCode_BadRequest_EmptyCode() throws Exception {
-        // Given
-        VerifyEmailCodeRequestDto request = new VerifyEmailCodeRequestDto("");
+    @ParameterizedTest
+    @MethodSource("invalidVerificationCodes")
+    void verifyEmailWithCode_BadRequest_InvalidCodeFormat(String code) throws Exception {
+        VerifyEmailCodeRequestDto request = new VerifyEmailCodeRequestDto(code);
 
-        // When & Then
         given().contentType(ContentType.JSON)
                 .body(objectMapper.writeValueAsString(request))
                 .when()
@@ -130,24 +120,6 @@ class EmailConfirmationResourceTest {
                 .then()
                 .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
 
-        // UserService should not be called for empty code
-        verify(userService, never()).verifyEmailWithCode(anyString());
-    }
-
-    @Test
-    void verifyEmailWithCode_BadRequest_NullCode() throws Exception {
-        // Given
-        VerifyEmailCodeRequestDto request = new VerifyEmailCodeRequestDto(null);
-
-        // When & Then
-        given().contentType(ContentType.JSON)
-                .body(objectMapper.writeValueAsString(request))
-                .when()
-                .post("/api/user/verify-email-code")
-                .then()
-                .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
-
-        // UserService should not be called for null code
         verify(userService, never()).verifyEmailWithCode(anyString());
     }
 

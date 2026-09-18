@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -51,6 +52,9 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class ReservationExporterTest {
 
@@ -168,62 +172,27 @@ class ReservationExporterTest {
         assertEquals(3, linebreaks, "CSV should have one header row and two data rows");
     }
 
-    @Test
-    void exportReservationsToCsv_fieldStartingWithFormulaChar_isEscapedWithLeadingApostrophe()
-            throws IOException {
-        Reservation reservation =
-                createReservation(
-                        id(1),
-                        "A1",
-                        "1",
-                        "=cmd|'/C calc'!A0",
-                        "Mustermann",
-                        ReservationStatus.RESERVED);
-        byte[] csvBytes =
-                ReservationExporter.exportReservationsToCsv(List.of(reservation)).toByteArray();
-        String csv = new String(csvBytes);
-        assertTrue(csv.contains("'=cmd|'/C calc'!A0"), csv);
-    }
-
-    @Test
-    void exportReservationsToCsv_fieldWithLeadingNonBreakingSpace_isEscapedWithLeadingApostrophe()
-            throws IOException {
+    private static Stream<Arguments> csvLeadingFormulaTriggerCases() {
         // U+00A0 (NO-BREAK SPACE) is trimmed by Excel/LibreOffice before evaluating a leading
         // formula-trigger character, so it must be treated like ordinary whitespace here.
-        Reservation reservation =
-                createReservation(
-                        id(1),
-                        "A1",
-                        "1",
-                        " =cmd|'/C calc'!A0",
-                        "Mustermann",
-                        ReservationStatus.RESERVED);
-        byte[] csvBytes =
-                ReservationExporter.exportReservationsToCsv(List.of(reservation)).toByteArray();
-        String csv = new String(csvBytes);
-        assertTrue(csv.contains("' =cmd|'/C calc'!A0"), csv);
+        return Stream.of(
+                Arguments.of("=cmd|'/C calc'!A0", "'=cmd|'/C calc'!A0"),
+                Arguments.of(" =cmd|'/C calc'!A0", "' =cmd|'/C calc'!A0"),
+                Arguments.of(" \n\tcmd", "' \n\tcmd"),
+                Arguments.of("\rcmd", "'\rcmd"));
     }
 
-    @Test
-    void exportReservationsToCsv_fieldWithLeadingTabAfterWhitespace_isEscaped() throws IOException {
+    @ParameterizedTest
+    @MethodSource("csvLeadingFormulaTriggerCases")
+    void exportReservationsToCsv_fieldWithLeadingFormulaTrigger_isEscapedWithLeadingApostrophe(
+            String seatNumber, String expectedSubstring) throws IOException {
         Reservation reservation =
                 createReservation(
-                        id(1), "A1", "1", " \n\tcmd", "Mustermann", ReservationStatus.RESERVED);
+                        id(1), "A1", "1", seatNumber, "Mustermann", ReservationStatus.RESERVED);
         byte[] csvBytes =
                 ReservationExporter.exportReservationsToCsv(List.of(reservation)).toByteArray();
         String csv = new String(csvBytes);
-        assertTrue(csv.contains("' \n\tcmd"), csv);
-    }
-
-    @Test
-    void exportReservationsToCsv_fieldWithLeadingCarriageReturn_isEscaped() throws IOException {
-        Reservation reservation =
-                createReservation(
-                        id(1), "A1", "1", "\rcmd", "Mustermann", ReservationStatus.RESERVED);
-        byte[] csvBytes =
-                ReservationExporter.exportReservationsToCsv(List.of(reservation)).toByteArray();
-        String csv = new String(csvBytes);
-        assertTrue(csv.contains("'\rcmd"), csv);
+        assertTrue(csv.contains(expectedSubstring), csv);
     }
 
     @Test
