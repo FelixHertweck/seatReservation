@@ -19,14 +19,17 @@
  */
 package de.felixhertweck.seatreservation.usermanagement.resource;
 
+import java.util.stream.Stream;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import de.felixhertweck.seatreservation.sanitization.XssSanitizingDeserializer;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class UserResourceXssTest {
 
@@ -45,31 +48,18 @@ public class UserResourceXssTest {
         objectMapper.registerModule(module);
     }
 
-    @Test
-    void whenDeserializing_thenStripsHtmlTags() throws Exception {
-        String json = "{\"text\":\"Hello <b>world</b>!\"}";
-        TestDto dto = objectMapper.readValue(json, TestDto.class);
-        assertEquals("Hello world!", dto.text);
+    private static Stream<Arguments> deserializationCases() {
+        return Stream.of(
+                Arguments.of("{\"text\":\"Hello <b>world</b>!\"}", "Hello world!"),
+                Arguments.of("{\"text\":\"<script>alert('xss')</script>Some text\"}", "Some text"),
+                Arguments.of("{\"text\":null}", null),
+                Arguments.of("{\"text\":\"\"}", ""));
     }
 
-    @Test
-    void whenDeserializing_thenStripsScriptTags() throws Exception {
-        String json = "{\"text\":\"<script>alert('xss')</script>Some text\"}";
+    @ParameterizedTest
+    @MethodSource("deserializationCases")
+    void whenDeserializing_thenSanitizesAsExpected(String json, String expected) throws Exception {
         TestDto dto = objectMapper.readValue(json, TestDto.class);
-        assertEquals("Some text", dto.text);
-    }
-
-    @Test
-    void whenDeserializingNull_thenReturnsNull() throws Exception {
-        String json = "{\"text\":null}";
-        TestDto dto = objectMapper.readValue(json, TestDto.class);
-        assertNull(dto.text);
-    }
-
-    @Test
-    void whenDeserializingEmptyString_thenReturnsEmptyString() throws Exception {
-        String json = "{\"text\":\"\"}";
-        TestDto dto = objectMapper.readValue(json, TestDto.class);
-        assertEquals("", dto.text);
+        assertEquals(expected, dto.text);
     }
 }
