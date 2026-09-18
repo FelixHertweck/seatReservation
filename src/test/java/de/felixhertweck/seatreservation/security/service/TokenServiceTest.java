@@ -30,6 +30,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.NewCookie;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -37,7 +38,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -444,7 +444,7 @@ public class TokenServiceTest {
 
     @Test
     @Transactional
-    void testCreateNewRefreshTokenCookie() {
+    void testCreateNewRefreshTokenCookie() throws Exception {
         // Given
         String refreshToken = tokenService.generateRefreshToken(testUser);
 
@@ -452,19 +452,14 @@ public class TokenServiceTest {
         JsonWebToken mockJwt = mock(JsonWebToken.class);
         when(mockJwt.getExpirationTime())
                 .thenReturn(System.currentTimeMillis() / 1000 + 604800); // 7 days
-        try {
-            when(jwtParser.parse(refreshToken)).thenReturn(mockJwt);
-        } catch (ParseException e) {
-            fail("Failed to mock JWT parser");
-        }
+        when(jwtParser.parse(refreshToken)).thenReturn(mockJwt);
 
         // When
-        NewCookie cookie = null;
-        try {
-            cookie = tokenService.createNewRefreshTokenCookie(refreshToken, "refreshToken");
-        } catch (JwtInvalidException e) {
-            fail("Should not throw exception: " + e.getMessage());
-        }
+        NewCookie cookie =
+                assertDoesNotThrow(
+                        () ->
+                                tokenService.createNewRefreshTokenCookie(
+                                        refreshToken, "refreshToken"));
 
         // Then
         assertNotNull(cookie);
@@ -478,7 +473,7 @@ public class TokenServiceTest {
 
     @Test
     @Transactional
-    void testCreateStatusCookie() {
+    void testCreateStatusCookie() throws Exception {
         // Given
         String refreshToken = tokenService.generateRefreshToken(testUser);
 
@@ -486,19 +481,14 @@ public class TokenServiceTest {
         JsonWebToken mockJwt = mock(JsonWebToken.class);
         when(mockJwt.getExpirationTime())
                 .thenReturn(System.currentTimeMillis() / 1000 + 604800); // 7 days
-        try {
-            when(jwtParser.parse(refreshToken)).thenReturn(mockJwt);
-        } catch (ParseException e) {
-            fail("Failed to mock JWT parser");
-        }
+        when(jwtParser.parse(refreshToken)).thenReturn(mockJwt);
 
         // When
-        NewCookie cookie = null;
-        try {
-            cookie = tokenService.createStatusCookie(refreshToken, "refreshToken_expiration");
-        } catch (JwtInvalidException e) {
-            fail("Should not throw exception: " + e.getMessage());
-        }
+        NewCookie cookie =
+                assertDoesNotThrow(
+                        () ->
+                                tokenService.createStatusCookie(
+                                        refreshToken, "refreshToken_expiration"));
 
         // Then
         assertNotNull(cookie);
