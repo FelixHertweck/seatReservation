@@ -169,7 +169,7 @@ public class AuthService {
             base.append(first);
         }
         if (!last.isEmpty()) {
-            if (base.length() > 0) {
+            if (!base.isEmpty()) {
                 base.append('.');
             }
             base.append(last);
