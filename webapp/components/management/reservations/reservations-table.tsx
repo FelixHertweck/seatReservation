@@ -67,7 +67,7 @@ export function ReservationsTable({
   onViewConfirmation,
 }: Readonly<ReservationsTableProps>) {
   const t = useT();
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
     new Set(),
   );
 
@@ -93,10 +93,10 @@ export function ReservationsTable({
   };
 
   const toggleGroupCollapsed = (groupKey: string) => {
-    const next = new Set(collapsedGroups);
+    const next = new Set(expandedGroups);
     if (next.has(groupKey)) next.delete(groupKey);
     else next.add(groupKey);
-    setCollapsedGroups(next);
+    setExpandedGroups(next);
   };
 
   const toggleGroupSelected = (ids: string[], allSelected: boolean) => {
@@ -156,7 +156,7 @@ export function ReservationsTable({
           const allSelected = groupIds.every((id) => selectedIds.has(id));
           const someSelected =
             !allSelected && groupIds.some((id) => selectedIds.has(id));
-          const isCollapsed = collapsedGroups.has(groupKey);
+          const isCollapsed = !expandedGroups.has(groupKey);
           const isBlockedGroup =
             groupReservations[0]?.status === ReservationStatus.BLOCKED;
           const groupUser = groupReservations.find((r) => r.user?.id)?.user;

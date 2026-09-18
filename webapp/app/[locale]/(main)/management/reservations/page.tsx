@@ -42,6 +42,7 @@ interface ReservationsViewPanelProps {
   highlightedSeatId: string | null;
   onSeatClick: (seatId: string) => void;
   onViewConfirmation: (userId: string, userName: string) => void;
+  height: number;
 }
 
 function ReservationsViewPanel({
@@ -58,15 +59,16 @@ function ReservationsViewPanel({
   highlightedSeatId,
   onSeatClick,
   onViewConfirmation,
+  height,
 }: Readonly<ReservationsViewPanelProps>) {
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3" style={{ height }}>
       <SearchAndFilter
         onSearch={onSearch}
         onFilter={() => {}}
         filterOptions={[]}
       />
-      <Card>
+      <Card className="min-h-0 flex-1 overflow-y-auto">
         <CardContent className="p-0">
           <ReservationsTable
             reservations={reservations}
@@ -361,6 +363,7 @@ export default function ManagementReservationsPage() {
         onViewConfirmation={(userId, userName) =>
           setConfirmationUser({ userId, userName })
         }
+        height={seatMapColumnHeight}
       />
     );
   } else if (mode === "reserve") {
