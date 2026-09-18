@@ -69,19 +69,37 @@ public class ReservationService {
 
     private static final Logger LOG = Logger.getLogger(ReservationService.class);
 
+    private final ReservationRepository reservationRepository;
+    private final EventRepository eventRepository;
+    private final UserRepository userRepository;
+    private final SeatRepository seatRepository;
+    private final EventUserAllowanceRepository eventUserAllowanceRepository;
+    private final EmailService emailService;
+    private final CheckInTokenService checkInTokenService;
+    private final EventAccessService eventAccessService;
+
+    @Inject
+    public ReservationService(
+            ReservationRepository reservationRepository,
+            EventRepository eventRepository,
+            UserRepository userRepository,
+            SeatRepository seatRepository,
+            EventUserAllowanceRepository eventUserAllowanceRepository,
+            EmailService emailService,
+            CheckInTokenService checkInTokenService,
+            EventAccessService eventAccessService) {
+        this.reservationRepository = reservationRepository;
+        this.eventRepository = eventRepository;
+        this.userRepository = userRepository;
+        this.seatRepository = seatRepository;
+        this.eventUserAllowanceRepository = eventUserAllowanceRepository;
+        this.emailService = emailService;
+        this.checkInTokenService = checkInTokenService;
+        this.eventAccessService = eventAccessService;
+    }
+
     @ConfigProperty(name = "exporter.pdf.minutesBeforeEventStart", defaultValue = "10")
     Integer exporterPdfMinutesBeforeEventStart;
-
-    @Inject ReservationRepository reservationRepository;
-    @Inject EventRepository eventRepository;
-    @Inject UserRepository userRepository;
-    @Inject SeatRepository seatRepository;
-    @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
-    @Inject EmailService emailService;
-
-    @Inject CheckInTokenService checkInTokenService;
-
-    @Inject EventAccessService eventAccessService;
 
     /**
      * Retrieves a reservation by its ID. Access is restricted based on user roles: - ADMIN: Returns

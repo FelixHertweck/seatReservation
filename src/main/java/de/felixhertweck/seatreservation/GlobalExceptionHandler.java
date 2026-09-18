@@ -81,7 +81,12 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
 
     private static final Logger LOG = Logger.getLogger(GlobalExceptionHandler.class);
 
-    @Inject TokenService tokenService;
+    private final TokenService tokenService;
+
+    @Inject
+    public GlobalExceptionHandler(TokenService tokenService) {
+        this.tokenService = tokenService;
+    }
 
     /**
      * Maps exceptions to HTTP responses with appropriate status codes and error messages. Clears

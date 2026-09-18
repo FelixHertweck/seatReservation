@@ -34,11 +34,19 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 @ApplicationScoped
 public class UserSecurityContext {
 
-    @Inject SecurityIdentity securityIdentity;
+    private final SecurityIdentity securityIdentity;
+    private final JsonWebToken jsonWebToken;
+    private final UserRepository userRepository;
 
-    @Inject JsonWebToken jsonWebToken;
-
-    @Inject UserRepository userRepository;
+    @Inject
+    public UserSecurityContext(
+            SecurityIdentity securityIdentity,
+            JsonWebToken jsonWebToken,
+            UserRepository userRepository) {
+        this.securityIdentity = securityIdentity;
+        this.jsonWebToken = jsonWebToken;
+        this.userRepository = userRepository;
+    }
 
     /**
      * Retrieves the current authenticated user based on the security context.

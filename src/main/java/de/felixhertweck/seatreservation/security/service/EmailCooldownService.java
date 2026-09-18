@@ -30,14 +30,19 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @ApplicationScoped
 public class EmailCooldownService {
 
+    private final EmailCooldownRepository repository;
+
+    @Inject
+    public EmailCooldownService(EmailCooldownRepository repository) {
+        this.repository = repository;
+    }
+
     public enum Purpose {
         TWO_FACTOR_RESEND,
         EMAIL_CONFIRMATION_RESEND,
         PASSWORD_RESET,
         USERNAME_RECOVERY
     }
-
-    @Inject EmailCooldownRepository repository;
 
     @ConfigProperty(name = "email.resend-cooldown-seconds", defaultValue = "60")
     int cooldownSeconds;

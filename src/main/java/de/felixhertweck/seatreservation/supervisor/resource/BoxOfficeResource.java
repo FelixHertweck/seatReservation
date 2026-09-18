@@ -56,8 +56,15 @@ public class BoxOfficeResource {
 
     private static final Logger LOG = Logger.getLogger(BoxOfficeResource.class);
 
-    @Inject BoxOfficeService boxOfficeService;
-    @Inject UserSecurityContext userSecurityContext;
+    private final BoxOfficeService boxOfficeService;
+    private final UserSecurityContext userSecurityContext;
+
+    @Inject
+    public BoxOfficeResource(
+            BoxOfficeService boxOfficeService, UserSecurityContext userSecurityContext) {
+        this.boxOfficeService = boxOfficeService;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     @GET
     @Path("/users")

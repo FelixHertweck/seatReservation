@@ -64,14 +64,34 @@ public class EventLocationService {
 
     private static final Logger LOG = Logger.getLogger(EventLocationService.class);
 
-    @Inject EventLocationRepository eventLocationRepository;
-    @Inject EventRepository eventRepository;
-    @Inject SeatRepository seatRepository;
-    @Inject UserRepository userRepository;
-    @Inject EventLocationAccessService eventLocationAccessService;
-    @Inject jakarta.enterprise.event.Event<EventUpdatedEvent> eventUpdatedBus;
-    @Inject jakarta.enterprise.event.Event<EventRescheduledEvent> eventRescheduledBus;
-    @Inject SeatmapCacheService seatmapCacheService;
+    private final EventLocationRepository eventLocationRepository;
+    private final EventRepository eventRepository;
+    private final SeatRepository seatRepository;
+    private final UserRepository userRepository;
+    private final EventLocationAccessService eventLocationAccessService;
+    private final jakarta.enterprise.event.Event<EventUpdatedEvent> eventUpdatedBus;
+    private final jakarta.enterprise.event.Event<EventRescheduledEvent> eventRescheduledBus;
+    private final SeatmapCacheService seatmapCacheService;
+
+    @Inject
+    public EventLocationService(
+            EventLocationRepository eventLocationRepository,
+            EventRepository eventRepository,
+            SeatRepository seatRepository,
+            UserRepository userRepository,
+            EventLocationAccessService eventLocationAccessService,
+            jakarta.enterprise.event.Event<EventUpdatedEvent> eventUpdatedBus,
+            jakarta.enterprise.event.Event<EventRescheduledEvent> eventRescheduledBus,
+            SeatmapCacheService seatmapCacheService) {
+        this.eventLocationRepository = eventLocationRepository;
+        this.eventRepository = eventRepository;
+        this.seatRepository = seatRepository;
+        this.userRepository = userRepository;
+        this.eventLocationAccessService = eventLocationAccessService;
+        this.eventUpdatedBus = eventUpdatedBus;
+        this.eventRescheduledBus = eventRescheduledBus;
+        this.seatmapCacheService = seatmapCacheService;
+    }
 
     /**
      * Retrieves a list of EventLocations belonging to the currently authenticated manager. If the

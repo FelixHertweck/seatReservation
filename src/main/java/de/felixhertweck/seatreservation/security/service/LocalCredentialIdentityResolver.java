@@ -29,7 +29,12 @@ import de.felixhertweck.seatreservation.model.repository.UserRepository;
 @ApplicationScoped
 public class LocalCredentialIdentityResolver implements IdentityResolver {
 
-    @Inject UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    @Inject
+    public LocalCredentialIdentityResolver(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public String providerId() {

@@ -64,9 +64,19 @@ public class UserResource {
 
     private static final Logger LOG = Logger.getLogger(UserResource.class);
 
-    @Inject UserService userService;
-    @Inject SecurityContext securityContext;
-    @Inject UserSecurityContext userSecurityContext;
+    private final UserService userService;
+    private final SecurityContext securityContext;
+    private final UserSecurityContext userSecurityContext;
+
+    @Inject
+    public UserResource(
+            UserService userService,
+            SecurityContext securityContext,
+            UserSecurityContext userSecurityContext) {
+        this.userService = userService;
+        this.securityContext = securityContext;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     /**
      * Imports a batch of users from the provided DTOs.

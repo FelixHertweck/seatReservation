@@ -65,6 +65,32 @@ public class AuthService {
 
     private static final Logger LOG = Logger.getLogger(AuthService.class);
 
+    private final UserRepository userRepository;
+    private final UserService userService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailService emailService;
+    private final LoginAttemptRepository loginAttemptRepository;
+    private final TokenService tokenService;
+    private final EmailCooldownService emailCooldownService;
+
+    @Inject
+    public AuthService(
+            UserRepository userRepository,
+            UserService userService,
+            PasswordResetTokenRepository passwordResetTokenRepository,
+            EmailService emailService,
+            LoginAttemptRepository loginAttemptRepository,
+            TokenService tokenService,
+            EmailCooldownService emailCooldownService) {
+        this.userRepository = userRepository;
+        this.userService = userService;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.emailService = emailService;
+        this.loginAttemptRepository = loginAttemptRepository;
+        this.tokenService = tokenService;
+        this.emailCooldownService = emailCooldownService;
+    }
+
     private record LockoutTier(int attempts, Duration window, Duration lockoutDuration) {}
 
     private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9._-]{3,64}$");
@@ -75,20 +101,6 @@ public class AuthService {
                     new LockoutTier(5, Duration.ofMinutes(15), Duration.ofMinutes(2)),
                     new LockoutTier(10, Duration.ofHours(1), Duration.ofMinutes(15)),
                     new LockoutTier(15, Duration.ofHours(24), Duration.ofHours(1)));
-
-    @Inject UserRepository userRepository;
-
-    @Inject UserService userService;
-
-    @Inject PasswordResetTokenRepository passwordResetTokenRepository;
-
-    @Inject EmailService emailService;
-
-    @Inject LoginAttemptRepository loginAttemptRepository;
-
-    @Inject TokenService tokenService;
-
-    @Inject EmailCooldownService emailCooldownService;
 
     @ConfigProperty(name = "registration.enabled", defaultValue = "true")
     boolean registrationEnabled;

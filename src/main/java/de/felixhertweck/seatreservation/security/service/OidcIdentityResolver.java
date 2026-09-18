@@ -34,7 +34,12 @@ public class OidcIdentityResolver implements IdentityResolver {
 
     private static final Logger LOG = Logger.getLogger(OidcIdentityResolver.class);
 
-    @Inject UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    @Inject
+    public OidcIdentityResolver(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public String providerId() {

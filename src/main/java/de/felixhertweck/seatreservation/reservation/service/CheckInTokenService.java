@@ -32,7 +32,12 @@ import de.felixhertweck.seatreservation.utils.CodeGenerator;
 @ApplicationScoped
 public class CheckInTokenService {
 
-    @Inject CheckInTokenRepository checkInTokenRepository;
+    private final CheckInTokenRepository checkInTokenRepository;
+
+    @Inject
+    public CheckInTokenService(CheckInTokenRepository checkInTokenRepository) {
+        this.checkInTokenRepository = checkInTokenRepository;
+    }
 
     /**
      * Finds an existing check-in token for the given user and event, or creates and persists a new

@@ -57,9 +57,14 @@ public class MarkerResource {
 
     private static final Logger LOG = Logger.getLogger(MarkerResource.class);
 
-    @Inject MarkerService markerService;
+    private final MarkerService markerService;
+    private final UserSecurityContext userSecurityContext;
 
-    @Inject UserSecurityContext userSecurityContext;
+    @Inject
+    public MarkerResource(MarkerService markerService, UserSecurityContext userSecurityContext) {
+        this.markerService = markerService;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     @POST
     @APIResponse(

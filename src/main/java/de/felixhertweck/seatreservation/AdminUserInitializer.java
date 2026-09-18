@@ -43,9 +43,14 @@ public class AdminUserInitializer {
 
     private static final Logger LOG = Logger.getLogger(AdminUserInitializer.class);
 
-    @Inject UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final UserService userService;
 
-    @Inject UserService userService;
+    @Inject
+    public AdminUserInitializer(UserRepository userRepository, UserService userService) {
+        this.userRepository = userRepository;
+        this.userService = userService;
+    }
 
     private static final int PASSWORD_LENGTH = 12;
 

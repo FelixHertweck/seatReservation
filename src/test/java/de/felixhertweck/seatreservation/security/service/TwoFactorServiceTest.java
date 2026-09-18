@@ -83,21 +83,20 @@ public class TwoFactorServiceTest {
                 twoFactorAttemptRepository,
                 emailService,
                 emailCooldownService);
-        twoFactorService = new TwoFactorService();
-        twoFactorService.userRepository = userRepository;
-        twoFactorService.backupCodeRepository = backupCodeRepository;
-        twoFactorService.challengeRepository = challengeRepository;
-        twoFactorService.twoFactorAttemptRepository = twoFactorAttemptRepository;
-        twoFactorService.emailService = emailService;
-        twoFactorService.emailCooldownService = emailCooldownService;
+        twoFactorService =
+                new TwoFactorService(
+                        userRepository,
+                        backupCodeRepository,
+                        challengeRepository,
+                        twoFactorAttemptRepository,
+                        emailService,
+                        emailCooldownService);
         twoFactorService.maxFailedAttempts = 5;
         twoFactorService.lockoutDurationSeconds = 300;
         when(emailCooldownService.checkAndRecord(any(), any())).thenReturn(Optional.empty());
 
-        TotpSecondFactor totp = new TotpSecondFactor();
-        totp.twoFactorService = twoFactorService;
-        EmailSecondFactor email = new EmailSecondFactor();
-        email.challengeRepository = challengeRepository;
+        TotpSecondFactor totp = new TotpSecondFactor(twoFactorService);
+        EmailSecondFactor email = new EmailSecondFactor(challengeRepository);
         List<SecondFactor> factors = List.of(totp, email);
         @SuppressWarnings("unchecked")
         Instance<SecondFactor> secondFactorsInstance = mock(Instance.class);

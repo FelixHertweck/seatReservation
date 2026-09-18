@@ -46,13 +46,22 @@ public class EntranceService {
 
     private static final Logger LOG = Logger.getLogger(EntranceService.class);
 
-    @Inject EventLocationEntranceRepository entranceRepository;
+    private final EventLocationEntranceRepository entranceRepository;
+    private final EventLocationAccessService eventLocationAccessService;
+    private final SeatRepository seatRepository;
+    private final SeatmapCacheService seatmapCacheService;
 
-    @Inject EventLocationAccessService eventLocationAccessService;
-
-    @Inject SeatRepository seatRepository;
-
-    @Inject SeatmapCacheService seatmapCacheService;
+    @Inject
+    public EntranceService(
+            EventLocationEntranceRepository entranceRepository,
+            EventLocationAccessService eventLocationAccessService,
+            SeatRepository seatRepository,
+            SeatmapCacheService seatmapCacheService) {
+        this.entranceRepository = entranceRepository;
+        this.eventLocationAccessService = eventLocationAccessService;
+        this.seatRepository = seatRepository;
+        this.seatmapCacheService = seatmapCacheService;
+    }
 
     /**
      * Finds all entrances of an event location, verifying the manager owns that location.

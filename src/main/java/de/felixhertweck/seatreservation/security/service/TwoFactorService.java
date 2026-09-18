@@ -66,14 +66,32 @@ import org.jboss.logging.Logger;
 public class TwoFactorService {
 
     private static final Logger LOG = Logger.getLogger(TwoFactorService.class);
+
+    private final UserRepository userRepository;
+    private final TwoFactorBackupCodeRepository backupCodeRepository;
+    private final TwoFactorChallengeRepository challengeRepository;
+    private final TwoFactorAttemptRepository twoFactorAttemptRepository;
+    private final EmailService emailService;
+    private final EmailCooldownService emailCooldownService;
+
+    @Inject
+    public TwoFactorService(
+            UserRepository userRepository,
+            TwoFactorBackupCodeRepository backupCodeRepository,
+            TwoFactorChallengeRepository challengeRepository,
+            TwoFactorAttemptRepository twoFactorAttemptRepository,
+            EmailService emailService,
+            EmailCooldownService emailCooldownService) {
+        this.userRepository = userRepository;
+        this.backupCodeRepository = backupCodeRepository;
+        this.challengeRepository = challengeRepository;
+        this.twoFactorAttemptRepository = twoFactorAttemptRepository;
+        this.emailService = emailService;
+        this.emailCooldownService = emailCooldownService;
+    }
+
     private static final Base32 BASE32_CODEC = new Base32();
 
-    @Inject UserRepository userRepository;
-    @Inject TwoFactorBackupCodeRepository backupCodeRepository;
-    @Inject TwoFactorChallengeRepository challengeRepository;
-    @Inject TwoFactorAttemptRepository twoFactorAttemptRepository;
-    @Inject EmailService emailService;
-    @Inject EmailCooldownService emailCooldownService;
     @Inject @Any Instance<SecondFactor> secondFactors;
 
     public Iterable<SecondFactor> getSecondFactors() {

@@ -79,13 +79,22 @@ public class EmailService {
 
     private static final Logger LOG = Logger.getLogger(EmailService.class);
 
-    @Inject EmailSender emailSender;
+    private final EmailSender emailSender;
+    private final EmailVerificationRepository emailVerificationRepository;
+    private final ReservationService reservationService;
+    private final ReservationEmailContent reservationEmailContent;
 
-    @Inject EmailVerificationRepository emailVerificationRepository;
-
-    @Inject ReservationService reservationService;
-
-    @Inject ReservationEmailContent reservationEmailContent;
+    @Inject
+    public EmailService(
+            EmailSender emailSender,
+            EmailVerificationRepository emailVerificationRepository,
+            ReservationService reservationService,
+            ReservationEmailContent reservationEmailContent) {
+        this.emailSender = emailSender;
+        this.emailVerificationRepository = emailVerificationRepository;
+        this.reservationService = reservationService;
+        this.reservationEmailContent = reservationEmailContent;
+    }
 
     @ConfigProperty(name = "email.frontend-base-url", defaultValue = "")
     String frontendBaseUrl;

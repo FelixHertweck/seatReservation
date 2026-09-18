@@ -49,10 +49,22 @@ public class EmailSeatMapResource {
 
     private static final Logger LOG = Logger.getLogger(EmailSeatMapResource.class);
 
-    @Inject EmailSeatMapService service;
-    @Inject EmailSeatMapTokenRepository tokenRepository;
-    @Inject ReservationRepository reservationRepository;
-    @Inject WalletPassService walletPassService;
+    private final EmailSeatMapService service;
+    private final EmailSeatMapTokenRepository tokenRepository;
+    private final ReservationRepository reservationRepository;
+    private final WalletPassService walletPassService;
+
+    @Inject
+    public EmailSeatMapResource(
+            EmailSeatMapService service,
+            EmailSeatMapTokenRepository tokenRepository,
+            ReservationRepository reservationRepository,
+            WalletPassService walletPassService) {
+        this.service = service;
+        this.tokenRepository = tokenRepository;
+        this.reservationRepository = reservationRepository;
+        this.walletPassService = walletPassService;
+    }
 
     @GET
     @Path("/seatmap")

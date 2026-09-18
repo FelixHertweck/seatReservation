@@ -36,7 +36,12 @@ import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 @ApplicationScoped
 public class EventAuthorizationService {
 
-    @Inject EventRepository eventRepository;
+    private final EventRepository eventRepository;
+
+    @Inject
+    public EventAuthorizationService(EventRepository eventRepository) {
+        this.eventRepository = eventRepository;
+    }
 
     /**
      * Checks whether the given user may operate on the given event, without throwing.

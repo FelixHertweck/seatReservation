@@ -70,11 +70,25 @@ public class AuthResource {
 
     private static final Logger LOG = Logger.getLogger(AuthResource.class);
 
-    @Inject AuthService authService;
-    @Inject TokenService tokenService;
-    @Inject UserSecurityContext userSecurityContext;
-    @Inject TwoFactorService twoFactorService;
-    @Inject AltchaService altchaService;
+    private final AuthService authService;
+    private final TokenService tokenService;
+    private final UserSecurityContext userSecurityContext;
+    private final TwoFactorService twoFactorService;
+    private final AltchaService altchaService;
+
+    @Inject
+    public AuthResource(
+            AuthService authService,
+            TokenService tokenService,
+            UserSecurityContext userSecurityContext,
+            TwoFactorService twoFactorService,
+            AltchaService altchaService) {
+        this.authService = authService;
+        this.tokenService = tokenService;
+        this.userSecurityContext = userSecurityContext;
+        this.twoFactorService = twoFactorService;
+        this.altchaService = altchaService;
+    }
 
     /**
      * Gets the current registration status.

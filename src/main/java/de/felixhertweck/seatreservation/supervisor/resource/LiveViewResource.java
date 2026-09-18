@@ -39,9 +39,15 @@ public class LiveViewResource {
 
     private static final Logger LOG = Logger.getLogger(LiveViewResource.class);
 
-    @Inject LiveViewService webSocketService;
+    private final LiveViewService webSocketService;
+    private final UserSecurityContext userSecurityContext;
 
-    @Inject UserSecurityContext userSecurityContext;
+    @Inject
+    public LiveViewResource(
+            LiveViewService webSocketService, UserSecurityContext userSecurityContext) {
+        this.webSocketService = webSocketService;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     /**
      * Handles WebSocket connection opening. Registers the connection for the event and sends

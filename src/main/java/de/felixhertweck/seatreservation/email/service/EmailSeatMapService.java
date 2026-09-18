@@ -51,9 +51,16 @@ public class EmailSeatMapService {
 
     private static final Logger LOG = Logger.getLogger(EmailSeatMapService.class);
 
-    @Inject EmailSeatMapTokenRepository tokenRepository;
+    private final EmailSeatMapTokenRepository tokenRepository;
+    private final ReservationRepository reservationRepository;
 
-    @Inject ReservationRepository reservationRepository;
+    @Inject
+    public EmailSeatMapService(
+            EmailSeatMapTokenRepository tokenRepository,
+            ReservationRepository reservationRepository) {
+        this.tokenRepository = tokenRepository;
+        this.reservationRepository = reservationRepository;
+    }
 
     @ConfigProperty(name = "email.seatmap.token.expiration.days", defaultValue = "30")
     long tokenExpirationDays;

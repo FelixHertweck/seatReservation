@@ -57,15 +57,25 @@ public class WebAuthnService {
 
     private static final Logger LOG = Logger.getLogger(WebAuthnService.class);
 
-    @Inject WebAuthnCredentialRepository webAuthnCredentialRepository;
+    private final WebAuthnCredentialRepository webAuthnCredentialRepository;
+    private final UserRepository userRepository;
+    private final UserService userService;
+    private final AuthService authService;
+    private final LoginAttemptRepository loginAttemptRepository;
 
-    @Inject UserRepository userRepository;
-
-    @Inject UserService userService;
-
-    @Inject AuthService authService;
-
-    @Inject LoginAttemptRepository loginAttemptRepository;
+    @Inject
+    public WebAuthnService(
+            WebAuthnCredentialRepository webAuthnCredentialRepository,
+            UserRepository userRepository,
+            UserService userService,
+            AuthService authService,
+            LoginAttemptRepository loginAttemptRepository) {
+        this.webAuthnCredentialRepository = webAuthnCredentialRepository;
+        this.userRepository = userRepository;
+        this.userService = userService;
+        this.authService = authService;
+        this.loginAttemptRepository = loginAttemptRepository;
+    }
 
     /**
      * @return whether the given user has at least one registered passkey

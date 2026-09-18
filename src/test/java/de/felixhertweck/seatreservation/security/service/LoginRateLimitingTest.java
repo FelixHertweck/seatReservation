@@ -55,9 +55,9 @@ public class LoginRateLimitingTest {
     @BeforeEach
     void setUp() {
         Mockito.reset(userRepository, loginAttemptRepository);
-        authService = new AuthService();
-        authService.userRepository = userRepository;
-        authService.loginAttemptRepository = loginAttemptRepository;
+        authService =
+                new AuthService(
+                        userRepository, null, null, null, loginAttemptRepository, null, null);
         authService.init();
     }
 

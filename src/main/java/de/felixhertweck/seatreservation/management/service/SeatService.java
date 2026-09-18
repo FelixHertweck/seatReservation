@@ -58,21 +58,34 @@ public class SeatService {
 
     private static final Logger LOG = Logger.getLogger(SeatService.class);
 
-    @Inject SeatRepository seatRepository;
+    private final SeatRepository seatRepository;
+    private final ReservationRepository reservationRepository;
+    private final EventUserAllowanceRepository eventUserAllowanceRepository;
+    private final EventLocationAccessService eventLocationAccessService;
+    private final EventLocationAreaRepository eventLocationAreaRepository;
+    private final EventLocationEntranceRepository eventLocationEntranceRepository;
+    private final SeatmapCacheService seatmapCacheService;
+    private final jakarta.enterprise.event.Event<ReservationCancelledEvent> reservationCancelledBus;
 
-    @Inject ReservationRepository reservationRepository;
-
-    @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
-
-    @Inject EventLocationAccessService eventLocationAccessService;
-
-    @Inject EventLocationAreaRepository eventLocationAreaRepository;
-
-    @Inject EventLocationEntranceRepository eventLocationEntranceRepository;
-
-    @Inject SeatmapCacheService seatmapCacheService;
-
-    @Inject jakarta.enterprise.event.Event<ReservationCancelledEvent> reservationCancelledBus;
+    @Inject
+    public SeatService(
+            SeatRepository seatRepository,
+            ReservationRepository reservationRepository,
+            EventUserAllowanceRepository eventUserAllowanceRepository,
+            EventLocationAccessService eventLocationAccessService,
+            EventLocationAreaRepository eventLocationAreaRepository,
+            EventLocationEntranceRepository eventLocationEntranceRepository,
+            SeatmapCacheService seatmapCacheService,
+            jakarta.enterprise.event.Event<ReservationCancelledEvent> reservationCancelledBus) {
+        this.seatRepository = seatRepository;
+        this.reservationRepository = reservationRepository;
+        this.eventUserAllowanceRepository = eventUserAllowanceRepository;
+        this.eventLocationAccessService = eventLocationAccessService;
+        this.eventLocationAreaRepository = eventLocationAreaRepository;
+        this.eventLocationEntranceRepository = eventLocationEntranceRepository;
+        this.seatmapCacheService = seatmapCacheService;
+        this.reservationCancelledBus = reservationCancelledBus;
+    }
 
     /**
      * Creates a new seat for the specified event location by a manager.

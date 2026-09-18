@@ -48,6 +48,13 @@ public class WebPushService {
 
     private static final Logger LOG = Logger.getLogger(WebPushService.class);
 
+    private final ObjectMapper objectMapper;
+
+    @Inject
+    public WebPushService(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     /** Push services reject VAPID JWTs whose expiry is more than 24h out; 12h leaves margin. */
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(10);
 
@@ -66,8 +73,6 @@ public class WebPushService {
             name = "seatreservation.vapid.subject",
             defaultValue = "mailto:admin@example.com")
     String vapidSubject;
-
-    @Inject ObjectMapper objectMapper;
 
     private final HttpClient httpClient =
             HttpClient.newBuilder().connectTimeout(REQUEST_TIMEOUT).build();

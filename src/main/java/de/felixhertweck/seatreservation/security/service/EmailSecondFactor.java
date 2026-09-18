@@ -33,7 +33,12 @@ import de.felixhertweck.seatreservation.utils.SecurityUtils;
 @ApplicationScoped
 public class EmailSecondFactor implements SecondFactor {
 
-    @Inject TwoFactorChallengeRepository challengeRepository;
+    private final TwoFactorChallengeRepository challengeRepository;
+
+    @Inject
+    public EmailSecondFactor(TwoFactorChallengeRepository challengeRepository) {
+        this.challengeRepository = challengeRepository;
+    }
 
     @Override
     public TwoFactorMethod method() {

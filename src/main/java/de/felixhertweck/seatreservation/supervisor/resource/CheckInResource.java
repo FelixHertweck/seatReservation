@@ -54,8 +54,14 @@ public class CheckInResource {
 
     private static final Logger LOG = Logger.getLogger(CheckInResource.class);
 
-    @Inject CheckInService checkInService;
-    @Inject UserSecurityContext userSecurityContext;
+    private final CheckInService checkInService;
+    private final UserSecurityContext userSecurityContext;
+
+    @Inject
+    public CheckInResource(CheckInService checkInService, UserSecurityContext userSecurityContext) {
+        this.checkInService = checkInService;
+        this.userSecurityContext = userSecurityContext;
+    }
 
     /**
      * POST endpoint to retrieve check-in information based on tokens. Validates each token

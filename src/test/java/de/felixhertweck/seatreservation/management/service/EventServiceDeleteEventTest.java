@@ -39,7 +39,6 @@ import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -50,7 +49,7 @@ public class EventServiceDeleteEventTest {
 
     @Mock jakarta.enterprise.event.Event<EventDeletedEvent> eventDeletedBus;
 
-    @InjectMocks EventService eventService;
+    EventService eventService;
 
     User adminUser;
     User managerUser;
@@ -61,10 +60,20 @@ public class EventServiceDeleteEventTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        EventAccessService eventAccessService = new EventAccessService();
-        eventAccessService.eventRepository = eventRepository;
-        eventService.eventAccessService = eventAccessService;
-        eventService.reservationRepository = reservationRepository;
+        EventAccessService eventAccessService = new EventAccessService(eventRepository);
+        eventService =
+                new EventService(
+                        eventRepository,
+                        null,
+                        null,
+                        reservationRepository,
+                        null,
+                        eventAccessService,
+                        null,
+                        null,
+                        eventDeletedBus,
+                        null,
+                        null);
 
         adminUser = new User();
         adminUser.id = id(1);

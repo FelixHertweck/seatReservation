@@ -51,14 +51,28 @@ public class OverviewService {
 
     private static final Logger LOG = Logger.getLogger(OverviewService.class);
 
+    private final EventRepository eventRepository;
+    private final EventLocationRepository eventLocationRepository;
+    private final ReservationRepository reservationRepository;
+    private final EventUserAllowanceRepository eventUserAllowanceRepository;
+    private final UserRepository userRepository;
+
+    @Inject
+    public OverviewService(
+            EventRepository eventRepository,
+            EventLocationRepository eventLocationRepository,
+            ReservationRepository reservationRepository,
+            EventUserAllowanceRepository eventUserAllowanceRepository,
+            UserRepository userRepository) {
+        this.eventRepository = eventRepository;
+        this.eventLocationRepository = eventLocationRepository;
+        this.reservationRepository = reservationRepository;
+        this.eventUserAllowanceRepository = eventUserAllowanceRepository;
+        this.userRepository = userRepository;
+    }
+
     private static final int UPCOMING_EVENTS_LIMIT = 5;
     private static final int DEADLINES_LIMIT = 5;
-
-    @Inject EventRepository eventRepository;
-    @Inject EventLocationRepository eventLocationRepository;
-    @Inject ReservationRepository reservationRepository;
-    @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
-    @Inject UserRepository userRepository;
 
     /**
      * Calculates aggregate statistics and lists for the manager dashboard overview.

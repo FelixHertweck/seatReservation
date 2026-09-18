@@ -51,13 +51,22 @@ import org.jboss.logging.Logger;
 public class EventReservationAllowanceService {
     private static final Logger LOG = Logger.getLogger(EventReservationAllowanceService.class);
 
-    @Inject EventRepository eventRepository;
+    private final EventRepository eventRepository;
+    private final UserRepository userRepository;
+    private final EventUserAllowanceRepository eventUserAllowanceRepository;
+    private final EventAccessService eventAccessService;
 
-    @Inject UserRepository userRepository;
-
-    @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
-
-    @Inject EventAccessService eventAccessService;
+    @Inject
+    public EventReservationAllowanceService(
+            EventRepository eventRepository,
+            UserRepository userRepository,
+            EventUserAllowanceRepository eventUserAllowanceRepository,
+            EventAccessService eventAccessService) {
+        this.eventRepository = eventRepository;
+        this.userRepository = userRepository;
+        this.eventUserAllowanceRepository = eventUserAllowanceRepository;
+        this.eventAccessService = eventAccessService;
+    }
 
     /**
      * Sets the reservation allowance for a user for a specific event. Access control: The manger
