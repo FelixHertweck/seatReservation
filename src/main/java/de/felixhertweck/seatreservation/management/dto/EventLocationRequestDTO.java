@@ -96,5 +96,7 @@ public class EventLocationRequestDTO {
         this.managerIds = managerIds;
     }
 
-    public EventLocationRequestDTO() {}
+    public EventLocationRequestDTO() {
+        // required for JSON deserialization
+    }
 }

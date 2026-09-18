@@ -118,7 +118,9 @@ public class OutboundEmail extends AbstractEntity {
     private String lastError;
 
     /** Constructor for JPA. */
-    public OutboundEmail() {}
+    public OutboundEmail() {
+        // required by JPA
+    }
 
     /**
      * Registers an attachment and wires up the bidirectional relationship.
