@@ -70,7 +70,7 @@ public class ReservationService {
     private static final Logger LOG = Logger.getLogger(ReservationService.class);
 
     @ConfigProperty(name = "exporter.pdf.minutesBeforeEventStart", defaultValue = "10")
-    Integer EXPORTER_PDF_MINUTES_BEFORE_EVENT_START;
+    Integer exporterPdfMinutesBeforeEventStart;
 
     @Inject ReservationRepository reservationRepository;
     @Inject EventRepository eventRepository;
@@ -600,7 +600,7 @@ public class ReservationService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         String reservedUntilValue =
                 event.getStartTime()
-                        .minusSeconds((long) EXPORTER_PDF_MINUTES_BEFORE_EVENT_START * 60)
+                        .minusSeconds((long) exporterPdfMinutesBeforeEventStart * 60)
                         .atZone(ZoneId.systemDefault())
                         .format(formatter);
 

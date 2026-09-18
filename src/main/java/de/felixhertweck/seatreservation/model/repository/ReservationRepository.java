@@ -252,7 +252,7 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
     public List<EventLocation> findDistinctEventLocationsByUser(User user) {
         return getEntityManager()
                 .createQuery(
-                        "select distinct e.event_location from Reservation r"
+                        "select distinct e.eventLocation from Reservation r"
                                 + " join r.event e"
                                 + " where r.user = :user and r.status != :status",
                         EventLocation.class)
@@ -383,7 +383,7 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
     public List<Reservation> findByUserAndEventId(User user, UUID eventId) {
         return find(
                         "select r from Reservation r join fetch r.event e left join fetch"
-                                + " e.event_location where r.user = ?1 and r.event.id = ?2",
+                                + " e.eventLocation where r.user = ?1 and r.event.id = ?2",
                         user,
                         eventId)
                 .list();
@@ -399,7 +399,7 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
     public List<Reservation> findActiveByUserAndEventId(User user, UUID eventId) {
         return find(
                         "select r from Reservation r join fetch r.event e left join fetch"
-                            + " e.event_location where r.user = ?1 and r.event.id = ?2 and r.status"
+                            + " e.eventLocation where r.user = ?1 and r.event.id = ?2 and r.status"
                             + " != ?3",
                         user,
                         eventId,
@@ -468,7 +468,7 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
                                 + " left join fetch r.user"
                                 + " left join fetch r.seat"
                                 + " left join fetch r.event e"
-                                + " left join fetch e.event_location"
+                                + " left join fetch e.eventLocation"
                                 + " where r.seat.id in ?1",
                         seatIds)
                 .list();

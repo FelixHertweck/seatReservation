@@ -59,23 +59,23 @@ import org.jboss.logging.Logger;
 public class EmailService {
 
     @ConfigProperty(name = "email.header.confirmation", defaultValue = "Email Confirmation")
-    String EMAIL_HEADER_CONFIRMATION;
+    String emailHeaderConfirmation;
 
     @ConfigProperty(name = "email.header.password-changed", defaultValue = "Password Changed")
-    String EMAIL_HEADER_PASSWORD_CHANGED;
+    String emailHeaderPasswordChanged;
 
     @ConfigProperty(name = "email.header.password-reset", defaultValue = "Password Reset Request")
-    String EMAIL_HEADER_PASSWORD_RESET;
+    String emailHeaderPasswordReset;
 
     @ConfigProperty(
             name = "email.header.username-recovery",
             defaultValue = "Username Recovery Request")
-    String EMAIL_HEADER_USERNAME_RECOVERY;
+    String emailHeaderUsernameRecovery;
 
     @ConfigProperty(
             name = "email.header.two-factor",
             defaultValue = "Two-Factor Authentication Code")
-    String EMAIL_HEADER_TWO_FACTOR;
+    String emailHeaderTwoFactor;
 
     private static final Logger LOG = Logger.getLogger(EmailService.class);
 
@@ -130,7 +130,7 @@ public class EmailService {
 
         emailSender.send(
                 new TwoFactorCodeNotification(
-                        user, code, EMAIL_HEADER_TWO_FACTOR, twoFactorCodeTemplate));
+                        user, code, emailHeaderTwoFactor, twoFactorCodeTemplate));
     }
 
     public void sendPasswordResetEmail(User user, PasswordResetToken passwordResetToken) {
@@ -146,7 +146,7 @@ public class EmailService {
                         user,
                         passwordResetToken,
                         frontendBaseUrl,
-                        EMAIL_HEADER_PASSWORD_RESET,
+                        emailHeaderPasswordReset,
                         passwordResetTemplate));
     }
 
@@ -156,13 +156,10 @@ public class EmailService {
             return;
         }
 
-        LOG.debugf("Username recovery subject: %s", EMAIL_HEADER_USERNAME_RECOVERY);
+        LOG.debugf("Username recovery subject: %s", emailHeaderUsernameRecovery);
         emailSender.send(
                 new UsernameRecoveryNotification(
-                        email,
-                        usernames,
-                        EMAIL_HEADER_USERNAME_RECOVERY,
-                        usernameRecoveryTemplate));
+                        email, usernames, emailHeaderUsernameRecovery, usernameRecoveryTemplate));
     }
 
     public void sendEmailConfirmation(User user, EmailVerification emailVerification) {
@@ -179,7 +176,7 @@ public class EmailService {
                         user,
                         emailVerification,
                         verificationLink,
-                        EMAIL_HEADER_CONFIRMATION,
+                        emailHeaderConfirmation,
                         emailConfirmationTemplate));
     }
 
@@ -243,7 +240,7 @@ public class EmailService {
 
         emailSender.send(
                 new PasswordChangedNotification(
-                        user, EMAIL_HEADER_PASSWORD_CHANGED, passwordChangedTemplate));
+                        user, emailHeaderPasswordChanged, passwordChangedTemplate));
     }
 
     /**

@@ -163,7 +163,7 @@ public class EventUserAllowanceRepository
     public Optional<EventUserAllowance> findByUserAndEventId(User user, UUID eventId) {
         return find(
                         "select a from EventUserAllowance a join fetch a.event e left join fetch"
-                                + " e.event_location where a.user = ?1 and a.event.id = ?2",
+                                + " e.eventLocation where a.user = ?1 and a.event.id = ?2",
                         user,
                         eventId)
                 .firstResultOptional();
@@ -201,7 +201,7 @@ public class EventUserAllowanceRepository
     public List<EventLocation> findDistinctEventLocationsByUser(User user) {
         return getEntityManager()
                 .createQuery(
-                        "select distinct e.event_location from EventUserAllowance a"
+                        "select distinct e.eventLocation from EventUserAllowance a"
                                 + " join a.event e"
                                 + " where a.user = :user",
                         EventLocation.class)
