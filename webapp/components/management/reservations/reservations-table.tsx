@@ -67,9 +67,7 @@ export function ReservationsTable({
   onViewConfirmation,
 }: Readonly<ReservationsTableProps>) {
   const t = useT();
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
-    new Set(),
-  );
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   const seatById = useMemo(() => new Map(seats.map((s) => [s.id, s])), [seats]);
 
