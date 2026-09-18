@@ -1,0 +1,101 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: backend-critical
+    folder: Alerts
+    interval: 1m
+    rules:
+      - uid: backend-5xx-error-rate
+        title: Backend 5xx error rate critical
+        condition: C
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Backend is returning 5xx errors
+          description: "5xx error rate has been above threshold for 2 minutes."
+        noDataState: OK
+        execErrState: Alerting
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus_ds
+            model:
+              refId: A
+              expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+              intervalMs: 1000
+              maxDataPoints: 43200
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: reduce
+              expression: A
+              reducer: last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0.1]
+
+      # Flags a spike in failed-auth (401) responses relative to overall traffic - catches
+      # distributed/low-and-slow brute-force attempts that stay under nginx's per-IP
+      # auth_limit (5r/m, see nginx/nginx.conf) because they spread across many IPs.
+      - uid: backend-401-bruteforce-ratio
+        title: Possible brute-force attack (401 spike)
+        condition: C
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Unusually high share of 401 responses
+          description: >-
+            More than 30% of all requests returned 401 over the last 5 minutes, at a
+            sustained rate above 0.2 req/s - consistent with a brute-force / credential
+            stuffing attempt. Adjust thresholds in rules.yaml if this is too sensitive
+            or not sensitive enough for your traffic.
+        noDataState: OK
+        execErrState: Alerting
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus_ds
+            model:
+              refId: A
+              expr: >-
+                (
+                  sum(rate(http_server_requests_seconds_count{status="401"}[5m]))
+                  /
+                  sum(rate(http_server_requests_seconds_count[5m]))
+                ) > 0.3
+                and
+                sum(rate(http_server_requests_seconds_count{status="401"}[5m])) > 0.2
+              intervalMs: 1000
+              maxDataPoints: 43200
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: reduce
+              expression: A
+              reducer: last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
