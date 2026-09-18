@@ -19,7 +19,6 @@
  */
 package de.felixhertweck.seatreservation.security.service;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -414,7 +413,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    void testRequestUsernameRecovery_SingleUserFound_SendsEmailWithUsername() throws IOException {
+    void testRequestUsernameRecovery_SingleUserFound_SendsEmailWithUsername() {
         String email = "test@example.com";
         User user = new User();
         user.setUsername("testuser");
@@ -431,8 +430,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    void testRequestUsernameRecovery_MultipleUsersFound_SendsEmailWithAllUsernames()
-            throws IOException {
+    void testRequestUsernameRecovery_MultipleUsersFound_SendsEmailWithAllUsernames() {
         String email = "shared@example.com";
         User firstUser = new User();
         firstUser.setUsername("firstuser");
@@ -453,7 +451,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    void testRequestUsernameRecovery_NoUserFound_DoesNotSendEmail() throws IOException {
+    void testRequestUsernameRecovery_NoUserFound_DoesNotSendEmail() {
         when(userRepository.findAllByEmail(anyString())).thenReturn(List.of());
 
         UsernameRecoveryRequestDTO requestDTO = new UsernameRecoveryRequestDTO();

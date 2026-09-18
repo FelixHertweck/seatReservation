@@ -21,7 +21,6 @@ package de.felixhertweck.seatreservation.usermanagement.service;
 
 import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -106,7 +105,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void createUser_Success_WithEmail() throws IOException {
+    void createUser_Success_WithEmail() {
         UserCreationDTO dto =
                 new UserCreationDTO(
                         "testuser", "test@example.com", "password", "John", "Doe", null);
@@ -143,7 +142,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void createUser_Success_WithoutEmail() throws IOException {
+    void createUser_Success_WithoutEmail() {
         UserCreationDTO dto =
                 new UserCreationDTO("testuser", null, "password", "John", "Doe", null);
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
@@ -161,7 +160,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void createUser_Success_WithEmail_NoVerificationSent() throws IOException {
+    void createUser_Success_WithEmail_NoVerificationSent() {
         UserCreationDTO dto =
                 new UserCreationDTO(
                         "testuser", "test@example.com", "password", "John", "Doe", null);
@@ -180,7 +179,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void createUser_InvalidUserException_NullDTO() throws IOException {
+    void createUser_InvalidUserException_NullDTO() {
         assertThrows(
                 InvalidUserException.class,
                 () -> userService.createUser(null, Set.of(Roles.USER), false));
@@ -191,7 +190,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void createUser_InvalidUserException_EmptyUsername() throws IOException {
+    void createUser_InvalidUserException_EmptyUsername() {
         final UserCreationDTO dto =
                 new UserCreationDTO("", "test@example.com", "password", "John", "Doe", null);
         assertThrows(
@@ -252,7 +251,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void createUser_DuplicateUserException_ExistingUsername() throws IOException {
+    void createUser_DuplicateUserException_ExistingUsername() {
         final UserCreationDTO dto =
                 new UserCreationDTO(
                         "existinguser", "test@example.com", "password", "John", "Doe", null);
@@ -269,7 +268,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void createUser_Success_WithDuplicateEmail() throws IOException {
+    void createUser_Success_WithDuplicateEmail() {
         UserCreationDTO dto =
                 new UserCreationDTO(
                         "newuser", "existing@example.com", "password", "Jane", "Doe", null);
@@ -307,7 +306,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void createUser_Success_MarkEmailAsVerified_SkipsVerificationEmail() throws IOException {
+    void createUser_Success_MarkEmailAsVerified_SkipsVerificationEmail() {
         UserCreationDTO dto =
                 new UserCreationDTO(
                         "testuser", "test@example.com", "password", "John", "Doe", null);
@@ -327,7 +326,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void createUser_RuntimeException_EmailVerificationTrue_NoEmail() throws IOException {
+    void createUser_RuntimeException_EmailVerificationTrue_NoEmail() {
         UserCreationDTO dto =
                 new UserCreationDTO("testuser", null, "password", "John", "Doe", null);
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
@@ -345,10 +344,7 @@ public class UserServiceTest {
 
     @Test
     void updateUser_Success_UpdateFirstname()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -389,10 +385,7 @@ public class UserServiceTest {
 
     @Test
     void updateUser_Success_UpdateLastname()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -433,10 +426,7 @@ public class UserServiceTest {
 
     @Test
     void updateUser_Success_UpdatePassword()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -479,10 +469,7 @@ public class UserServiceTest {
 
     @Test
     void updateUser_Success_UpdatePassword_SendsEmail()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -517,10 +504,7 @@ public class UserServiceTest {
 
     @Test
     void updateUser_Success_PasswordSaltChangesOnPasswordUpdate()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
         String initialSalt = "initialSalt";
         User existingUser =
                 new User(
@@ -560,10 +544,7 @@ public class UserServiceTest {
 
     @Test
     void updateUser_Success_UpdateRoles()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -603,10 +584,7 @@ public class UserServiceTest {
 
     @Test
     void updateUser_Success_NoEmailChange()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -651,10 +629,7 @@ public class UserServiceTest {
 
     @Test
     void updateUser_Success_UpdateEmail()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -712,7 +687,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUser_UserNotFoundException() throws IOException {
+    void updateUser_UserNotFoundException() {
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
                         "New",
@@ -732,7 +707,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUser_InvalidUserException_NullDTO() throws IOException {
+    void updateUser_InvalidUserException_NullDTO() {
         assertThrows(InvalidUserException.class, () -> userService.updateUser(id(1), null, null));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never())
@@ -741,10 +716,7 @@ public class UserServiceTest {
 
     @Test
     void updateUser_Success_WithDuplicateEmail()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -804,8 +776,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUser_Success_UpdateEmail_NoVerificationSent()
-            throws IOException, UserNotFoundException {
+    void updateUser_Success_UpdateEmail_NoVerificationSent() throws UserNotFoundException {
         User existingUser =
                 new User(
                         "testuser",
@@ -845,8 +816,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUser_Success_NoEmailChange_VerificationSentTrue()
-            throws IOException, UserNotFoundException {
+    void updateUser_Success_NoEmailChange_VerificationSentTrue() throws UserNotFoundException {
         User existingUser =
                 new User(
                         "testuser",
@@ -1070,10 +1040,7 @@ public class UserServiceTest {
 
     @Test
     void updateUserProfile_Success_UpdateFirstname()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -1113,10 +1080,7 @@ public class UserServiceTest {
 
     @Test
     void updateUserProfile_Success_UpdateLastname()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -1156,10 +1120,7 @@ public class UserServiceTest {
 
     @Test
     void updateUserProfile_Success_UpdatePassword()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -1194,7 +1155,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUserProfile_Success_UpdateEmail() throws IOException {
+    void updateUserProfile_Success_UpdateEmail() {
         User existingUser =
                 new User(
                         "testuser",
@@ -1410,7 +1371,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUserProfile_UserNotFoundException() throws IOException {
+    void updateUserProfile_UserNotFoundException() {
         final UserProfileUpdateDTO dto =
                 new UserProfileUpdateDTO("New", null, null, null, null, null);
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
@@ -1425,7 +1386,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUserProfile_InvalidUserException_NullDTO() throws IOException {
+    void updateUserProfile_InvalidUserException_NullDTO() {
         assertThrows(
                 InvalidUserException.class, () -> userService.updateUserProfile("testuser", null));
         verify(userRepository, never()).persist(any(User.class));
@@ -1435,10 +1396,7 @@ public class UserServiceTest {
 
     @Test
     void updateUserProfile_Success_WithDuplicateEmail()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -1488,7 +1446,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void importUsers_Success() throws InvalidUserException, DuplicateUserException, IOException {
+    void importUsers_Success() throws InvalidUserException, DuplicateUserException {
         Set<AdminUserCreationDto> dtos = new HashSet<>();
         AdminUserCreationDto dto1 =
                 new AdminUserCreationDto(
@@ -1545,7 +1503,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void importUsers_EmptySet() throws InvalidUserException, DuplicateUserException, IOException {
+    void importUsers_EmptySet() throws InvalidUserException, DuplicateUserException {
         Set<AdminUserCreationDto> dtos = Collections.emptySet();
 
         Set<UserDTO> importedUsers = userService.importUsers(dtos);
@@ -1558,7 +1516,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void importUsers_InvalidUserException() throws IOException {
+    void importUsers_InvalidUserException() {
         Set<AdminUserCreationDto> dtos = new HashSet<>();
         AdminUserCreationDto invalidDto =
                 new AdminUserCreationDto(
@@ -1580,7 +1538,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void importUsers_DuplicateUserException() throws IOException {
+    void importUsers_DuplicateUserException() {
         Set<AdminUserCreationDto> dtos = new HashSet<>();
         AdminUserCreationDto duplicateDto =
                 new AdminUserCreationDto(
@@ -1621,7 +1579,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void importUsers_EmailSendFailure() throws IOException {
+    void importUsers_EmailSendFailure() {
         Set<AdminUserCreationDto> dtos = new HashSet<>();
         AdminUserCreationDto dto1 =
                 new AdminUserCreationDto(
@@ -1823,7 +1781,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUser_SecurityException_SelfLockout_DoesNotSendPasswordEmail() throws IOException {
+    void updateUser_SecurityException_SelfLockout_DoesNotSendPasswordEmail() {
         User existingUser =
                 new User(
                         "admin",

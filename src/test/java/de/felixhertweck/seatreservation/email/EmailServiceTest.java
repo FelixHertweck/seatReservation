@@ -21,7 +21,6 @@ package de.felixhertweck.seatreservation.email;
 
 import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -144,7 +143,7 @@ class EmailServiceTest {
     }
 
     @Test
-    void sendEmailConfirmation_Success() throws IOException {
+    void sendEmailConfirmation_Success() {
         User user = createTestUser();
         EmailVerification emailVerification =
                 new EmailVerification(
@@ -172,7 +171,7 @@ class EmailServiceTest {
     }
 
     @Test
-    void sendPasswordResetEmail_Success() throws IOException {
+    void sendPasswordResetEmail_Success() {
         User user = createTestUser();
         PasswordResetToken passwordResetToken =
                 new PasswordResetToken(
@@ -260,7 +259,7 @@ class EmailServiceTest {
     }
 
     @Test
-    void sendEventReminder_Success() throws IOException {
+    void sendEventReminder_Success() {
         User user = createTestUser();
         EventLocation location = createTestEventLocation();
         Event event = createTestEvent(location);
@@ -307,7 +306,7 @@ class EmailServiceTest {
     }
 
     @Test
-    void sendEventReminder_IOException() throws IOException {
+    void sendEventReminder_IOException() {
         User user = createTestUser();
         EventLocation location = createTestEventLocation();
         Event event = createTestEvent(location);
@@ -455,8 +454,7 @@ class EmailServiceTest {
     }
 
     @Test
-    void sendUpdateReservationConfirmation_AllSeatsDeleted_OmitsQrCodeAndSeatmap()
-            throws IOException {
+    void sendUpdateReservationConfirmation_AllSeatsDeleted_OmitsQrCodeAndSeatmap() {
         User user = createTestUser();
         EventLocation location = createTestEventLocation();
         Event event = createTestEvent(location);
@@ -487,8 +485,7 @@ class EmailServiceTest {
     }
 
     @Test
-    void sendUpdateReservationConfirmation_WithActiveSeats_IncludesQrCodeAndSeatmap()
-            throws IOException {
+    void sendUpdateReservationConfirmation_WithActiveSeats_IncludesQrCodeAndSeatmap() {
         User user = createTestUser();
         EventLocation location = createTestEventLocation();
         Event event = createTestEvent(location);
