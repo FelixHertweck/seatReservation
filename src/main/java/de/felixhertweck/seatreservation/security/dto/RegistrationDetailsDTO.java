@@ -110,11 +110,11 @@ public abstract class RegistrationDetailsDTO {
             sb.append(firstname.trim());
         }
         if (lastname != null && !lastname.isBlank()) {
-            if (sb.length() > 0) {
+            if (!sb.isEmpty()) {
                 sb.append(' ');
             }
             sb.append(lastname.trim());
         }
-        return sb.length() > 0 ? sb.toString() : username;
+        return !sb.isEmpty() ? sb.toString() : username;
     }
 }

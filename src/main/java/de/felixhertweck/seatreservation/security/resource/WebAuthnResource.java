@@ -477,11 +477,11 @@ public class WebAuthnResource {
             sb.append(user.getFirstname().trim());
         }
         if (user.getLastname() != null && !user.getLastname().isBlank()) {
-            if (sb.length() > 0) {
+            if (!sb.isEmpty()) {
                 sb.append(' ');
             }
             sb.append(user.getLastname().trim());
         }
-        return sb.length() > 0 ? sb.toString() : user.getUsername();
+        return !sb.isEmpty() ? sb.toString() : user.getUsername();
     }
 }
