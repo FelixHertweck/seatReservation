@@ -52,8 +52,8 @@ import de.felixhertweck.seatreservation.security.exceptions.AccountLockedExcepti
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.PasswordResetTokenExpiredException;
 import de.felixhertweck.seatreservation.security.exceptions.PasswordResetTokenNotFoundException;
-import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
-import de.felixhertweck.seatreservation.userManagment.service.UserService;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserCreationDTO;
+import de.felixhertweck.seatreservation.usermanagement.service.UserService;
 import de.felixhertweck.seatreservation.utils.SecurityUtils;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.narayana.jta.QuarkusTransaction;

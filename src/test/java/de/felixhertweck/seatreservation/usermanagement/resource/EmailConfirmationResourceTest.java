@@ -18,7 +18,7 @@
  * #L%
  */
 
-package de.felixhertweck.seatreservation.userManagment.resource;
+package de.felixhertweck.seatreservation.usermanagement.resource;
 
 import jakarta.ws.rs.core.Response;
 
@@ -27,10 +27,10 @@ import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.felixhertweck.seatreservation.userManagment.dto.VerifyEmailCodeRequestDto;
-import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
-import de.felixhertweck.seatreservation.userManagment.service.UserService;
+import de.felixhertweck.seatreservation.usermanagement.dto.VerifyEmailCodeRequestDto;
+import de.felixhertweck.seatreservation.usermanagement.exceptions.VerificationCodeNotFoundException;
+import de.felixhertweck.seatreservation.usermanagement.exceptions.VerifyTokenExpiredException;
+import de.felixhertweck.seatreservation.usermanagement.service.UserService;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;

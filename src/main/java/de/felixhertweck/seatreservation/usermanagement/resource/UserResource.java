@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.userManagment.resource;
+package de.felixhertweck.seatreservation.usermanagement.resource;
 
 import java.util.Collections;
 import java.util.List;
@@ -41,11 +41,11 @@ import jakarta.ws.rs.core.SecurityContext;
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.common.dto.UserDTO;
 import de.felixhertweck.seatreservation.model.entity.Roles;
-import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
-import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
-import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
-import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
-import de.felixhertweck.seatreservation.userManagment.service.UserService;
+import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserCreationDto;
+import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserUpdateDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserCreationDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserProfileUpdateDTO;
+import de.felixhertweck.seatreservation.usermanagement.service.UserService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import io.quarkus.security.Authenticated;

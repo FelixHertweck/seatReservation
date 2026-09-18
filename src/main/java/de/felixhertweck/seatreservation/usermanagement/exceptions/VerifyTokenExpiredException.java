@@ -17,19 +17,19 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.userManagment.exceptions;
+package de.felixhertweck.seatreservation.usermanagement.exceptions;
 
 /**
- * Exception thrown when a verification code is not found. This is a runtime exception that
- * indicates an invalid or missing verification code.
+ * Exception thrown when a verification token has expired. This is a runtime exception that
+ * indicates an expired verification code or token.
  */
-public class VerificationCodeNotFoundException extends RuntimeException {
+public class VerifyTokenExpiredException extends RuntimeException {
     /**
-     * Constructs a VerificationCodeNotFoundException with the specified detail message.
+     * Constructs a VerifyTokenExpiredException with the specified detail message.
      *
      * @param message the detail message
      */
-    public VerificationCodeNotFoundException(String message) {
+    public VerifyTokenExpiredException(String message) {
         super(message);
     }
 }

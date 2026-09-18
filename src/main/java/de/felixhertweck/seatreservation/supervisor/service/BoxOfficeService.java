@@ -57,7 +57,7 @@ import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeGuestReservation
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.exception.BookingDeadlineNotPassedException;
-import de.felixhertweck.seatreservation.userManagment.service.UserService;
+import de.felixhertweck.seatreservation.usermanagement.service.UserService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import org.jboss.logging.Logger;
 

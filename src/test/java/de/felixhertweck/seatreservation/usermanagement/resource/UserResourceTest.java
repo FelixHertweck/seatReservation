@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.userManagment.resource;
+package de.felixhertweck.seatreservation.usermanagement.resource;
 
 import java.util.HashSet;
 import java.util.List;
@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 
-import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
+import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserCreationDto;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import org.junit.jupiter.api.Test;
@@ -226,7 +226,7 @@ class UserResourceTest {
     de.felixhertweck.seatreservation.model.repository.RefreshTokenRepository refreshTokenRepository;
 
     @jakarta.inject.Inject
-    de.felixhertweck.seatreservation.userManagment.service.UserService userService;
+    de.felixhertweck.seatreservation.usermanagement.service.UserService userService;
 
     @Test
     void testDeleteUser_WithAssociatedEntities_Success() {

@@ -27,7 +27,7 @@ import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
+import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserCreationDto;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;

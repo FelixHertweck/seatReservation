@@ -45,8 +45,8 @@ import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedExcepti
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.TokenService;
-import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
+import de.felixhertweck.seatreservation.usermanagement.exceptions.VerificationCodeNotFoundException;
+import de.felixhertweck.seatreservation.usermanagement.exceptions.VerifyTokenExpiredException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
