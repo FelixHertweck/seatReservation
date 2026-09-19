@@ -23,24 +23,23 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
+    strategy:
+      matrix:
+        package-name:
+          - seatreservation-frontend
+          - seatreservation-backend
 
     steps:
-      - name: Frontend delete untagged versions
-        uses: actions/delete-package-versions@v5
+      # actions/delete-package-versions isn't multi-arch aware
+      - name: Delete untagged versions
+        uses: dataaxiom/ghcr-cleanup-action@v1
         with:
-          package-name: 'seatreservation-frontend'
-          package-type: 'container'
-          min-versions-to-keep: 5
-          delete-only-untagged-versions: 'true'
-          token: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Backend delete untagged versions
-        uses: actions/delete-package-versions@v5
-        with:
-          package-name: 'seatreservation-backend'
-          package-type: 'container'
-          min-versions-to-keep: 5
-          delete-only-untagged-versions: 'true'
+          package: ${{ matrix.package-name }}
+          keep-n-untagged: 5
+          delete-untagged: true
+          delete-ghost-images: true
+          delete-partial-images: true
+          delete-orphaned-images: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
   delete-pr-images:
