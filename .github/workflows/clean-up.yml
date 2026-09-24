@@ -36,7 +36,6 @@ jobs:
         with:
           package: ${{ matrix.package-name }}
           keep-n-untagged: 5
-          delete-untagged: true
           delete-ghost-images: true
           delete-partial-images: true
           delete-orphaned-images: true
