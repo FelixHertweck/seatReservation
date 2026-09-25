@@ -23,6 +23,7 @@ import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -70,6 +71,9 @@ import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserTagUpdateReq
 import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserTagUpdateResultDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserCreationDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserImportFailureDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserImportFailureReason;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserImportResultDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserTagAssignmentRequestDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserTagAssignmentResultDTO;
@@ -259,8 +263,7 @@ public class UserServiceTest {
         final UserCreationDTO dto =
                 new UserCreationDTO(
                         "existinguser", "test@example.com", "password", "John", "Doe", null);
-        when(userRepository.findByUsernameOptional(anyString()))
-                .thenReturn(Optional.of(new User()));
+        when(userRepository.existsByUsername(anyString())).thenReturn(true);
 
         assertThrows(
                 DuplicateUserException.class,
@@ -1592,8 +1595,142 @@ public class UserServiceTest {
     }
 
     @Test
+    void importUsers_InvalidEntryDoesNotBlockTheValidOnes() {
+        List<AdminUserCreationDto> dtos =
+                List.of(importDto("bad name"), importDto("good.user"), importDto("x"));
+
+        UserImportResultDTO result = userService.importUsers(dtos);
+
+        assertEquals(
+                List.of("good.user"), result.created().stream().map(UserDTO::username).toList());
+        assertEquals(2, result.failed().size());
+        assertTrue(
+                result.failed().stream()
+                        .allMatch(f -> f.reason() == UserImportFailureReason.INVALID));
+        assertTrue(result.failed().get(0).message().contains("username"));
+    }
+
+    @Test
+    void replaceUser_DeletesAndCreatesAgain() {
+        User existing =
+                new User(
+                        "anna",
+                        "old@example.com",
+                        true,
+                        false,
+                        "h",
+                        "s",
+                        "Anna",
+                        "Old",
+                        Set.of(Roles.USER),
+                        Set.of("x"));
+        existing.id = id(1);
+        AuthenticatedUser admin = new AuthenticatedUser(id(9), Set.of(Roles.ADMIN));
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existing));
+        when(userRepository.findByIds(List.of(id(1)))).thenReturn(List.of(existing));
+        when(userRepository.existsByUsername("Anna")).thenReturn(false);
+
+        UserDTO result = userService.replaceUser(id(1), importDto("Anna"), admin);
+
+        assertEquals("Anna", result.username());
+        verify(userRepository).deleteByIds(List.of(id(1)));
+        verify(userRepository).persist(any(User.class));
+    }
+
+    @Test
+    void replaceUser_OtherUsername_IsRejectedAndNothingIsDeleted() {
+        User existing =
+                new User(
+                        "anna",
+                        "old@example.com",
+                        true,
+                        false,
+                        "h",
+                        "s",
+                        "Anna",
+                        "Old",
+                        Set.of(Roles.USER),
+                        Set.of());
+        existing.id = id(1);
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existing));
+
+        assertThrows(
+                InvalidUserException.class,
+                () -> userService.replaceUser(id(1), importDto("someone.else"), null));
+        verify(userRepository, never()).deleteByIds(any());
+        verify(userRepository, never()).persist(any(User.class));
+    }
+
+    @Test
+    void replaceUser_OwnAccount_IsRejectedAndNothingIsCreated() {
+        User existing =
+                new User(
+                        "admin",
+                        "a@example.com",
+                        true,
+                        false,
+                        "h",
+                        "s",
+                        "Ad",
+                        "Min",
+                        Set.of(Roles.ADMIN),
+                        Set.of());
+        existing.id = id(9);
+        AuthenticatedUser admin = new AuthenticatedUser(id(9), Set.of(Roles.ADMIN));
+        when(userRepository.findByIdOptional(id(9))).thenReturn(Optional.of(existing));
+        when(userRepository.findByIds(List.of(id(9)))).thenReturn(List.of(existing));
+
+        assertThrows(
+                AccessDeniedException.class,
+                () -> userService.replaceUser(id(9), importDto("admin"), admin));
+        verify(userRepository, never()).deleteByIds(any());
+        verify(userRepository, never()).persist(any(User.class));
+    }
+
+    @Test
+    void importUsers_ImportsWhatWorksAndReportsAllConflicts() {
+        List<AdminUserCreationDto> dtos =
+                List.of(
+                        importDto("new.user"),
+                        importDto("taken"),
+                        importDto("NEW.user"),
+                        importDto("BoxOffice"),
+                        importDto("second.user"));
+        when(userRepository.findExistingUsernames(any())).thenReturn(List.of("taken"));
+
+        UserImportResultDTO result = userService.importUsers(dtos);
+
+        assertEquals(
+                List.of("new.user", "second.user"),
+                result.created().stream().map(UserDTO::username).toList());
+        assertEquals(
+                List.of(
+                        UserImportFailureReason.USERNAME_EXISTS,
+                        UserImportFailureReason.DUPLICATE_IN_BATCH,
+                        UserImportFailureReason.RESERVED_USERNAME),
+                result.failed().stream().map(UserImportFailureDTO::reason).toList());
+        assertEquals(
+                List.of("taken", "NEW.user", "BoxOffice"),
+                result.failed().stream().map(UserImportFailureDTO::username).toList());
+        verify(userRepository, times(2)).persist(any(User.class));
+    }
+
+    private static AdminUserCreationDto importDto(String username) {
+        return new AdminUserCreationDto(
+                username,
+                username + "@example.com",
+                false,
+                false,
+                "pass",
+                "First",
+                "Last",
+                Set.of(Roles.USER),
+                Set.of());
+    }
+
+    @Test
     void importUsers_Success() throws InvalidUserException, DuplicateUserException {
-        Set<AdminUserCreationDto> dtos = new HashSet<>();
+        List<AdminUserCreationDto> dtos = new ArrayList<>();
         AdminUserCreationDto dto1 =
                 new AdminUserCreationDto(
                         "user1",
@@ -1639,10 +1776,11 @@ public class UserServiceTest {
                                 "token",
                                 Instant.now()));
 
-        Set<UserDTO> importedUsers = userService.importUsers(dtos);
+        UserImportResultDTO result = userService.importUsers(dtos);
 
-        assertNotNull(importedUsers);
-        assertEquals(2, importedUsers.size());
+        assertNotNull(result);
+        assertEquals(2, result.created().size());
+        assertTrue(result.failed().isEmpty());
         verify(userRepository, times(2)).persist(any(User.class));
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -1650,20 +1788,21 @@ public class UserServiceTest {
 
     @Test
     void importUsers_EmptySet() throws InvalidUserException, DuplicateUserException {
-        Set<AdminUserCreationDto> dtos = Collections.emptySet();
+        List<AdminUserCreationDto> dtos = Collections.emptyList();
 
-        Set<UserDTO> importedUsers = userService.importUsers(dtos);
+        UserImportResultDTO result = userService.importUsers(dtos);
 
-        assertNotNull(importedUsers);
-        assertTrue(importedUsers.isEmpty());
+        assertNotNull(result);
+        assertTrue(result.created().isEmpty());
+        assertTrue(result.failed().isEmpty());
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
-    void importUsers_InvalidUserException() {
-        Set<AdminUserCreationDto> dtos = new HashSet<>();
+    void importUsers_InvalidUsername_IsReportedAsFailure() {
+        List<AdminUserCreationDto> dtos = new ArrayList<>();
         AdminUserCreationDto invalidDto =
                 new AdminUserCreationDto(
                         "",
@@ -1677,15 +1816,19 @@ public class UserServiceTest {
                         Set.of()); // Invalid username
         dtos.add(invalidDto);
 
-        assertThrows(InvalidUserException.class, () -> userService.importUsers(dtos));
+        UserImportResultDTO result = userService.importUsers(dtos);
+
+        assertTrue(result.created().isEmpty());
+        assertEquals(1, result.failed().size());
+        assertEquals(UserImportFailureReason.INVALID, result.failed().get(0).reason());
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
-    void importUsers_DuplicateUserException() {
-        Set<AdminUserCreationDto> dtos = new HashSet<>();
+    void importUsers_ExistingUsername_IsReportedCaseInsensitively() {
+        List<AdminUserCreationDto> dtos = new ArrayList<>();
         AdminUserCreationDto duplicateDto =
                 new AdminUserCreationDto(
                         "existinguser",
@@ -1700,7 +1843,7 @@ public class UserServiceTest {
         dtos.add(duplicateDto);
 
         when(userRepository.findExistingUsernames(Set.of("existinguser")))
-                .thenReturn(List.of("existinguser")); // Simulate existing user
+                .thenReturn(List.of("ExistingUser")); // Simulate existing user (other casing)
         when(emailService.createEmailVerification(any(User.class)))
                 .thenReturn(
                         new EmailVerification(
@@ -1718,7 +1861,11 @@ public class UserServiceTest {
                                 "token",
                                 Instant.now()));
 
-        assertThrows(DuplicateUserException.class, () -> userService.importUsers(dtos));
+        UserImportResultDTO result = userService.importUsers(dtos);
+
+        assertTrue(result.created().isEmpty());
+        assertEquals(1, result.failed().size());
+        assertEquals(UserImportFailureReason.USERNAME_EXISTS, result.failed().get(0).reason());
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -1726,7 +1873,7 @@ public class UserServiceTest {
 
     @Test
     void importUsers_EmailSendFailure() {
-        Set<AdminUserCreationDto> dtos = new HashSet<>();
+        List<AdminUserCreationDto> dtos = new ArrayList<>();
         AdminUserCreationDto dto1 =
                 new AdminUserCreationDto(
                         "user1",

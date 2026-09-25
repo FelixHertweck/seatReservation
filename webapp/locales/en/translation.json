@@ -248,7 +248,19 @@
           "default": "An error occurred while creating the user. Please try again."
         }
       },
+      "resolve": {
+        "success": {
+          "title": "{{succeeded}} conflicts resolved, {{failed}} failed"
+        },
+        "error": {
+          "title": "Could not resolve conflicts",
+          "default": "An error occurred while resolving the conflicts. Please try again."
+        }
+      },
       "import": {
+        "partial": {
+          "title": "{{created}} imported, {{failed}} skipped (conflict)"
+        },
         "success": {
           "title": "Users Imported",
           "description": "The users have been successfully imported."
@@ -395,6 +407,37 @@
     "affected": "{{count}} of {{total}} users will change.",
     "apply": "Apply changes"
   },
+  "userConflictResolver": {
+    "title": "Resolve {{count}} conflicts",
+    "description": "These usernames already exist. Decide for each user: skip, update or replace.",
+    "search": "Search…",
+    "selectAll": "Select all",
+    "selectedCount": "{{count}} selected",
+    "action": {
+      "skip": "Skip",
+      "update": "Update",
+      "replace": "Replace"
+    },
+    "skipInfo": "This user stays unchanged and is not imported.",
+    "replaceWarning": "The existing user is deleted and created anew. Their reservations, allowances, passkeys and 2FA settings are lost and they get a new ID. All values come from the import.",
+    "replaceOwnAccount": "Your own account cannot be replaced.",
+    "removesAdminWarning": "With this choice the user loses the ADMIN role.",
+    "whatToApply": "Which values should be taken from the import?",
+    "noDifferences": "No differences in name, email, roles and tags.",
+    "setPassword": "Set the password from the import",
+    "field": {
+      "firstname": "First name",
+      "lastname": "Last name",
+      "email": "Email",
+      "roles": "Roles",
+      "tags": "New tags"
+    },
+    "summary": "{{updateCount}} to update, {{replaceCount}} to replace, {{skipCount}} to skip.",
+    "confirmReplace": "{{count}} users will be deleted and created anew. Their reservations, allowances, passkeys and 2FA settings will be lost. Continue?",
+    "apply": "Apply conflicts",
+    "resultSummary": "{{succeeded}} resolved, {{failed}} failed.",
+    "done": "Done"
+  },
   "userExport": {
     "noUsersToExportTitle": "No users to export",
     "noUsersToExportDescription": "No user data available that could be exported.",
@@ -472,6 +515,17 @@
     "importUsersButton": "Import Users",
     "importingButton": "Importing...",
     "importDataButton": "Import Data",
+    "warning": {
+      "DUPLICATE_IN_BATCH": "{{count}} username(s) appear more than once in the import and are only imported once (the first entry wins): {{names}}",
+      "RESERVED_USERNAME": "{{count}} username(s) are reserved and will not be imported: {{names}}",
+      "USERNAME_EXISTS": "{{count}} username(s) already exist and can be resolved one by one after the import: {{names}}"
+    },
+    "conflictReason": {
+      "USERNAME_EXISTS": "username already exists",
+      "DUPLICATE_IN_BATCH": "username appears more than once in the import",
+      "RESERVED_USERNAME": "username is reserved"
+    },
+    "partialImportError": "{{created}} users imported. {{failed}} could not be imported and remain below for editing: {{details}}",
     "usersDataArrayError": "Users data must be an array",
     "userDataValidationError": "Each user must have username, password, firstname, lastname, and roles",
     "invalidRoleError": "Invalid role found. Available roles are: ADMIN, MANAGER, USER",

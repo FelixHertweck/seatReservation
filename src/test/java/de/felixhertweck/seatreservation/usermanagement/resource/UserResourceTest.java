@@ -32,6 +32,9 @@ import static org.hamcrest.Matchers.is;
 import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserCreationDto;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.jwt.Claim;
+import io.quarkus.test.security.jwt.ClaimType;
+import io.quarkus.test.security.jwt.JwtSecurity;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
@@ -162,7 +165,8 @@ class UserResourceTest {
                 .post("/api/users/admin/import")
                 .then()
                 .statusCode(200)
-                .body("size()", is(2));
+                .body("created.size()", is(2))
+                .body("failed.size()", is(0));
     }
 
     @Test
@@ -214,7 +218,7 @@ class UserResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    void importUsers_InvalidInput() {
+    void importUsers_InvalidEntry_IsReportedAndDoesNotRejectTheBatch() {
         Set<AdminUserCreationDto> dtos = new HashSet<>();
         // Invalid DTO: empty username
         dtos.add(
@@ -234,12 +238,14 @@ class UserResourceTest {
                 .when()
                 .post("/api/users/admin/import")
                 .then()
-                .statusCode(400); // Expecting Bad Request due to InvalidUserException
+                .statusCode(200)
+                .body("created.size()", is(0))
+                .body("failed[0].reason", equalTo("INVALID"));
     }
 
     @Test
     @TestSecurity(user = "admin", roles = "ADMIN")
-    void importUsers_DuplicateUser() {
+    void importUsers_DuplicateUser_IsReportedNotRejected() {
         Set<AdminUserCreationDto> dtos = new HashSet<>();
         dtos.add(
                 new AdminUserCreationDto(
@@ -287,7 +293,139 @@ class UserResourceTest {
                 .when()
                 .post("/api/users/admin/import")
                 .then()
-                .statusCode(409); // Expecting Conflict due to DuplicateUserException
+                .statusCode(200)
+                .body("failed.reason", org.hamcrest.Matchers.hasItem("USERNAME_EXISTS"));
+    }
+
+    @Test
+    @TestSecurity(user = "admin", roles = "ADMIN")
+    void importUsers_ExistingUsernameWithOtherCasing_IsReported() {
+        String body =
+                "[{\"username\":\"CaseTest.User\",\"email\":null,\"emailVerified\":false,"
+                        + "\"sendEmailVerification\":false,\"password\":\"password123\","
+                        + "\"firstname\":\"Case\",\"lastname\":\"Test\","
+                        + "\"roles\":[\"USER\"],\"tags\":[]}]";
+        given().contentType("application/json")
+                .body(body)
+                .when()
+                .post("/api/users/admin/import")
+                .then()
+                .statusCode(200)
+                .body("created.size()", is(1));
+
+        given().contentType("application/json")
+                .body(body.replace("CaseTest.User", "casetest.user"))
+                .when()
+                .post("/api/users/admin/import")
+                .then()
+                .statusCode(200)
+                .body("created.size()", is(0))
+                .body("failed[0].reason", equalTo("USERNAME_EXISTS"));
+    }
+
+    @Test
+    @TestSecurity(user = "admin", roles = "ADMIN")
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
+    void resolveImportConflicts_UnknownUser_IsReportedAsFailure() {
+        String body =
+                "[{\"action\":\"UPDATE\",\"existingUserId\":\"00000000-0000-0000-0000-00000000ffff\","
+                    + "\"update\":{\"firstname\":\"A\",\"lastname\":\"B\",\"email\":null,"
+                    + "\"emailVerified\":false,\"sendEmailVerification\":false,"
+                    + "\"roles\":[\"USER\"],\"tags\":[]}}]";
+        given().contentType("application/json")
+                .body(body)
+                .when()
+                .post("/api/users/admin/import/resolve")
+                .then()
+                .log()
+                .body()
+                .statusCode(200)
+                .body("[0].success", is(false));
+    }
+
+    @Test
+    @TestSecurity(user = "admin", roles = "ADMIN")
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
+    void resolveImportConflicts_ReplaceThenUpdate_WorksAgainstTheDatabase() {
+        String user =
+                "{\"username\":\"resolve.me\",\"email\":null,\"emailVerified\":false,"
+                        + "\"sendEmailVerification\":false,\"password\":\"password123\","
+                        + "\"firstname\":\"Old\",\"lastname\":\"Name\","
+                        + "\"roles\":[\"USER\"],\"tags\":[\"keep\"]}";
+        String oldId =
+                given().contentType("application/json")
+                        .body("[" + user + "]")
+                        .when()
+                        .post("/api/users/admin/import")
+                        .then()
+                        .statusCode(200)
+                        .body("created.size()", is(1))
+                        .extract()
+                        .path("created[0].id");
+
+        String newId =
+                given().contentType("application/json")
+                        .body(
+                                "[{\"action\":\"REPLACE\",\"existingUserId\":\""
+                                        + oldId
+                                        + "\",\"replacement\":"
+                                        + user.replace("Old", "Replaced")
+                                        + "}]")
+                        .when()
+                        .post("/api/users/admin/import/resolve")
+                        .then()
+                        .statusCode(200)
+                        .body("[0].success", is(true))
+                        .extract()
+                        .path("[0].userId");
+        org.junit.jupiter.api.Assertions.assertNotEquals(oldId, newId);
+
+        given().contentType("application/json")
+                .body(
+                        "[{\"action\":\"UPDATE\",\"existingUserId\":\""
+                                + newId
+                                + "\",\"update\":{\"firstname\":\"Updated\","
+                                + "\"lastname\":\"Name\",\"email\":null,\"emailVerified\":false,"
+                                + "\"sendEmailVerification\":false,\"roles\":[\"USER\"],"
+                                + "\"tags\":[\"keep\",\"more\"]}}]")
+                .when()
+                .post("/api/users/admin/import/resolve")
+                .then()
+                .statusCode(200)
+                .body("[0].success", is(true))
+                .body("[0].userId", equalTo(newId));
+
+        // The old user is gone, the replaced one carries the updated values.
+        given().when()
+                .get("/api/users/admin")
+                .then()
+                .statusCode(200)
+                .body("find { it.id == '" + oldId + "' }", org.hamcrest.Matchers.nullValue())
+                .body("find { it.id == '" + newId + "' }.firstname", equalTo("Updated"))
+                .body(
+                        "find { it.id == '" + newId + "' }.tags",
+                        org.hamcrest.Matchers.containsInAnyOrder("keep", "more"));
+    }
+
+    @Test
+    @TestSecurity(user = "manager", roles = "MANAGER")
+    void resolveImportConflicts_ManagerForbidden() {
+        given().contentType("application/json")
+                .body("[]")
+                .when()
+                .post("/api/users/admin/import/resolve")
+                .then()
+                .statusCode(403);
     }
 
     @jakarta.inject.Inject

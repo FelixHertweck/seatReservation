@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Validator;
 
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.common.dto.UserDTO;
@@ -60,6 +62,9 @@ import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserTagUpdateReq
 import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserTagUpdateResultDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserCreationDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserImportFailureDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserImportFailureReason;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserImportResultDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserTagAssignmentRequestDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserTagAssignmentResultDTO;
@@ -77,6 +82,7 @@ public class UserService {
     private static final Logger LOG = Logger.getLogger(UserService.class);
 
     private final UserRepository userRepository;
+    private final Validator validator;
     private final EmailService emailService;
     private final EmailVerificationRepository emailVerificationRepository;
     private final TwoFactorService twoFactorService;
@@ -88,7 +94,9 @@ public class UserService {
             EmailService emailService,
             EmailVerificationRepository emailVerificationRepository,
             TwoFactorService twoFactorService,
-            EmailCooldownService emailCooldownService) {
+            EmailCooldownService emailCooldownService,
+            Validator validator) {
+        this.validator = validator;
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.emailVerificationRepository = emailVerificationRepository;
@@ -102,37 +110,145 @@ public class UserService {
     private static final Set<String> RESERVED_USERNAMES = Set.of("boxoffice");
 
     /**
-     * Imports a set of users from the provided DTOs. Send directly email verification if email is
-     * set.
+     * Imports a batch of users. Users without a conflict are created; all others are reported in
+     * the result instead of aborting the import. Usernames are compared case-insensitively.
      *
-     * @param adminUserCreationDtos The set of user creation DTOs to import.
-     * @return A set of UserDTOs representing the imported users.
+     * @param adminUserCreationDtos The users to import.
+     * @return The created users and the users that could not be created, with the reason.
      */
     @Transactional
-    public Set<UserDTO> importUsers(Set<AdminUserCreationDto> adminUserCreationDtos)
-            throws InvalidUserException, DuplicateUserException {
+    public UserImportResultDTO importUsers(List<AdminUserCreationDto> adminUserCreationDtos) {
         LOG.infof("Importing %d users.", adminUserCreationDtos.size());
 
         Set<String> requestedUsernames =
                 adminUserCreationDtos.stream()
                         .map(AdminUserCreationDto::getUsername)
+                        .filter(name -> name != null && !name.isBlank())
+                        .map(UserService::usernameKey)
                         .collect(Collectors.toSet());
         Set<String> knownExistingUsernames =
-                new HashSet<>(userRepository.findExistingUsernames(requestedUsernames));
+                userRepository.findExistingUsernames(requestedUsernames).stream()
+                        .map(UserService::usernameKey)
+                        .collect(Collectors.toCollection(HashSet::new));
+        Set<String> seenInBatch = new HashSet<>();
 
-        Set<UserDTO> importedUsers = new HashSet<>();
+        List<UserDTO> created = new ArrayList<>();
+        List<UserImportFailureDTO> failed = new ArrayList<>();
         for (AdminUserCreationDto adminUser : adminUserCreationDtos) {
-            UserDTO user =
-                    createUser(
-                            new UserCreationDTO(adminUser),
-                            adminUser.getRoles(),
-                            false,
-                            false,
-                            Boolean.TRUE.equals(adminUser.getEmailVerified()),
-                            knownExistingUsernames);
-            importedUsers.add(user);
+            if (adminUser == null) {
+                failed.add(
+                        new UserImportFailureDTO(
+                                null, UserImportFailureReason.INVALID, "Empty user entry."));
+                continue;
+            }
+            String username = adminUser.getUsername();
+            String violations =
+                    validator.validate(adminUser).stream()
+                            .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                            .sorted()
+                            .collect(Collectors.joining("; "));
+            if (!violations.isEmpty()) {
+                failed.add(
+                        new UserImportFailureDTO(
+                                username, UserImportFailureReason.INVALID, violations));
+                continue;
+            }
+            if (username == null || username.isBlank()) {
+                failed.add(
+                        new UserImportFailureDTO(
+                                username,
+                                UserImportFailureReason.INVALID,
+                                "Username cannot be empty."));
+                continue;
+            }
+            String key = usernameKey(username);
+            if (RESERVED_USERNAMES.contains(key)) {
+                failed.add(
+                        new UserImportFailureDTO(
+                                username,
+                                UserImportFailureReason.RESERVED_USERNAME,
+                                "Username '" + username + "' is reserved."));
+            } else if (seenInBatch.contains(key)) {
+                failed.add(
+                        new UserImportFailureDTO(
+                                username,
+                                UserImportFailureReason.DUPLICATE_IN_BATCH,
+                                "Username '" + username + "' appears more than once."));
+            } else {
+                seenInBatch.add(key);
+                if (knownExistingUsernames.contains(key)) {
+                    failed.add(usernameExists(username));
+                    continue;
+                }
+                try {
+                    created.add(
+                            createUser(
+                                    new UserCreationDTO(adminUser),
+                                    adminUser.getRoles(),
+                                    false,
+                                    false,
+                                    Boolean.TRUE.equals(adminUser.getEmailVerified()),
+                                    knownExistingUsernames));
+                } catch (InvalidUserException e) {
+                    failed.add(
+                            new UserImportFailureDTO(
+                                    username, UserImportFailureReason.INVALID, e.getMessage()));
+                } catch (DuplicateUserException e) {
+                    failed.add(usernameExists(username));
+                }
+            }
         }
-        return importedUsers;
+        LOG.infof("Import finished: %d created, %d failed.", created.size(), failed.size());
+        return new UserImportResultDTO(created, failed);
+    }
+
+    private static UserImportFailureDTO usernameExists(String username) {
+        return new UserImportFailureDTO(
+                username,
+                UserImportFailureReason.USERNAME_EXISTS,
+                "User with username " + username + " already exists.");
+    }
+
+    /** Normalizes a username for duplicate checks, which ignore upper/lower case. */
+    private static String usernameKey(String username) {
+        return username.trim().toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * Replaces an existing user: deletes it together with everything that belongs to it and creates
+     * it anew, in a single transaction. If anything fails, the existing user is kept.
+     *
+     * @param existingUserId the user to replace
+     * @param replacement the data of the new user; must have the same username as the existing one
+     * @param currentUser the acting admin, who cannot replace their own account
+     * @return the newly created user, which has a new id
+     */
+    @Transactional
+    public UserDTO replaceUser(
+            UUID existingUserId, AdminUserCreationDto replacement, AuthenticatedUser currentUser)
+            throws UserNotFoundException, AccessDeniedException {
+        User existing =
+                userRepository
+                        .findByIdOptional(existingUserId)
+                        .orElseThrow(
+                                () ->
+                                        new UserNotFoundException(
+                                                "User with id " + existingUserId + " not found."));
+        if (replacement.getUsername() == null
+                || !usernameKey(existing.getUsername())
+                        .equals(usernameKey(replacement.getUsername()))) {
+            throw new InvalidUserException(
+                    "The replacement must have the username of the replaced user.");
+        }
+        // Validates that the acting admin and the reserved system account are not deleted.
+        deleteUser(List.of(existingUserId), currentUser);
+        return createUser(
+                new UserCreationDTO(replacement),
+                replacement.getRoles(),
+                false,
+                false,
+                Boolean.TRUE.equals(replacement.getEmailVerified()),
+                null);
     }
 
     /**
@@ -188,10 +304,10 @@ public class UserService {
      *     immediately (e.g. an admin creating a pre-verified account); {@code
      *     sendEmailVerification} is ignored in that case since there is nothing left to verify
      * @param knownExistingUsernames when non-{@code null}, the duplicate-username check is done
-     *     against this in-memory set instead of a per-call database query; used by {@link
-     *     #importUsers} to check all usernames of a batch in a single upfront query. The newly
-     *     created user's username is added to the set so later entries in the same batch still
-     *     detect duplicates against each other.
+     *     against this in-memory set of lower-cased usernames instead of a per-call database query;
+     *     used by {@link #importUsers} to check all usernames of a batch in a single upfront query.
+     *     The newly created user's username is added to the set so later entries in the same batch
+     *     still detect duplicates against each other.
      * @return the created user
      */
     @Transactional
@@ -236,10 +352,9 @@ public class UserService {
 
         boolean isDuplicate =
                 knownExistingUsernames != null
-                        ? knownExistingUsernames.contains(userCreationDTO.getUsername())
-                        : userRepository
-                                .findByUsernameOptional(userCreationDTO.getUsername())
-                                .isPresent();
+                        ? knownExistingUsernames.contains(
+                                usernameKey(userCreationDTO.getUsername()))
+                        : userRepository.existsByUsername(userCreationDTO.getUsername());
         if (isDuplicate) {
             LOG.warnf(
                     "Duplicate user creation attempt for username: %s",
@@ -289,7 +404,7 @@ public class UserService {
         userRepository.persist(user);
         LOG.debugf("User %s persisted successfully with ID: %s", user.getUsername(), user.id);
         if (knownExistingUsernames != null) {
-            knownExistingUsernames.add(user.getUsername());
+            knownExistingUsernames.add(usernameKey(user.getUsername()));
         }
 
         if (sendEmailVerification && !markEmailAsVerified) {

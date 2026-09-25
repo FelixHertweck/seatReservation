@@ -11,9 +11,17 @@ import {
   deleteApiUsersAdminByIdMutation,
   getApiUsersRolesOptions,
   postApiUsersAdminImportMutation,
+  postApiUsersAdminImportResolveMutation,
   postApiUsersAdminTagsMutation,
 } from "@/api/@tanstack/react-query.gen";
-import type { AdminUserCreationDto, AdminUserUpdateDto, UserDto } from "@/api";
+import type {
+  AdminUserCreationDto,
+  AdminUserUpdateDto,
+  UserDto,
+  UserImportResolutionDto,
+  UserImportResolutionResultDto,
+  UserImportResultDto,
+} from "@/api";
 import { UserManagementProps } from "@/components/admin/user-management";
 import { ErrorWithResponse } from "@/components/init-query-client";
 
@@ -34,6 +42,10 @@ export function useAdmin(): UserManagementProps {
 
   const { mutateAsync: importMutation } = useMutation({
     ...postApiUsersAdminImportMutation(),
+  });
+
+  const { mutateAsync: resolveMutation } = useMutation({
+    ...postApiUsersAdminImportResolveMutation(),
   });
 
   const { mutateAsync: tagsMutation } = useMutation({
@@ -75,14 +87,8 @@ export function useAdmin(): UserManagementProps {
 
   const importUsers = async (
     userData: AdminUserCreationDto[],
-  ): Promise<void> => {
+  ): Promise<UserImportResultDto> => {
     const request = importMutation({ body: userData }).then((data) => {
-      queryClient.setQueriesData(
-        { queryKey: getApiUsersAdminQueryKey() },
-        (oldData: UserDto[] | undefined) => {
-          return oldData ? [...oldData, ...data] : [...data];
-        },
-      );
       queryClient.invalidateQueries({
         queryKey: getApiUsersAdminQueryKey(),
       });
@@ -90,14 +96,20 @@ export function useAdmin(): UserManagementProps {
     });
     toast.promise(request, {
       loading: t("common.loading"),
-      success: () => t("admin.user.import.success.title"),
+      success: (data) =>
+        data.failed && data.failed.length > 0
+          ? t("admin.user.import.partial.title", {
+              created: data.created?.length ?? 0,
+              failed: data.failed.length,
+            })
+          : t("admin.user.import.success.title"),
       error: (error: ErrorWithResponse) => ({
         message: t("admin.user.import.error.title"),
         description:
           error.response?.description ?? t("admin.user.import.error.default"),
       }),
     });
-    await request;
+    return request;
   };
 
   const updateUser = async (
@@ -130,6 +142,31 @@ export function useAdmin(): UserManagementProps {
       }),
     });
     await request;
+  };
+
+  const resolveImportConflicts = async (
+    resolutions: UserImportResolutionDto[],
+  ): Promise<UserImportResolutionResultDto[]> => {
+    const request = resolveMutation({ body: resolutions }).then((data) => {
+      queryClient.invalidateQueries({
+        queryKey: getApiUsersAdminQueryKey(),
+      });
+      return data;
+    });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: (data) =>
+        t("admin.user.resolve.success.title", {
+          succeeded: data.filter((result) => result.success).length,
+          failed: data.filter((result) => !result.success).length,
+        }),
+      error: (error: ErrorWithResponse) => ({
+        message: t("admin.user.resolve.error.title"),
+        description:
+          error.response?.description ?? t("admin.user.resolve.error.default"),
+      }),
+    });
+    return request;
   };
 
   const updateUserTags = async (
@@ -193,6 +230,7 @@ export function useAdmin(): UserManagementProps {
     isLoading: userIsLoading || rolesIsLoading,
     createUser,
     importUsers,
+    resolveImportConflicts,
     updateUser,
     updateUserTags,
     deleteUser,

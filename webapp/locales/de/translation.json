@@ -248,7 +248,19 @@
           "default": "Beim Erstellen des Benutzers ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
         }
       },
+      "resolve": {
+        "success": {
+          "title": "{{succeeded}} Konflikte gelöst, {{failed}} fehlgeschlagen"
+        },
+        "error": {
+          "title": "Konflikte konnten nicht gelöst werden",
+          "default": "Beim Lösen der Konflikte ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+        }
+      },
       "import": {
+        "partial": {
+          "title": "{{created}} importiert, {{failed}} übersprungen (Konflikt)"
+        },
         "success": {
           "title": "Benutzer importiert",
           "description": "Die Benutzer wurden erfolgreich importiert."
@@ -395,6 +407,37 @@
     "affected": "{{count}} von {{total}} Nutzern werden geändert.",
     "apply": "Änderungen anwenden"
   },
+  "userConflictResolver": {
+    "title": "{{count}} Konflikte lösen",
+    "description": "Diese Nutzernamen existieren bereits. Lege pro Nutzer fest: überspringen, aktualisieren oder ersetzen.",
+    "search": "Suchen…",
+    "selectAll": "Alle auswählen",
+    "selectedCount": "{{count}} ausgewählt",
+    "action": {
+      "skip": "Überspringen",
+      "update": "Aktualisieren",
+      "replace": "Ersetzen"
+    },
+    "skipInfo": "Dieser Nutzer bleibt unverändert und wird nicht importiert.",
+    "replaceWarning": "Der bestehende Nutzer wird gelöscht und neu angelegt. Dabei gehen seine Reservierungen, Kontingente, Passkeys und 2FA-Einstellungen verloren, und er erhält eine neue ID. Alle Werte stammen aus dem Import.",
+    "replaceOwnAccount": "Das eigene Konto kann nicht ersetzt werden.",
+    "removesAdminWarning": "Mit dieser Auswahl verliert der Nutzer die Rolle ADMIN.",
+    "whatToApply": "Welche Werte sollen aus dem Import übernommen werden?",
+    "noDifferences": "Keine Unterschiede bei Name, E-Mail, Rollen und Tags.",
+    "setPassword": "Passwort aus dem Import setzen",
+    "field": {
+      "firstname": "Vorname",
+      "lastname": "Nachname",
+      "email": "E-Mail",
+      "roles": "Rollen",
+      "tags": "Neue Tags"
+    },
+    "summary": "{{updateCount}} aktualisieren, {{replaceCount}} ersetzen, {{skipCount}} überspringen.",
+    "confirmReplace": "{{count}} Nutzer werden gelöscht und neu angelegt. Ihre Reservierungen, Kontingente, Passkeys und 2FA-Einstellungen gehen verloren. Fortfahren?",
+    "apply": "Konflikte anwenden",
+    "resultSummary": "{{succeeded}} gelöst, {{failed}} fehlgeschlagen.",
+    "done": "Fertig"
+  },
   "userExport": {
     "noUsersToExportTitle": "Keine Benutzer zum Exportieren",
     "noUsersToExportDescription": "Es sind keine Benutzerdaten verfügbar, die exportiert werden könnten.",
@@ -472,6 +515,17 @@
     "importUsersButton": "Benutzer importieren",
     "importingButton": "Importiere...",
     "importDataButton": "Daten importieren",
+    "warning": {
+      "DUPLICATE_IN_BATCH": "{{count}} Nutzername(n) kommen im Import mehrfach vor und werden nur einmal importiert (der erste Eintrag zählt): {{names}}",
+      "RESERVED_USERNAME": "{{count}} Nutzername(n) sind reserviert und werden nicht importiert: {{names}}",
+      "USERNAME_EXISTS": "{{count}} Nutzername(n) existieren bereits und lassen sich nach dem Import einzeln lösen: {{names}}"
+    },
+    "conflictReason": {
+      "USERNAME_EXISTS": "Nutzername existiert bereits",
+      "DUPLICATE_IN_BATCH": "Nutzername kommt im Import mehrfach vor",
+      "RESERVED_USERNAME": "Nutzername ist reserviert"
+    },
+    "partialImportError": "{{created}} Nutzer importiert. {{failed}} konnten nicht importiert werden und stehen unten weiter zur Bearbeitung: {{details}}",
     "usersDataArrayError": "Benutzerdaten müssen ein Array sein",
     "userDataValidationError": "Jeder Benutzer muss username, password, firstname, lastname und roles haben",
     "invalidRoleError": "Ungültige Rolle gefunden. Verfügbare Rollen sind: ADMIN, MANAGER, USER",
