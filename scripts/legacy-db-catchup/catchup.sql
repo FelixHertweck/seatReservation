@@ -22,6 +22,14 @@ CREATE TABLE IF NOT EXISTS email_seat_map_tokens (
 );
 CREATE SEQUENCE IF NOT EXISTS email_seat_map_tokens_seq START WITH 1 INCREMENT BY 50 NO MINVALUE NO MAXVALUE CACHE 1;
 
+CREATE TABLE IF NOT EXISTS email_verification (
+    expiration_time timestamp(6) with time zone NOT NULL,
+    id bigint NOT NULL,
+    user_id bigint,
+    token character varying(255) NOT NULL
+);
+CREATE SEQUENCE IF NOT EXISTS email_verification_seq START WITH 1 INCREMENT BY 50 NO MINVALUE NO MAXVALUE CACHE 1;
+
 CREATE TABLE IF NOT EXISTS email_seat_map_token_seats (
     token_id bigint NOT NULL,
     seat_number character varying(255)
@@ -138,6 +146,16 @@ BEGIN
     END IF;
 END $$;
 
+-- Databases that predate the markers feature have neither name.
+CREATE TABLE IF NOT EXISTS event_location_markers (
+    xcoordinate integer,
+    ycoordinate integer,
+    event_location_id bigint,
+    id bigint NOT NULL,
+    label character varying(255)
+);
+CREATE SEQUENCE IF NOT EXISTS event_location_markers_seq START WITH 1 INCREMENT BY 50 NO MINVALUE NO MAXVALUE CACHE 1;
+
 -- Added columns -------------------------------------------------------------------------------
 
 ALTER TABLE events ADD COLUMN IF NOT EXISTS remindersenddate timestamp(6) with time zone;
@@ -161,6 +179,10 @@ BEGIN
             ('email_seat_map_token_seats', 'email_seat_map_token_seats_token_id_seat_number_key', 'UNIQUE (token_id, seat_number)'),
             ('email_seat_map_tokens', 'email_seat_map_tokens_pkey', 'PRIMARY KEY (id)'),
             ('email_seat_map_tokens', 'email_seat_map_tokens_token_key', 'UNIQUE (token)'),
+            ('email_verification', 'email_verification_pkey', 'PRIMARY KEY (id)'),
+            ('email_verification', 'email_verification_token_key', 'UNIQUE (token)'),
+            ('email_verification', 'email_verification_user_id_key', 'UNIQUE (user_id)'),
+            ('event_location_markers', 'event_location_markers_pkey', 'PRIMARY KEY (id)'),
             ('event_location_area_boundary', 'event_location_area_boundary_pkey', 'PRIMARY KEY (sort_order, area_id)'),
             ('event_location_areas', 'event_location_areas_pkey', 'PRIMARY KEY (id)'),
             ('event_location_entrances', 'event_location_entrances_pkey', 'PRIMARY KEY (id)'),
@@ -176,6 +198,8 @@ BEGIN
 
             ('refresh_tokens', 'fk1lih5y2npsf8u5o3vhdb9y0os', 'FOREIGN KEY (user_id) REFERENCES users(id)'),
             ('event_supervisors', 'fk3aoscdyd7pr6u826dxmj5eq34', 'FOREIGN KEY (event_id) REFERENCES events(id)'),
+            ('event_location_markers', 'fk3svetled00reig5xnq9t4uucj', 'FOREIGN KEY (event_location_id) REFERENCES eventlocations(id)'),
+            ('email_verification', 'fkbh3863tiicveqq2k27uooni0g', 'FOREIGN KEY (user_id) REFERENCES users(id)'),
             ('event_location_entrances', 'fk5d8980bb9w8gflo6kuaulslmc', 'FOREIGN KEY (event_location_id) REFERENCES eventlocations(id)'),
             ('webauthn_credentials', 'fk61k8kijke2qqqpsrg65qjwcie', 'FOREIGN KEY (user_id) REFERENCES users(id)'),
             ('outbound_email_cc', 'fk9iqj75se6yd752rpnvh444t2y', 'FOREIGN KEY (email_id) REFERENCES outbound_emails(id)'),
