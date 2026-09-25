@@ -42,9 +42,13 @@ import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.common.dto.UserDTO;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserCreationDto;
+import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserTagUpdateRequestDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserTagUpdateResultDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserProfileUpdateDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserTagAssignmentRequestDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserTagAssignmentResultDTO;
 import de.felixhertweck.seatreservation.usermanagement.service.UserService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
@@ -102,6 +106,29 @@ public class UserResource {
                 "Received POST request to /api/users/admin/import for %d users.",
                 userCreationDTOs.size());
         return userService.importUsers(userCreationDTOs);
+    }
+
+    /**
+     * Adds and removes tags for several users at once (admin only).
+     *
+     * @param request the user ids and the tags to add and remove
+     * @return the user ids grouped by outcome
+     */
+    @POST
+    @Path("/admin/tags")
+    @RolesAllowed(Roles.ADMIN)
+    @APIResponse(responseCode = "200", description = "Tag update processed")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid ids or tags")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only ADMIN role can access this resource")
+    public AdminUserTagUpdateResultDTO updateTagsForUsers(
+            @Valid AdminUserTagUpdateRequestDTO request) {
+        LOG.debugf(
+                "Received POST request to /api/users/admin/tags for %d users.",
+                request.userIds().size());
+        return userService.updateTagsForUsers(request);
     }
 
     /**
@@ -217,6 +244,29 @@ public class UserResource {
         List<LimitedUserInfoDTO> users = userService.getAllUsers();
         LOG.debugf("Returning %d limited user info DTOs.", users.size());
         return users;
+    }
+
+    /**
+     * Adds a tag to the users with the given usernames (managers and admins). Only adds; existing
+     * tags are never removed or replaced.
+     *
+     * @param request the usernames and the tag to add
+     * @return the usernames grouped by outcome
+     */
+    @POST
+    @Path("/manager/tags")
+    @RolesAllowed({Roles.ADMIN, Roles.MANAGER})
+    @APIResponse(responseCode = "200", description = "Tag assignment processed")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid usernames or tag")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only ADMIN or MANAGER roles can access this resource")
+    public UserTagAssignmentResultDTO addTagToUsers(@Valid UserTagAssignmentRequestDTO request) {
+        LOG.debugf(
+                "Received POST request to /api/users/manager/tags for %d usernames.",
+                request.usernames().size());
+        return userService.addTagToUsers(request);
     }
 
     /**

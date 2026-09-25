@@ -19,7 +19,6 @@
  */
 package de.felixhertweck.seatreservation.usermanagement.dto;
 
-import java.util.Set;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -45,9 +44,6 @@ public class UserProfileUpdateDTO {
     @NoHtmlSanitize
     private final String password;
 
-    @NotNull(message = "tags cannot be null")
-    private final Set<String> tags;
-
     // Required only when changing the email address while 2FA is enabled
     @NoHtmlSanitize private final String twoFactorCode;
 
@@ -67,10 +63,6 @@ public class UserProfileUpdateDTO {
         return password;
     }
 
-    public Set<String> getTags() {
-        return tags;
-    }
-
     public String getTwoFactorCode() {
         return twoFactorCode;
     }
@@ -80,13 +72,11 @@ public class UserProfileUpdateDTO {
             String lastname,
             String password,
             String email,
-            Set<String> tags,
             String twoFactorCode) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.password = password;
         this.email = email;
-        this.tags = tags;
         this.twoFactorCode = twoFactorCode;
     }
 }

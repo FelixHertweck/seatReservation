@@ -24,6 +24,18 @@ export type AdminUserCreationDto = {
     tags: Array<string>;
 };
 
+export type AdminUserTagUpdateRequestDto = {
+    userIds: Array<string>;
+    addTags: Array<string>;
+    removeTags: Array<string>;
+};
+
+export type AdminUserTagUpdateResultDto = {
+    updated?: Array<string>;
+    unchanged?: Array<string>;
+    notFound?: Array<string>;
+};
+
 export type AdminUserUpdateDto = {
     email?: string;
     emailVerified: boolean;
@@ -802,7 +814,6 @@ export type UserProfileUpdateDto = {
     firstname: string;
     lastname: string;
     password?: string;
-    tags: Array<string>;
     twoFactorCode?: string;
 };
 
@@ -818,6 +829,17 @@ export type UserReservationResponseDto = {
 export type UserReservationsRequestDto = {
     eventId: Uuid;
     seatIds: Array<string>;
+};
+
+export type UserTagAssignmentRequestDto = {
+    usernames: Array<string>;
+    tag: string;
+};
+
+export type UserTagAssignmentResultDto = {
+    updated?: Array<string>;
+    alreadyTagged?: Array<string>;
+    notFound?: Array<string>;
 };
 
 export type UsernameAvailabilityDto = {
@@ -4311,6 +4333,37 @@ export type PostApiUsersAdminImportResponses = {
 
 export type PostApiUsersAdminImportResponse = PostApiUsersAdminImportResponses[keyof PostApiUsersAdminImportResponses];
 
+export type PostApiUsersAdminTagsData = {
+    body: AdminUserTagUpdateRequestDto;
+    path?: never;
+    query?: never;
+    url: '/api/users/admin/tags';
+};
+
+export type PostApiUsersAdminTagsErrors = {
+    /**
+     * Bad Request: Invalid ids or tags
+     */
+    400: unknown;
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only ADMIN role can access this resource
+     */
+    403: unknown;
+};
+
+export type PostApiUsersAdminTagsResponses = {
+    /**
+     * Tag update processed
+     */
+    200: AdminUserTagUpdateResultDto;
+};
+
+export type PostApiUsersAdminTagsResponse = PostApiUsersAdminTagsResponses[keyof PostApiUsersAdminTagsResponses];
+
 export type DeleteApiUsersAdminByIdData = {
     body?: never;
     path?: never;
@@ -4415,6 +4468,37 @@ export type GetApiUsersManagerResponses = {
 };
 
 export type GetApiUsersManagerResponse = GetApiUsersManagerResponses[keyof GetApiUsersManagerResponses];
+
+export type PostApiUsersManagerTagsData = {
+    body: UserTagAssignmentRequestDto;
+    path?: never;
+    query?: never;
+    url: '/api/users/manager/tags';
+};
+
+export type PostApiUsersManagerTagsErrors = {
+    /**
+     * Bad Request: Invalid usernames or tag
+     */
+    400: unknown;
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only ADMIN or MANAGER roles can access this resource
+     */
+    403: unknown;
+};
+
+export type PostApiUsersManagerTagsResponses = {
+    /**
+     * Tag assignment processed
+     */
+    200: UserTagAssignmentResultDto;
+};
+
+export type PostApiUsersManagerTagsResponse = PostApiUsersManagerTagsResponses[keyof PostApiUsersManagerTagsResponses];
 
 export type GetApiUsersMeData = {
     body?: never;

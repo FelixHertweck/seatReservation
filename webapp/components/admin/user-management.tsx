@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Edit, Trash2, FileText, Download } from "lucide-react";
+import { Plus, Edit, Trash2, FileText, Download, Tags } from "lucide-react";
 import { Button } from "@/components/custom-ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/custom-ui/skeleton";
 import { UserFormModal } from "@/components/admin/user-form-modal";
 import { UserImportModal } from "@/components/admin/user-import-modal";
+import { UserBulkTagsModal } from "@/components/admin/user-bulk-tags-modal";
 import { TruncatedCell } from "@/components/common/truncated-cell";
 import type { UserDto, AdminUserCreationDto, AdminUserUpdateDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
@@ -43,6 +44,11 @@ export interface UserManagementProps {
   updateUser: (id: string, user: AdminUserUpdateDto) => Promise<void>;
   deleteUser: (ids: string[]) => Promise<void>;
   importUsers?: (users: AdminUserCreationDto[]) => Promise<void>;
+  updateUserTags?: (
+    userIds: string[],
+    addTags: string[],
+    removeTags: string[],
+  ) => Promise<void>;
   isLoading: boolean;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
@@ -56,6 +62,7 @@ export function UserManagement({
   updateUser,
   deleteUser,
   importUsers,
+  updateUserTags,
   isLoading = false,
   searchQuery,
   onSearchChange,
@@ -66,6 +73,7 @@ export function UserManagement({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [isDeletingSelected, setIsDeletingSelected] = useState(false);
@@ -163,6 +171,22 @@ export function UserManagement({
     setSelectedIds(newSelectedIds);
   };
 
+  const selectedUsers = (allUsers ?? users).filter(
+    (user) => user.id && selectedIds.has(user.id),
+  );
+  const allTags = Array.from(
+    new Set((allUsers ?? users).flatMap((user) => user.tags ?? [])),
+  ).sort();
+
+  const handleApplyTags = async (addTags: string[], removeTags: string[]) => {
+    if (!updateUserTags) return;
+    await updateUserTags(
+      selectedUsers.map((user) => user.id as string),
+      addTags,
+      removeTags,
+    );
+  };
+
   const handleDeleteSelected = async () => {
     if (
       selectedIds.size > 0 &&
@@ -202,6 +226,18 @@ export function UserManagement({
           <>
             <OverflowActionBar
               actions={[
+                ...(selectedIds.size > 0 && updateUserTags
+                  ? [
+                      {
+                        key: "editTags",
+                        label: t("userManagement.editTagsButton", {
+                          count: selectedIds.size,
+                        }),
+                        icon: <Tags className="h-4 w-4" />,
+                        onClick: () => setIsTagsModalOpen(true),
+                      },
+                    ]
+                  : []),
                 ...(selectedIds.size > 0
                   ? [
                       {
@@ -584,6 +620,16 @@ export function UserManagement({
             isCreating={isCreating}
             onSubmit={handleModalSubmit}
             onClose={() => setIsModalOpen(false)}
+          />
+        )}
+
+        {isTagsModalOpen && updateUserTags && (
+          <UserBulkTagsModal
+            isOpen={isTagsModalOpen}
+            onClose={() => setIsTagsModalOpen(false)}
+            selectedUsers={selectedUsers}
+            suggestions={allTags}
+            onApply={handleApplyTags}
           />
         )}
 

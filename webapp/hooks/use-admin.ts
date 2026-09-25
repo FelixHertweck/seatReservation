@@ -11,6 +11,7 @@ import {
   deleteApiUsersAdminByIdMutation,
   getApiUsersRolesOptions,
   postApiUsersAdminImportMutation,
+  postApiUsersAdminTagsMutation,
 } from "@/api/@tanstack/react-query.gen";
 import type { AdminUserCreationDto, AdminUserUpdateDto, UserDto } from "@/api";
 import { UserManagementProps } from "@/components/admin/user-management";
@@ -33,6 +34,10 @@ export function useAdmin(): UserManagementProps {
 
   const { mutateAsync: importMutation } = useMutation({
     ...postApiUsersAdminImportMutation(),
+  });
+
+  const { mutateAsync: tagsMutation } = useMutation({
+    ...postApiUsersAdminTagsMutation(),
   });
 
   const { mutateAsync: updateMutation } = useMutation({
@@ -127,6 +132,34 @@ export function useAdmin(): UserManagementProps {
     await request;
   };
 
+  const updateUserTags = async (
+    userIds: string[],
+    addTags: string[],
+    removeTags: string[],
+  ): Promise<void> => {
+    const request = tagsMutation({
+      body: { userIds, addTags, removeTags },
+    }).then((data) => {
+      queryClient.invalidateQueries({
+        queryKey: getApiUsersAdminQueryKey(),
+      });
+      return data;
+    });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: (data) =>
+        t("admin.user.tags.success.title", {
+          count: data.updated?.length ?? 0,
+        }),
+      error: (error: ErrorWithResponse) => ({
+        message: t("admin.user.tags.error.title"),
+        description:
+          error.response?.description ?? t("admin.user.tags.error.default"),
+      }),
+    });
+    await request;
+  };
+
   const deleteUser = async (ids: string[]): Promise<void> => {
     const request = deleteMutation({ query: { ids } }).then((data) => {
       queryClient.setQueriesData(
@@ -161,6 +194,7 @@ export function useAdmin(): UserManagementProps {
     createUser,
     importUsers,
     updateUser,
+    updateUserTags,
     deleteUser,
   };
 }

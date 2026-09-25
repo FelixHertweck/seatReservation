@@ -268,6 +268,15 @@
           "default": "Beim Aktualisieren des Benutzers ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
         }
       },
+      "tags": {
+        "success": {
+          "title": "Tags für {{count}} Nutzer aktualisiert"
+        },
+        "error": {
+          "title": "Tags konnten nicht aktualisiert werden",
+          "default": "Beim Aktualisieren der Tags ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+        }
+      },
       "delete": {
         "success": {
           "title": "Benutzer gelöscht",
@@ -339,8 +348,6 @@
     "confirmationEmailResentDescription": "Eine neue Bestätigungs-E-Mail wurde an Ihre Adresse gesendet.",
     "resendButton": "Erneut senden",
     "tagsLabel": "Tags",
-    "addTagPlaceholder": "Neuen Tag hinzufügen",
-    "addButton": "Hinzufügen",
     "saveChangesButton": "Änderungen speichern",
     "noSaveChangesButton": "Keine Änderungen zum Speichern",
     "passwordSectionTitle": "Passwort ändern",
@@ -371,6 +378,22 @@
     "footerDescription": "Die umfassendste Sitzplatz Reservierungs-Plattform für moderne Organisationen.",
     "githubProjectLink": "GitHub-Projekt",
     "copyright": "© 2025 SeatReservation. Alle Rechte vorbehalten."
+  },
+  "userBulkTagsModal": {
+    "title": "Tags für {{count}} Nutzer bearbeiten",
+    "description": "Tags gemeinsam für alle ausgewählten Nutzer hinzufügen oder entfernen.",
+    "currentTagsLabel": "Tags der Auswahl",
+    "noTags": "Die ausgewählten Nutzer haben noch keine Tags.",
+    "countOf": "{{count}} von {{total}}",
+    "willAdd": "wird hinzugefügt",
+    "willRemove": "wird entfernt",
+    "hint": "Klick ändert den Zustand: bei allen hinzufügen, bei allen entfernen oder unverändert lassen (nur bei Tags, die nicht alle haben).",
+    "suggestionsLabel": "Weitere vorhandene Tags (zum Hinzufügen anklicken)",
+    "addTagLabel": "Neuen Tag hinzufügen",
+    "addTagPlaceholder": "Tag eingeben oder auswählen",
+    "removeNewTag": "Tag verwerfen",
+    "affected": "{{count}} von {{total}} Nutzern werden geändert.",
+    "apply": "Änderungen anwenden"
   },
   "userExport": {
     "noUsersToExportTitle": "Keine Benutzer zum Exportieren",
@@ -421,6 +444,7 @@
     "title": "Benutzerverwaltung",
     "description": "Systembenutzer und deren Rollen verwalten",
     "addUserButton": "Benutzer hinzufügen",
+    "editTagsButton": "Tags bearbeiten ({{count}})",
     "importJsonButton": "JSON importieren",
     "selectAll": "Alle auswählen",
     "deselectAll": "Alle abwählen",
@@ -935,6 +959,7 @@
     "managementEvents": "Veranstaltungen",
     "managementReservations": "Reservierungen",
     "managementAllowances": "Kontingente",
+    "managementMemberTags": "Mitglieds-Tags",
     "userManagement": "Benutzer-Verwaltung",
     "admin": "Admin",
     "supervisor": "Supervisor",
@@ -1668,6 +1693,22 @@
       "resendSuccess": "Reservierungsbestätigung wurde erneut per E-Mail gesendet.",
       "resendError": "Fehler beim erneuten Senden der Reservierungsbestätigung.",
       "loadError": "Bestätigungs-E-Mail konnte nicht geladen werden."
+    },
+    "memberTags": {
+      "title": "Mitglieds-Tags",
+      "description": "Einen Tag für mehrere Nutzer anhand ihrer Nutzernamen vergeben.",
+      "formTitle": "Tag vergeben",
+      "tagLabel": "Tag",
+      "existingTagsLabel": "Vorhandene Tags (zum Übernehmen anklicken)",
+      "tagPlaceholder": "z. B. mitglied-2026",
+      "usernamesLabel": "Nutzernamen",
+      "usernamesPlaceholder": "Ein Nutzername pro Zeile (oder durch Komma getrennt)",
+      "previewMatched": "{{count}} Nutzer erhalten den Tag.",
+      "previewAlreadyTagged": "{{count}} haben den Tag bereits.",
+      "previewUnknown": "{{count}} unbekannt: {{names}}",
+      "submit": "Tag an {{count}} Nutzer vergeben",
+      "assignSuccess": "Tag wurde vergeben.",
+      "assignError": "Tag konnte nicht vergeben werden."
     },
     "allowances": {
       "title": "Kontingente",

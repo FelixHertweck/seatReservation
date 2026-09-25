@@ -62,6 +62,74 @@ export const AdminUserCreationDtoSchema = {
     }
 } as const;
 
+export const AdminUserTagUpdateRequestDTOSchema = {
+    type: 'object',
+    required: [
+        'userIds',
+        'addTags',
+        'removeTags'
+    ],
+    properties: {
+        userIds: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            },
+            minItems: 1
+        },
+        addTags: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string',
+                pattern: '\\S',
+                maxLength: 100
+            }
+        },
+        removeTags: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string',
+                pattern: '\\S',
+                maxLength: 100
+            }
+        }
+    }
+} as const;
+
+export const AdminUserTagUpdateResultDTOSchema = {
+    type: 'object',
+    properties: {
+        updated: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        },
+        unchanged: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        },
+        notFound: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        }
+    }
+} as const;
+
 export const AdminUserUpdateDTOSchema = {
     type: 'object',
     properties: {
@@ -2027,8 +2095,7 @@ export const UserProfileUpdateDTOSchema = {
     required: [
         'email',
         'firstname',
-        'lastname',
-        'tags'
+        'lastname'
     ],
     properties: {
         email: {
@@ -2043,13 +2110,6 @@ export const UserProfileUpdateDTOSchema = {
         password: {
             type: 'string',
             minLength: 8
-        },
-        tags: {
-            type: 'array',
-            uniqueItems: true,
-            items: {
-                type: 'string'
-            }
         },
         twoFactorCode: {
             type: 'string'
@@ -2100,6 +2160,53 @@ export const UserReservationsRequestDTOSchema = {
                 pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
             },
             minItems: 1
+        }
+    }
+} as const;
+
+export const UserTagAssignmentRequestDTOSchema = {
+    type: 'object',
+    required: [
+        'usernames',
+        'tag'
+    ],
+    properties: {
+        usernames: {
+            type: 'array',
+            items: {
+                type: 'string',
+                pattern: '\\S'
+            },
+            minItems: 1
+        },
+        tag: {
+            type: 'string',
+            pattern: '\\S',
+            maxLength: 100
+        }
+    }
+} as const;
+
+export const UserTagAssignmentResultDTOSchema = {
+    type: 'object',
+    properties: {
+        updated: {
+            type: 'array',
+            items: {
+                type: 'string'
+            }
+        },
+        alreadyTagged: {
+            type: 'array',
+            items: {
+                type: 'string'
+            }
+        },
+        notFound: {
+            type: 'array',
+            items: {
+                type: 'string'
+            }
         }
     }
 } as const;

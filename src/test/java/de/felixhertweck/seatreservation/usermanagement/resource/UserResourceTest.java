@@ -54,6 +54,77 @@ class UserResourceTest {
     }
 
     @Test
+    @TestSecurity(user = "manager", roles = "MANAGER")
+    void addTagToUsers_ManagerAllowed_ReportsUnknownUsernames() {
+        given().contentType("application/json")
+                .body("{\"usernames\":[\"no-such-user\"],\"tag\":\"mitglied-2026\"}")
+                .when()
+                .post("/api/users/manager/tags")
+                .then()
+                .statusCode(200)
+                .body("notFound", org.hamcrest.Matchers.contains("no-such-user"));
+    }
+
+    @Test
+    @TestSecurity(user = "manager", roles = "MANAGER")
+    void addTagToUsers_BlankTag_BadRequest() {
+        given().contentType("application/json")
+                .body("{\"usernames\":[\"a\"],\"tag\":\" \"}")
+                .when()
+                .post("/api/users/manager/tags")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    @TestSecurity(user = "testuser", roles = "USER")
+    void addTagToUsers_UserForbidden() {
+        given().contentType("application/json")
+                .body("{\"usernames\":[\"a\"],\"tag\":\"x\"}")
+                .when()
+                .post("/api/users/manager/tags")
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    @TestSecurity(user = "admin", roles = "ADMIN")
+    void updateTagsForUsers_AdminAllowed_ReportsUnknownIds() {
+        String id = "00000000-0000-0000-0000-00000000ffff";
+        given().contentType("application/json")
+                .body("{\"userIds\":[\"" + id + "\"],\"addTags\":[\"x\"],\"removeTags\":[]}")
+                .when()
+                .post("/api/users/admin/tags")
+                .then()
+                .statusCode(200)
+                .body("notFound", org.hamcrest.Matchers.contains(id));
+    }
+
+    @Test
+    @TestSecurity(user = "admin", roles = "ADMIN")
+    void updateTagsForUsers_NoTags_BadRequest() {
+        given().contentType("application/json")
+                .body(
+                        "{\"userIds\":[\"00000000-0000-0000-0000-000000000001\"],\"addTags\":[],\"removeTags\":[]}")
+                .when()
+                .post("/api/users/admin/tags")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    @TestSecurity(user = "manager", roles = "MANAGER")
+    void updateTagsForUsers_ManagerForbidden() {
+        given().contentType("application/json")
+                .body(
+                        "{\"userIds\":[\"00000000-0000-0000-0000-000000000001\"],\"addTags\":[\"x\"],\"removeTags\":[]}")
+                .when()
+                .post("/api/users/admin/tags")
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
     void testGetAllUsersAsAdminUnauthorized() {
         given().when().get("/api/users/admin").then().statusCode(401);
     }

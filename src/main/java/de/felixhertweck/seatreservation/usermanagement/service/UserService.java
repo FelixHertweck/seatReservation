@@ -21,8 +21,11 @@ package de.felixhertweck.seatreservation.usermanagement.service;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -51,10 +54,15 @@ import de.felixhertweck.seatreservation.security.exceptions.EmailCooldownExcepti
 import de.felixhertweck.seatreservation.security.exceptions.InvalidTwoFactorCodeException;
 import de.felixhertweck.seatreservation.security.service.EmailCooldownService;
 import de.felixhertweck.seatreservation.security.service.TwoFactorService;
+import de.felixhertweck.seatreservation.supervisor.service.BoxOfficeService;
 import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserCreationDto;
+import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserTagUpdateRequestDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserTagUpdateResultDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserProfileUpdateDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserTagAssignmentRequestDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserTagAssignmentResultDTO;
 import de.felixhertweck.seatreservation.usermanagement.exceptions.SendEmailException;
 import de.felixhertweck.seatreservation.usermanagement.exceptions.VerificationCodeNotFoundException;
 import de.felixhertweck.seatreservation.usermanagement.exceptions.VerifyTokenExpiredException;
@@ -572,6 +580,114 @@ public class UserService {
         return users;
     }
 
+    /**
+     * Adds a tag to all users with the given usernames. Existing tags are kept; nothing else about
+     * the users is touched. Duplicate and blank usernames are ignored.
+     *
+     * @param request the usernames and the tag to add
+     * @return the usernames grouped by outcome
+     */
+    @Transactional
+    public UserTagAssignmentResultDTO addTagToUsers(UserTagAssignmentRequestDTO request) {
+        String tag = request.tag().trim();
+        if (tag.isEmpty()) {
+            throw new InvalidUserException("Tag cannot be blank.");
+        }
+        Set<String> usernames =
+                request.usernames().stream()
+                        .map(String::trim)
+                        .filter(name -> !name.isEmpty())
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        // The boxoffice system account is not a real person and must not be tagged.
+        Map<String, User> found = new HashMap<>();
+        for (User user : userRepository.findByUsernamesWithTags(usernames)) {
+            if (!BoxOfficeService.BOXOFFICE_USERNAME.equalsIgnoreCase(user.getUsername())) {
+                found.put(user.getUsername(), user);
+            }
+        }
+
+        List<String> updated = new ArrayList<>();
+        List<String> alreadyTagged = new ArrayList<>();
+        List<String> notFound = new ArrayList<>();
+        for (String username : usernames) {
+            User user = found.get(username);
+            if (user == null) {
+                notFound.add(username);
+            } else if (user.getTags().contains(tag)) {
+                alreadyTagged.add(username);
+            } else {
+                Set<String> tags = new HashSet<>(user.getTags());
+                tags.add(tag);
+                user.setTags(tags);
+                updated.add(username);
+            }
+        }
+        LOG.infof(
+                "Added tag '%s' to %d users (%d already tagged, %d not found).",
+                tag, updated.size(), alreadyTagged.size(), notFound.size());
+        return new UserTagAssignmentResultDTO(updated, alreadyTagged, notFound);
+    }
+
+    /**
+     * Adds and removes tags for several users at once. Only the listed tags are touched; all other
+     * tags of the users stay as they are.
+     *
+     * @param request the user ids and the tags to add and remove
+     * @return the user ids grouped by outcome
+     */
+    @Transactional
+    public AdminUserTagUpdateResultDTO updateTagsForUsers(AdminUserTagUpdateRequestDTO request) {
+        Set<String> addTags = trimmed(request.addTags());
+        Set<String> removeTags = trimmed(request.removeTags());
+        if (addTags.isEmpty() && removeTags.isEmpty()) {
+            throw new InvalidUserException("At least one tag to add or remove is required.");
+        }
+        if (addTags.stream().anyMatch(removeTags::contains)) {
+            throw new InvalidUserException("A tag cannot be added and removed at the same time.");
+        }
+        Set<UUID> ids = new LinkedHashSet<>(request.userIds());
+
+        // The boxoffice system account is not a real person and must not be modified.
+        Map<UUID, User> found = new HashMap<>();
+        for (User user : userRepository.findByIdsWithTags(ids)) {
+            if (!BoxOfficeService.BOXOFFICE_USERNAME.equalsIgnoreCase(user.getUsername())) {
+                found.put(user.getId(), user);
+            }
+        }
+
+        List<UUID> updated = new ArrayList<>();
+        List<UUID> unchanged = new ArrayList<>();
+        List<UUID> notFound = new ArrayList<>();
+        for (UUID id : ids) {
+            User user = found.get(id);
+            if (user == null) {
+                notFound.add(id);
+                continue;
+            }
+            Set<String> tags = new HashSet<>(user.getTags());
+            boolean changed = tags.addAll(addTags);
+            changed |= tags.removeAll(removeTags);
+            if (changed) {
+                user.setTags(tags);
+                updated.add(id);
+            } else {
+                unchanged.add(id);
+            }
+        }
+        LOG.infof(
+                "Bulk tag update: +%s -%s, %d users updated, %d unchanged, %d not found.",
+                addTags, removeTags, updated.size(), unchanged.size(), notFound.size());
+        return new AdminUserTagUpdateResultDTO(updated, unchanged, notFound);
+    }
+
+    private static Set<String> trimmed(Set<String> tags) {
+        return tags.stream()
+                .map(String::trim)
+                .filter(tag -> !tag.isEmpty())
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
     public List<UserDTO> getUsersAsAdmin() {
         List<UserDTO> users =
                 userRepository.findAllWithTagsAndRoles().stream().map(UserDTO::new).toList();
@@ -631,7 +747,7 @@ public class UserService {
                 userProfileUpdateDTO.getFirstname(),
                 userProfileUpdateDTO.getLastname(),
                 userProfileUpdateDTO.getPassword(),
-                userProfileUpdateDTO.getTags(),
+                existingUser.getTags(), // tags are admin-managed, users cannot change them
                 true,
                 markEmailAsVerified);
 
