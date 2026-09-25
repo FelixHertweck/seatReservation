@@ -74,6 +74,7 @@ import de.felixhertweck.seatreservation.usermanagement.exceptions.VerifyTokenExp
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.SecurityUtils;
 import io.quarkus.elytron.security.common.BcryptUtil;
+import io.quarkus.narayana.jta.runtime.TransactionConfiguration;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -109,6 +110,10 @@ public class UserService {
     // office are booked under (see supervisor.service.BoxOfficeService).
     private static final Set<String> RESERVED_USERNAMES = Set.of("boxoffice");
 
+    // Every imported user gets a bcrypt-hashed password (~80 ms each), so a large import needs
+    // far more than the default transaction timeout of 60 seconds.
+    private static final int IMPORT_TRANSACTION_TIMEOUT_SECONDS = 300;
+
     /**
      * Imports a batch of users. Users without a conflict are created; all others are reported in
      * the result instead of aborting the import. Usernames are compared case-insensitively.
@@ -117,6 +122,7 @@ public class UserService {
      * @return The created users and the users that could not be created, with the reason.
      */
     @Transactional
+    @TransactionConfiguration(timeout = IMPORT_TRANSACTION_TIMEOUT_SECONDS)
     public UserImportResultDTO importUsers(List<AdminUserCreationDto> adminUserCreationDtos) {
         LOG.infof("Importing %d users.", adminUserCreationDtos.size());
 
