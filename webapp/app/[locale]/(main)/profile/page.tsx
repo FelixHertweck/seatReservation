@@ -19,7 +19,7 @@ import { Button } from "@/components/custom-ui/button";
 import { Label } from "@/components/custom-ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/custom-ui/skeleton";
-import { X, AtSign, User, Mail, Lock, Tag, Save } from "lucide-react";
+import { AtSign, User, Mail, Lock, Tag, Save } from "lucide-react";
 import { toast } from "sonner";
 import type { UserProfileUpdateDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
@@ -34,7 +34,6 @@ interface FormData {
   firstname: string;
   lastname: string;
   email: string;
-  tags: string[];
 }
 
 export default function ProfilePage() {
@@ -54,14 +53,12 @@ export default function ProfilePage() {
     firstname: user?.firstname || "",
     lastname: user?.lastname || "",
     email: user?.email || "",
-    tags: user?.tags || [],
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [originalEmail, setOriginalEmail] = useState(initialFormData.email);
   const [originalFormData, setOriginalFormData] =
     useState<FormData>(initialFormData);
-  const [newTag, setNewTag] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPasswordSection, setShowPasswordSection] =
@@ -81,14 +78,12 @@ export default function ProfilePage() {
     user &&
     (user.firstname !== originalFormData.firstname ||
       user.lastname !== originalFormData.lastname ||
-      user.email !== originalFormData.email ||
-      JSON.stringify(user.tags || []) !== JSON.stringify(originalFormData.tags))
+      user.email !== originalFormData.email)
   ) {
     const newData: FormData = {
       firstname: user.firstname || "",
       lastname: user.lastname || "",
       email: user.email || "",
-      tags: user.tags || [],
     };
     setFormData(newData);
     setOriginalFormData(newData);
@@ -119,23 +114,6 @@ export default function ProfilePage() {
     confirmPassword,
     setHasUnsavedChanges,
   ]);
-
-  const handleAddTag = () => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData((prev) => ({
-        ...prev,
-        tags: [...prev.tags, newTag.trim()],
-      }));
-      setNewTag("");
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((tag) => tag !== tagToRemove),
-    }));
-  };
 
   const isPasswordValid = newPassword.length >= 8;
   const doPasswordsMatch = newPassword === confirmPassword;
@@ -424,57 +402,19 @@ export default function ProfilePage() {
                 {t("profilePage.tagsLabel")}
               </Label>
               {isLoading ? (
-                <>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    <Skeleton className="h-6 w-16" />
-                    <Skeleton className="h-6 w-20" />
-                    <Skeleton className="h-6 w-12" />
-                  </div>
-                  <div className="flex gap-2">
-                    <Skeleton className="h-10 flex-1" />
-                    <Skeleton className="h-10 w-20" />
-                  </div>
-                </>
+                <div className="flex flex-wrap gap-2">
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-6 w-20" />
+                  <Skeleton className="h-6 w-12" />
+                </div>
               ) : (
-                <>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {formData.tags.map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="secondary"
-                        className="flex items-center gap-1"
-                      >
-                        {tag}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveTag(tag)}
-                          className="h-auto p-0.5"
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <Input
-                      id="newTag"
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      placeholder={t("profilePage.addTagPlaceholder")}
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleAddTag();
-                        }
-                      }}
-                    />
-                    <Button type="button" onClick={handleAddTag}>
-                      {t("profilePage.addButton")}
-                    </Button>
-                  </div>
-                </>
+                <div className="flex flex-wrap gap-2">
+                  {(user?.tags ?? []).map((tag) => (
+                    <Badge key={tag} variant="secondary">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
               )}
             </div>
             {isLoading ? (

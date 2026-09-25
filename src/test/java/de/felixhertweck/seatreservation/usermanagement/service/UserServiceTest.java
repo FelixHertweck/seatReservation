@@ -66,9 +66,13 @@ import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.exceptions.InvalidTwoFactorCodeException;
 import de.felixhertweck.seatreservation.security.service.TwoFactorService;
 import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserCreationDto;
+import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserTagUpdateRequestDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserTagUpdateResultDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserProfileUpdateDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserTagAssignmentRequestDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserTagAssignmentResultDTO;
 import de.felixhertweck.seatreservation.usermanagement.exceptions.VerificationCodeNotFoundException;
 import de.felixhertweck.seatreservation.usermanagement.exceptions.VerifyTokenExpiredException;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
@@ -1054,13 +1058,7 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
         final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(
-                        "New",
-                        "User",
-                        null,
-                        existingUser.getEmail(),
-                        Collections.singleton(Roles.USER),
-                        null);
+                new UserProfileUpdateDTO("New", "User", null, existingUser.getEmail(), null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1094,13 +1092,7 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
         final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(
-                        "John",
-                        "New",
-                        null,
-                        existingUser.getEmail(),
-                        Collections.singleton(Roles.USER),
-                        null);
+                new UserProfileUpdateDTO("John", "New", null, existingUser.getEmail(), null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1134,7 +1126,7 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
         final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, "newpassword", null, null, null);
+                new UserProfileUpdateDTO(null, null, "newpassword", null, null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1155,6 +1147,161 @@ public class UserServiceTest {
     }
 
     @Test
+    void addTagToUsers_AddsTagKeepsExistingAndReportsOutcome() {
+        User alice =
+                new User(
+                        "alice",
+                        "a@example.com",
+                        true,
+                        false,
+                        "h",
+                        "s",
+                        "A",
+                        "A",
+                        Set.of(Roles.USER),
+                        Set.of("old"));
+        User bob =
+                new User(
+                        "bob",
+                        "b@example.com",
+                        true,
+                        false,
+                        "h",
+                        "s",
+                        "B",
+                        "B",
+                        Set.of(Roles.USER),
+                        Set.of("mitglied-2026"));
+        User boxoffice =
+                new User(
+                        "boxoffice",
+                        null,
+                        true,
+                        false,
+                        "h",
+                        "s",
+                        "B",
+                        "O",
+                        Set.of(Roles.USER),
+                        Set.of());
+        when(userRepository.findByUsernamesWithTags(any()))
+                .thenReturn(List.of(alice, bob, boxoffice));
+
+        UserTagAssignmentResultDTO result =
+                userService.addTagToUsers(
+                        new UserTagAssignmentRequestDTO(
+                                List.of("alice", " bob ", "boxoffice", "ghost", "alice"),
+                                "mitglied-2026"));
+
+        assertEquals(List.of("alice"), result.updated());
+        assertEquals(List.of("bob"), result.alreadyTagged());
+        assertEquals(List.of("boxoffice", "ghost"), result.notFound());
+        assertEquals(Set.of("old", "mitglied-2026"), alice.getTags());
+        assertTrue(boxoffice.getTags().isEmpty());
+    }
+
+    @Test
+    void updateTagsForUsers_AddsAndRemovesOnlyListedTags() {
+        User alice =
+                new User(
+                        "alice",
+                        "a@example.com",
+                        true,
+                        false,
+                        "h",
+                        "s",
+                        "A",
+                        "A",
+                        Set.of(Roles.USER),
+                        Set.of("old", "keep"));
+        alice.id = id(1);
+        User bob =
+                new User(
+                        "bob",
+                        "b@example.com",
+                        true,
+                        false,
+                        "h",
+                        "s",
+                        "B",
+                        "B",
+                        Set.of(Roles.USER),
+                        Set.of("new", "keep"));
+        bob.id = id(2);
+        User boxoffice =
+                new User(
+                        "boxoffice",
+                        null,
+                        true,
+                        false,
+                        "h",
+                        "s",
+                        "B",
+                        "O",
+                        Set.of(Roles.USER),
+                        Set.of("old"));
+        boxoffice.id = id(3);
+        when(userRepository.findByIdsWithTags(any())).thenReturn(List.of(alice, bob, boxoffice));
+
+        AdminUserTagUpdateResultDTO result =
+                userService.updateTagsForUsers(
+                        new AdminUserTagUpdateRequestDTO(
+                                List.of(id(1), id(2), id(3), id(4)), Set.of("new"), Set.of("old")));
+
+        assertEquals(List.of(id(1)), result.updated());
+        assertEquals(List.of(id(2)), result.unchanged());
+        assertEquals(List.of(id(3), id(4)), result.notFound());
+        assertEquals(Set.of("new", "keep"), alice.getTags());
+        assertEquals(Set.of("new", "keep"), bob.getTags());
+        assertEquals(Set.of("old"), boxoffice.getTags());
+    }
+
+    @Test
+    void updateTagsForUsers_NothingToDo_Throws() {
+        assertThrows(
+                InvalidUserException.class,
+                () ->
+                        userService.updateTagsForUsers(
+                                new AdminUserTagUpdateRequestDTO(
+                                        List.of(id(1)), Set.of(), Set.of())));
+    }
+
+    @Test
+    void updateTagsForUsers_SameTagAddedAndRemoved_Throws() {
+        assertThrows(
+                InvalidUserException.class,
+                () ->
+                        userService.updateTagsForUsers(
+                                new AdminUserTagUpdateRequestDTO(
+                                        List.of(id(1)), Set.of("x"), Set.of("x"))));
+    }
+
+    @Test
+    void updateUserProfile_KeepsAdminManagedTags() {
+        User existingUser =
+                new User(
+                        "testuser",
+                        "old@example.com",
+                        true,
+                        false,
+                        "oldhash",
+                        "salt",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER),
+                        Set.of("mitglied-2026-abcd"));
+        final UserProfileUpdateDTO dto =
+                new UserProfileUpdateDTO("Jane", null, null, existingUser.getEmail(), null);
+
+        when(userRepository.findByUsernameOptional("testuser"))
+                .thenReturn(Optional.of(existingUser));
+
+        UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
+
+        assertEquals(Set.of("mitglied-2026-abcd"), updatedUser.tags());
+    }
+
+    @Test
     void updateUserProfile_Success_UpdateEmail() {
         User existingUser =
                 new User(
@@ -1169,7 +1316,7 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
         UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "new@example.com", null, null);
+                new UserProfileUpdateDTO(null, null, null, "new@example.com", null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1237,7 +1384,7 @@ public class UserServiceTest {
         String validCode = validTotpCodeForEmailChangeTests(TOTP_SECRET_BYTES_EMAIL_CHANGE);
 
         UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "new@example.com", null, validCode);
+                new UserProfileUpdateDTO(null, null, null, "new@example.com", validCode);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1292,7 +1439,7 @@ public class UserServiceTest {
         existingUser.setTotpSecret("JBSWY3DPEHPK3PXP");
 
         UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "new@example.com", null, "000000");
+                new UserProfileUpdateDTO(null, null, null, "new@example.com", "000000");
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1326,7 +1473,7 @@ public class UserServiceTest {
         existingUser.setEmailEnabled(true);
 
         UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "new@example.com", null, null);
+                new UserProfileUpdateDTO(null, null, null, "new@example.com", null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1357,7 +1504,7 @@ public class UserServiceTest {
         // Same email as before, only the name changes -- no 2FA code needed since the trust
         // invariant (email address is unchanged) isn't touched.
         UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO("NewFirstName", null, null, "old@example.com", null, null);
+                new UserProfileUpdateDTO("NewFirstName", null, null, "old@example.com", null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1372,8 +1519,7 @@ public class UserServiceTest {
 
     @Test
     void updateUserProfile_UserNotFoundException() {
-        final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO("New", null, null, null, null, null);
+        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null, null);
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.findByUsername(anyString())).thenReturn(null); // Mock findByUsername
 
@@ -1410,7 +1556,7 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
         final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "duplicate@example.com", null, null);
+                new UserProfileUpdateDTO(null, null, null, "duplicate@example.com", null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));

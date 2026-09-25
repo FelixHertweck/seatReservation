@@ -179,4 +179,35 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
                 .setParameter("usernames", usernames)
                 .getResultList();
     }
+
+    /**
+     * Loads the users with the given usernames, including their tags, in a single query.
+     *
+     * @param usernames the usernames to look up
+     * @return the matching users; usernames without a user are simply absent
+     */
+    public List<User> findByUsernamesWithTags(Collection<String> usernames) {
+        if (usernames.isEmpty()) {
+            return List.of();
+        }
+        return find(
+                        "select distinct u from User u left join fetch u.tags where u.username in"
+                                + " ?1",
+                        usernames)
+                .list();
+    }
+
+    /**
+     * Loads the users with the given ids, including their tags, in a single query.
+     *
+     * @param ids the user ids to look up
+     * @return the matching users; ids without a user are simply absent
+     */
+    public List<User> findByIdsWithTags(Collection<UUID> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        return find("select distinct u from User u left join fetch u.tags where u.id in ?1", ids)
+                .list();
+    }
 }

@@ -49,6 +49,68 @@
           }
         }
       },
+      "AdminUserTagUpdateRequestDTO" : {
+        "type" : "object",
+        "required" : [ "userIds", "addTags", "removeTags" ],
+        "properties" : {
+          "userIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            },
+            "minItems" : 1
+          },
+          "addTags" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string",
+              "pattern" : "\\S",
+              "maxLength" : 100
+            }
+          },
+          "removeTags" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string",
+              "pattern" : "\\S",
+              "maxLength" : 100
+            }
+          }
+        }
+      },
+      "AdminUserTagUpdateResultDTO" : {
+        "type" : "object",
+        "properties" : {
+          "updated" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
+          },
+          "unchanged" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
+          },
+          "notFound" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
+          }
+        }
+      },
       "AdminUserUpdateDTO" : {
         "type" : "object",
         "properties" : {
@@ -1780,7 +1842,7 @@
       },
       "UserProfileUpdateDTO" : {
         "type" : "object",
-        "required" : [ "email", "firstname", "lastname", "tags" ],
+        "required" : [ "email", "firstname", "lastname" ],
         "properties" : {
           "email" : {
             "type" : "string"
@@ -1794,13 +1856,6 @@
           "password" : {
             "type" : "string",
             "minLength" : 8
-          },
-          "tags" : {
-            "type" : "array",
-            "uniqueItems" : true,
-            "items" : {
-              "type" : "string"
-            }
           },
           "twoFactorCode" : {
             "type" : "string"
@@ -1846,6 +1901,48 @@
               "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             },
             "minItems" : 1
+          }
+        }
+      },
+      "UserTagAssignmentRequestDTO" : {
+        "type" : "object",
+        "required" : [ "usernames", "tag" ],
+        "properties" : {
+          "usernames" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "pattern" : "\\S"
+            },
+            "minItems" : 1
+          },
+          "tag" : {
+            "type" : "string",
+            "pattern" : "\\S",
+            "maxLength" : 100
+          }
+        }
+      },
+      "UserTagAssignmentResultDTO" : {
+        "type" : "object",
+        "properties" : {
+          "updated" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "alreadyTagged" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "notFound" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         }
       },
@@ -5996,6 +6093,46 @@
         } ]
       }
     },
+    "/api/users/admin/tags" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AdminUserTagUpdateRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Tag update processed",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminUserTagUpdateResultDTO"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request: Invalid ids or tags"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: Only ADMIN role can access this resource"
+          }
+        },
+        "summary" : "Update Tags For Users",
+        "tags" : [ "User Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "ADMIN" ]
+        } ]
+      }
+    },
     "/api/users/admin/{id}" : {
       "put" : {
         "parameters" : [ {
@@ -6110,6 +6247,46 @@
           }
         },
         "summary" : "Get All Users",
+        "tags" : [ "User Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "ADMIN", "MANAGER" ]
+        } ]
+      }
+    },
+    "/api/users/manager/tags" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UserTagAssignmentRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Tag assignment processed",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserTagAssignmentResultDTO"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request: Invalid usernames or tag"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: Only ADMIN or MANAGER roles can access this resource"
+          }
+        },
+        "summary" : "Add Tag To Users",
         "tags" : [ "User Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "ADMIN", "MANAGER" ]

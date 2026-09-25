@@ -21,6 +21,7 @@ import {
   LayoutDashboard,
   MapPinned,
   Ticket,
+  Tag,
   Store,
   ShieldCheck,
 } from "lucide-react";
@@ -194,6 +195,12 @@ export function AppSidebar() {
           },
         ],
       });
+      managementItems.push({
+        title: t("sidebar.managementMemberTags"),
+        url: "/management/member-tags",
+        icon: Tag,
+        badge: t("sidebar.manager"),
+      });
     }
 
     const adminItems: MenuItem[] = [];
@@ -251,8 +258,18 @@ export function AppSidebar() {
   // pathname without the locale prefix, e.g. "/de/management/locations" -> "/management/locations"
   const currentPath = `/${pathname.split("/").slice(2).join("/")}`;
 
+  // Top-level entries that live below another entry's URL; the parent must not
+  // stay highlighted while one of these is open.
+  const NESTED_TOP_LEVEL_URLS = ["/management/member-tags"];
+
   const isPathActive = (url: string) =>
-    currentPath === url || currentPath.startsWith(`${url}/`);
+    (currentPath === url || currentPath.startsWith(`${url}/`)) &&
+    !NESTED_TOP_LEVEL_URLS.some(
+      (nested) =>
+        nested !== url &&
+        nested.startsWith(`${url}/`) &&
+        (currentPath === nested || currentPath.startsWith(`${nested}/`)),
+    );
 
   // Sub-items are siblings, not a nested hierarchy, so an exact match avoids
   // e.g. "/events" (Browse) staying highlighted while on "/events/reservations".

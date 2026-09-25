@@ -268,6 +268,15 @@
           "default": "An error occurred while updating the user. Please try again."
         }
       },
+      "tags": {
+        "success": {
+          "title": "Tags updated for {{count}} users"
+        },
+        "error": {
+          "title": "Could not update tags",
+          "default": "An error occurred while updating the tags. Please try again."
+        }
+      },
       "delete": {
         "success": {
           "title": "User Deleted",
@@ -339,8 +348,6 @@
     "confirmationEmailResentDescription": "A new confirmation email has been sent to your address.",
     "resendButton": "Resend",
     "tagsLabel": "Tags",
-    "addTagPlaceholder": "Add new tag",
-    "addButton": "Add",
     "saveChangesButton": "Save Changes",
     "noSaveChangesButton": "No changes to save",
     "passwordSectionTitle": "Change Password",
@@ -371,6 +378,22 @@
     "footerDescription": "The most comprehensive seat reservation platform for modern organizations.",
     "githubProjectLink": "GitHub Project",
     "copyright": "© 2025 SeatReservation. All rights reserved."
+  },
+  "userBulkTagsModal": {
+    "title": "Edit tags for {{count}} users",
+    "description": "Add or remove tags for all selected users at once.",
+    "currentTagsLabel": "Tags of the selection",
+    "noTags": "The selected users have no tags yet.",
+    "countOf": "{{count}} of {{total}}",
+    "willAdd": "will be added",
+    "willRemove": "will be removed",
+    "hint": "Click to change the state: add to everyone, remove from everyone, or leave unchanged (only for tags not everyone has).",
+    "suggestionsLabel": "Other existing tags (click to add)",
+    "addTagLabel": "Add new tag",
+    "addTagPlaceholder": "Enter or pick a tag",
+    "removeNewTag": "Discard tag",
+    "affected": "{{count}} of {{total}} users will change.",
+    "apply": "Apply changes"
   },
   "userExport": {
     "noUsersToExportTitle": "No users to export",
@@ -421,6 +444,7 @@
     "title": "User Management",
     "description": "Manage system users and their roles",
     "addUserButton": "Add User",
+    "editTagsButton": "Edit tags ({{count}})",
     "importJsonButton": "Import JSON",
     "selectAll": "Select All",
     "deselectAll": "Deselect All",
@@ -1099,6 +1123,7 @@
     "managementEvents": "Events",
     "managementReservations": "Reservations",
     "managementAllowances": "Allowances",
+    "managementMemberTags": "Member tags",
     "userManagement": "User Management",
     "admin": "Admin",
     "supervisor": "Supervisor",
@@ -1668,6 +1693,22 @@
       "resendSuccess": "Reservation confirmation resent via email.",
       "resendError": "Failed to resend reservation confirmation.",
       "loadError": "Failed to load confirmation email."
+    },
+    "memberTags": {
+      "title": "Member tags",
+      "description": "Assign a tag to several users by their usernames.",
+      "formTitle": "Assign tag",
+      "tagLabel": "Tag",
+      "existingTagsLabel": "Existing tags (click to use)",
+      "tagPlaceholder": "e.g. mitglied-2026",
+      "usernamesLabel": "Usernames",
+      "usernamesPlaceholder": "One username per line (or comma separated)",
+      "previewMatched": "{{count}} users will receive the tag.",
+      "previewAlreadyTagged": "{{count}} already have the tag.",
+      "previewUnknown": "{{count}} unknown: {{names}}",
+      "submit": "Assign tag to {{count}} users",
+      "assignSuccess": "Tag assigned.",
+      "assignError": "Could not assign the tag."
     },
     "allowances": {
       "title": "Allowances",
