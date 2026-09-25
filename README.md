@@ -255,36 +255,34 @@ The Docker Compose stack includes a monitoring setup:
 
 ## User Import
 
-### CSV → AdminUserCreationDto Importer
+### CSV → JSON Converter
 
-This small Java program reads an `input.csv` and writes the data as JSON to `output.json`.  
-Each line of the CSV is translated into an `AdminUserCreationDto` object.
+[`tools/csv-to-json.html`](tools/csv-to-json.html) is a static page that converts a CSV file into the JSON expected by the admin user import (`AdminUserCreationDto`). The conversion runs entirely in the browser, so no passwords are sent to a server.
 
-#### Running the Importer
+You can open the file locally or serve it via nginx. Serve only this file (not the whole `tools/` folder with any CSV/JSON data next to it), and ideally behind authentication.
 
-To run the importer, execute the following command from the project root:
+1.   Open the page and select your CSV file (or paste its content).
+2.   Adjust roles and tags if needed (defaults: `USER` and `imported`).
+3.   Click **Convert**, then download `output.json`.
+4.   Import the JSON via the admin interface.
 
-```shell script
-mvn exec:java@import
+#### Structure of the CSV
+
+Columns are separated by `;` (semicolon). A header row is optional; without one, columns are read by position.
+
+| firstname | lastname | password | email (optional) |
+|-----------|----------|----------|------------------|
+| Max       | Mustermann | secret123 | max@example.com |
+| Anna      | Müller     | password  | |
+
+**Example:**
+```
+firstname;lastname;password;email
+Max;Mustermann;secret123;max@example.com
+Anna;Müller;password;
 ```
 
-The `input.csv` file must be placed in the project root directory. The generated `output.json` can then be imported via the admin interface.
-
-#### Structure of `input.csv`
-
-The file **must** be in the project root directory.  
-Columns are separated by `,` (comma).
-
-| First Name | Last Name | Password |
-|------------|-----------|----------|
-| Max        | Mustermann | secret123 |
-| Anna       | Müller     | password |
-
-**Example `input.csv`:**
-```
-Max,Mustermann,secret123
-Anna,Müller,password
-```
+The username is generated as `firstname.lastname` (lowercase, umlauts transliterated, invalid characters removed). Rows with a missing first name, last name or password are skipped and reported.
 
 ## Templates
 
