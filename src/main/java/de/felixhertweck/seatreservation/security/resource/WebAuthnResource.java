@@ -193,7 +193,7 @@ public class WebAuthnResource {
         if (!authService.isRegistrationEnabled()) {
             throw new RegistrationDisabledException("User registration is currently disabled");
         }
-        if (userRepository.findByUsernameOptional(registration.getUsername()).isPresent()) {
+        if (userRepository.existsByUsername(registration.getUsername())) {
             throw new DuplicateUserException(
                     "User with username " + registration.getUsername() + " already exists.");
         }

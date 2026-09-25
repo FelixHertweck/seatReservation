@@ -795,6 +795,45 @@ export type UserEventResponseDto = {
     cancellationReason?: string;
 };
 
+export type UserImportFailureDto = {
+    username?: string;
+    reason?: UserImportFailureReason;
+    message?: string;
+};
+
+export const UserImportFailureReason = {
+    USERNAME_EXISTS: 'USERNAME_EXISTS',
+    DUPLICATE_IN_BATCH: 'DUPLICATE_IN_BATCH',
+    RESERVED_USERNAME: 'RESERVED_USERNAME',
+    INVALID: 'INVALID'
+} as const;
+
+export type UserImportFailureReason = typeof UserImportFailureReason[keyof typeof UserImportFailureReason];
+
+export const UserImportResolutionAction = { UPDATE: 'UPDATE', REPLACE: 'REPLACE' } as const;
+
+export type UserImportResolutionAction = typeof UserImportResolutionAction[keyof typeof UserImportResolutionAction];
+
+export type UserImportResolutionDto = {
+    action: UserImportResolutionAction;
+    existingUserId: Uuid;
+    update?: AdminUserUpdateDto;
+    replacement?: AdminUserCreationDto;
+};
+
+export type UserImportResolutionResultDto = {
+    existingUserId?: Uuid;
+    username?: string;
+    success?: boolean;
+    message?: string;
+    userId?: Uuid;
+};
+
+export type UserImportResultDto = {
+    created?: Array<UserDto>;
+    failed?: Array<UserImportFailureDto>;
+};
+
 export type UserNotificationDto = {
     id?: Uuid;
     category?: NotificationCategory;
@@ -4318,20 +4357,47 @@ export type PostApiUsersAdminImportErrors = {
      * Forbidden: Only ADMIN role can access this resource
      */
     403: unknown;
-    /**
-     * Conflict: One or more users in the batch have a conflicting username or email
-     */
-    409: unknown;
 };
 
 export type PostApiUsersAdminImportResponses = {
     /**
-     * Users imported successfully
+     * Import processed; conflicting users are listed in the result
      */
-    200: Array<UserDto>;
+    200: UserImportResultDto;
 };
 
 export type PostApiUsersAdminImportResponse = PostApiUsersAdminImportResponses[keyof PostApiUsersAdminImportResponses];
+
+export type PostApiUsersAdminImportResolveData = {
+    body: Array<UserImportResolutionDto>;
+    path?: never;
+    query?: never;
+    url: '/api/users/admin/import/resolve';
+};
+
+export type PostApiUsersAdminImportResolveErrors = {
+    /**
+     * Bad Request: Invalid resolution data
+     */
+    400: unknown;
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only ADMIN role can access this resource
+     */
+    403: unknown;
+};
+
+export type PostApiUsersAdminImportResolveResponses = {
+    /**
+     * Resolutions processed, see each result
+     */
+    200: Array<UserImportResolutionResultDto>;
+};
+
+export type PostApiUsersAdminImportResolveResponse = PostApiUsersAdminImportResolveResponses[keyof PostApiUsersAdminImportResolveResponses];
 
 export type PostApiUsersAdminTagsData = {
     body: AdminUserTagUpdateRequestDto;

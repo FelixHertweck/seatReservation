@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -69,14 +70,13 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
     }
 
     /**
-     * Checks whether a user with the given username already exists. Uses the unique index on {@code
-     * username} via a {@code count} query, so it never scans the full table.
+     * Checks whether a user with the given username already exists, ignoring upper/lower case.
      *
      * @param username the username to check
      * @return true if a user with this username exists, false otherwise
      */
     public boolean existsByUsername(String username) {
-        return count("username", username) > 0;
+        return count("lower(username)", username.toLowerCase(Locale.ROOT)) > 0;
     }
 
     /**
@@ -162,11 +162,11 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
     }
 
     /**
-     * Finds which of the given usernames already exist, used to batch-check duplicates for a bulk
-     * user import instead of querying once per username.
+     * Finds which of the given usernames already exist, ignoring upper/lower case. Used to
+     * batch-check duplicates for a bulk user import instead of querying once per username.
      *
-     * @param usernames the usernames to check
-     * @return the subset of {@code usernames} that already belong to an existing user
+     * @param usernames the usernames to check, already lower-cased
+     * @return the stored usernames that match one of {@code usernames}
      */
     public List<String> findExistingUsernames(Collection<String> usernames) {
         if (usernames.isEmpty()) {
@@ -174,7 +174,7 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
         }
         return getEntityManager()
                 .createQuery(
-                        "select u.username from User u where u.username in :usernames",
+                        "select u.username from User u where lower(u.username) in :usernames",
                         String.class)
                 .setParameter("usernames", usernames)
                 .getResultList();

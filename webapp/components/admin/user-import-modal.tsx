@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Upload, FileText, Pencil } from "lucide-react";
 import { Button } from "@/components/custom-ui/button";
 import {
@@ -15,30 +15,83 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/custom-ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import type { AdminUserCreationDto, AdminUserUpdateDto } from "@/api";
+import type {
+  AdminUserCreationDto,
+  AdminUserUpdateDto,
+  UserDto,
+  UserImportResolutionDto,
+  UserImportResolutionResultDto,
+  UserImportResultDto,
+} from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { UserFormModal } from "@/components/admin/user-form-modal";
+import { UserConflictResolverModal } from "@/components/admin/user-conflict-resolver-modal";
+import { useAuth } from "@/hooks/use-auth";
+import {
+  detectImportConflicts,
+  usernameKey,
+  type ImportConflict,
+  type ImportConflictReason,
+} from "@/lib/import-conflicts";
 
 interface UserImportModalProps {
   isOpen: boolean;
   onClose: () => void;
   availableRoles: string[];
-  onImportUsers: (users: AdminUserCreationDto[]) => Promise<void>;
+  existingUsers: UserDto[];
+  onResolveConflicts?: (
+    resolutions: UserImportResolutionDto[],
+  ) => Promise<UserImportResolutionResultDto[]>;
+  onImportUsers: (
+    users: AdminUserCreationDto[],
+  ) => Promise<UserImportResultDto>;
 }
 
 export function UserImportModal({
   isOpen,
   onClose,
   availableRoles,
+  existingUsers,
+  onResolveConflicts,
   onImportUsers,
 }: UserImportModalProps) {
   const t = useT();
+  const { user: currentUser } = useAuth();
 
   const [jsonData, setJsonData] = useState("");
   const [parsedUsers, setParsedUsers] = useState<AdminUserCreationDto[]>([]);
   const [parseError, setParseError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Conflicts are shown live, before anything is imported.
+  const liveConflicts = useMemo(
+    () => detectImportConflicts(parsedUsers, existingUsers).conflicts,
+    [parsedUsers, existingUsers],
+  );
+  const conflictOfUser = useMemo(
+    () => new Map(liveConflicts.map((conflict) => [conflict.user, conflict])),
+    [liveConflicts],
+  );
+  const conflictSummary = (reason: ImportConflictReason) => {
+    const usernames = Array.from(
+      new Set(
+        liveConflicts
+          .filter((conflict) => conflict.reason === reason)
+          .map((conflict) => conflict.user.username),
+      ),
+    );
+    if (usernames.length === 0) return null;
+    const shown = usernames.slice(0, 8).join(", ");
+    return t(`userImportModal.warning.${reason}`, {
+      count: usernames.length,
+      names: usernames.length > 8 ? `${shown}, …` : shown,
+    });
+  };
+
+  const [resolverConflicts, setResolverConflicts] = useState<
+    ImportConflict[] | null
+  >(null);
 
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingUser, setEditingUser] = useState<AdminUserCreationDto | null>(
@@ -113,9 +166,64 @@ export function UserImportModal({
         }
       }
 
-      await onImportUsers(dataToImport);
+      // Import what has no conflict; conflicting users stay in the editor.
+      const { clean, conflicts } = detectImportConflicts(
+        dataToImport,
+        existingUsers,
+      );
+      const problems = conflicts.map(
+        (conflict) =>
+          `${conflict.user.username}: ${t(
+            `userImportModal.conflictReason.${conflict.reason}`,
+          )}`,
+      );
+      // Track the entries themselves (not just their usernames), so that for a
+      // username that appears twice only the entry that was not imported stays.
+      const failedEntries = new Set<AdminUserCreationDto>(
+        conflicts.map((conflict) => conflict.user),
+      );
+      let createdCount = 0;
 
-      handleClose();
+      if (clean.length > 0) {
+        const result = await onImportUsers(clean);
+        createdCount = result.created?.length ?? 0;
+        for (const failure of result.failed ?? []) {
+          const entry = clean.find(
+            (user) =>
+              usernameKey(user.username) === usernameKey(failure.username),
+          );
+          if (entry) failedEntries.add(entry);
+          problems.push(`${failure.username}: ${failure.message}`);
+        }
+      }
+
+      if (failedEntries.size === 0) {
+        handleClose();
+        return;
+      }
+
+      // Keep only the users that were not imported so the rest can be fixed and retried.
+      const remaining = dataToImport.filter((user: AdminUserCreationDto) =>
+        failedEntries.has(user),
+      );
+      setJsonData(JSON.stringify(remaining, null, 2));
+      setParsedUsers(remaining);
+      setError(
+        t("userImportModal.partialImportError", {
+          created: createdCount,
+          failed: remaining.length,
+          details: problems.join("; "),
+        }),
+      );
+
+      // Conflicts with an existing user can be resolved side by side.
+      const resolvable = conflicts.filter(
+        (conflict) =>
+          conflict.reason === "USERNAME_EXISTS" && conflict.existing,
+      );
+      if (onResolveConflicts && resolvable.length > 0) {
+        setResolverConflicts(resolvable);
+      }
     } catch (err) {
       setError(
         err instanceof Error
@@ -210,6 +318,24 @@ export function UserImportModal({
                   />
                 </div>
 
+                {(
+                  [
+                    "DUPLICATE_IN_BATCH",
+                    "RESERVED_USERNAME",
+                    "USERNAME_EXISTS",
+                  ] as const
+                ).map((reason) => {
+                  const message = conflictSummary(reason);
+                  return message ? (
+                    <div
+                      key={reason}
+                      className="text-xs text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-950/40 p-2.5 rounded border border-amber-200 dark:border-amber-800"
+                    >
+                      {message}
+                    </div>
+                  ) : null;
+                })}
+
                 {parseError && (
                   <div className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/40 p-2.5 rounded border border-amber-200 dark:border-amber-800">
                     {parseError}
@@ -246,6 +372,21 @@ export function UserImportModal({
                             <span className="text-xs text-muted-foreground font-normal">
                               (@{user.username})
                             </span>
+                            {conflictOfUser.get(user) && (
+                              <Badge
+                                variant={
+                                  conflictOfUser.get(user)?.reason ===
+                                  "USERNAME_EXISTS"
+                                    ? "secondary"
+                                    : "destructive"
+                                }
+                                className="text-[10px] py-0 px-1.5 font-normal"
+                              >
+                                {t(
+                                  `userImportModal.conflictReason.${conflictOfUser.get(user)?.reason}`,
+                                )}
+                              </Badge>
+                            )}
                           </div>
                           {user.email && (
                             <div className="text-xs text-muted-foreground truncate">
@@ -296,7 +437,9 @@ export function UserImportModal({
             {/* Global Error Display */}
             {error && (
               <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
-                {error}
+                <p className="line-clamp-2" title={error}>
+                  {error}
+                </p>
               </div>
             )}
 
@@ -317,6 +460,34 @@ export function UserImportModal({
           </form>
         </DialogContent>
       </Dialog>
+
+      {resolverConflicts && onResolveConflicts && (
+        <UserConflictResolverModal
+          isOpen
+          conflicts={resolverConflicts}
+          currentUserId={currentUser?.id}
+          onResolve={onResolveConflicts}
+          onClose={(resolvedUsernames) => {
+            setResolverConflicts(null);
+            if (resolvedUsernames.length === 0) return;
+            // Drop only the first entry per resolved username; further entries with
+            // the same username are separate duplicates that were not resolved.
+            const pending = new Set(resolvedUsernames.map(usernameKey));
+            const rest = parsedUsers.filter((user) => {
+              const key = usernameKey(user.username);
+              if (!pending.has(key)) return true;
+              pending.delete(key);
+              return false;
+            });
+            if (rest.length === 0) {
+              handleClose();
+              return;
+            }
+            setJsonData(JSON.stringify(rest, null, 2));
+            setParsedUsers(rest);
+          }}
+        />
+      )}
 
       {/* Edit Form Modal for locally editing a parsed JSON user */}
       {editingUser && (

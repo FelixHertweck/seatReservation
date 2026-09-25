@@ -2051,6 +2051,100 @@ export const UserEventResponseDTOSchema = {
     }
 } as const;
 
+export const UserImportFailureDTOSchema = {
+    type: 'object',
+    properties: {
+        username: {
+            type: 'string'
+        },
+        reason: {
+            $ref: '#/components/schemas/UserImportFailureReason'
+        },
+        message: {
+            type: 'string'
+        }
+    }
+} as const;
+
+export const UserImportFailureReasonSchema = {
+    type: 'string',
+    enum: [
+        'USERNAME_EXISTS',
+        'DUPLICATE_IN_BATCH',
+        'RESERVED_USERNAME',
+        'INVALID'
+    ]
+} as const;
+
+export const UserImportResolutionActionSchema = {
+    type: 'string',
+    enum: [
+        'UPDATE',
+        'REPLACE'
+    ]
+} as const;
+
+export const UserImportResolutionDTOSchema = {
+    type: 'object',
+    required: [
+        'action',
+        'existingUserId'
+    ],
+    properties: {
+        action: {
+            $ref: '#/components/schemas/UserImportResolutionAction'
+        },
+        existingUserId: {
+            $ref: '#/components/schemas/UUID'
+        },
+        update: {
+            $ref: '#/components/schemas/AdminUserUpdateDTO'
+        },
+        replacement: {
+            $ref: '#/components/schemas/AdminUserCreationDto'
+        }
+    }
+} as const;
+
+export const UserImportResolutionResultDTOSchema = {
+    type: 'object',
+    properties: {
+        existingUserId: {
+            $ref: '#/components/schemas/UUID'
+        },
+        username: {
+            type: 'string'
+        },
+        success: {
+            type: 'boolean'
+        },
+        message: {
+            type: 'string'
+        },
+        userId: {
+            $ref: '#/components/schemas/UUID'
+        }
+    }
+} as const;
+
+export const UserImportResultDTOSchema = {
+    type: 'object',
+    properties: {
+        created: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/UserDTO'
+            }
+        },
+        failed: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/UserImportFailureDTO'
+            }
+        }
+    }
+} as const;
+
 export const UserNotificationDTOSchema = {
     type: 'object',
     properties: {

@@ -1802,6 +1802,83 @@
           }
         }
       },
+      "UserImportFailureDTO" : {
+        "type" : "object",
+        "properties" : {
+          "username" : {
+            "type" : "string"
+          },
+          "reason" : {
+            "$ref" : "#/components/schemas/UserImportFailureReason"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        }
+      },
+      "UserImportFailureReason" : {
+        "type" : "string",
+        "enum" : [ "USERNAME_EXISTS", "DUPLICATE_IN_BATCH", "RESERVED_USERNAME", "INVALID" ]
+      },
+      "UserImportResolutionAction" : {
+        "type" : "string",
+        "enum" : [ "UPDATE", "REPLACE" ]
+      },
+      "UserImportResolutionDTO" : {
+        "type" : "object",
+        "required" : [ "action", "existingUserId" ],
+        "properties" : {
+          "action" : {
+            "$ref" : "#/components/schemas/UserImportResolutionAction"
+          },
+          "existingUserId" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "update" : {
+            "$ref" : "#/components/schemas/AdminUserUpdateDTO"
+          },
+          "replacement" : {
+            "$ref" : "#/components/schemas/AdminUserCreationDto"
+          }
+        }
+      },
+      "UserImportResolutionResultDTO" : {
+        "type" : "object",
+        "properties" : {
+          "existingUserId" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "username" : {
+            "type" : "string"
+          },
+          "success" : {
+            "type" : "boolean"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "userId" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        }
+      },
+      "UserImportResultDTO" : {
+        "type" : "object",
+        "properties" : {
+          "created" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/UserDTO"
+            }
+          },
+          "failed" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/UserImportFailureDTO"
+            }
+          }
+        }
+      },
       "UserNotificationDTO" : {
         "type" : "object",
         "properties" : {
@@ -6049,7 +6126,6 @@
             "application/json" : {
               "schema" : {
                 "type" : "array",
-                "uniqueItems" : true,
                 "items" : {
                   "$ref" : "#/components/schemas/AdminUserCreationDto"
                 }
@@ -6060,15 +6136,11 @@
         },
         "responses" : {
           "200" : {
-            "description" : "Users imported successfully",
+            "description" : "Import processed; conflicting users are listed in the result",
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "array",
-                  "uniqueItems" : true,
-                  "items" : {
-                    "$ref" : "#/components/schemas/UserDTO"
-                  }
+                  "$ref" : "#/components/schemas/UserImportResultDTO"
                 }
               }
             }
@@ -6081,12 +6153,55 @@
           },
           "403" : {
             "description" : "Forbidden: Only ADMIN role can access this resource"
-          },
-          "409" : {
-            "description" : "Conflict: One or more users in the batch have a conflicting username or email"
           }
         },
         "summary" : "Import Users",
+        "tags" : [ "User Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/users/admin/import/resolve" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/UserImportResolutionDTO"
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Resolutions processed, see each result",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/UserImportResolutionResultDTO"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request: Invalid resolution data"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: Only ADMIN role can access this resource"
+          }
+        },
+        "summary" : "Resolve Import Conflicts",
         "tags" : [ "User Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "ADMIN" ]

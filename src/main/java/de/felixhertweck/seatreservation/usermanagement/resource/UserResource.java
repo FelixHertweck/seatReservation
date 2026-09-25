@@ -21,7 +21,6 @@ package de.felixhertweck.seatreservation.usermanagement.resource;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -46,9 +45,13 @@ import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserTagUpdateReq
 import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserTagUpdateResultDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserCreationDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserImportResolutionDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserImportResolutionResultDTO;
+import de.felixhertweck.seatreservation.usermanagement.dto.UserImportResultDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserTagAssignmentRequestDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.UserTagAssignmentResultDTO;
+import de.felixhertweck.seatreservation.usermanagement.service.UserImportResolutionService;
 import de.felixhertweck.seatreservation.usermanagement.service.UserService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
@@ -69,43 +72,72 @@ public class UserResource {
     private static final Logger LOG = Logger.getLogger(UserResource.class);
 
     private final UserService userService;
+    private final UserImportResolutionService userImportResolutionService;
     private final SecurityContext securityContext;
     private final UserSecurityContext userSecurityContext;
 
     @Inject
     public UserResource(
             UserService userService,
+            UserImportResolutionService userImportResolutionService,
             SecurityContext securityContext,
             UserSecurityContext userSecurityContext) {
         this.userService = userService;
+        this.userImportResolutionService = userImportResolutionService;
         this.securityContext = securityContext;
         this.userSecurityContext = userSecurityContext;
     }
 
     /**
-     * Imports a batch of users from the provided DTOs.
+     * Imports a batch of users. Users without a conflict are created; conflicting users are listed
+     * in the result instead of failing the whole import.
      *
-     * @param userCreationDTOs the set of user creation DTOs to import
-     * @return a set of created UserDTOs
+     * @param userCreationDTOs the list of user creation DTOs to import
+     * @return the created users and the users that could not be created, with the reason
      */
     @POST
     @Path("/admin/import")
     @RolesAllowed(Roles.ADMIN)
-    @APIResponse(responseCode = "200", description = "Users imported successfully")
+    @APIResponse(
+            responseCode = "200",
+            description = "Import processed; conflicting users are listed in the result")
     @APIResponse(responseCode = "400", description = "Bad Request: Invalid user data")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only ADMIN role can access this resource")
-    @APIResponse(
-            responseCode = "409",
-            description =
-                    "Conflict: One or more users in the batch have a conflicting username or email")
-    public Set<UserDTO> importUsers(Set<@Valid AdminUserCreationDto> userCreationDTOs) {
+    // Entries are validated one by one in the service, so invalid ones are reported
+    // in the result instead of rejecting the whole batch.
+    public UserImportResultDTO importUsers(List<AdminUserCreationDto> userCreationDTOs) {
         LOG.debugf(
                 "Received POST request to /api/users/admin/import for %d users.",
                 userCreationDTOs.size());
         return userService.importUsers(userCreationDTOs);
+    }
+
+    /**
+     * Applies the resolutions chosen for import conflicts: update an existing user with the given
+     * values, or replace it (delete and create anew). Each resolution succeeds or fails on its own.
+     *
+     * @param resolutions the resolutions to apply
+     * @return one result per resolution, in the same order
+     */
+    @POST
+    @Path("/admin/import/resolve")
+    @RolesAllowed(Roles.ADMIN)
+    @APIResponse(responseCode = "200", description = "Resolutions processed, see each result")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid resolution data")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only ADMIN role can access this resource")
+    public List<UserImportResolutionResultDTO> resolveImportConflicts(
+            List<@Valid UserImportResolutionDTO> resolutions) {
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
+        LOG.debugf(
+                "Received POST request to /api/users/admin/import/resolve for %d users.",
+                resolutions.size());
+        return userImportResolutionService.resolve(resolutions, currentUser);
     }
 
     /**

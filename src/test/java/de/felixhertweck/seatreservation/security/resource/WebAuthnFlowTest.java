@@ -355,6 +355,23 @@ class WebAuthnFlowTest {
     }
 
     @Test
+    void registerNewOptions_duplicateUsernameWithOtherCasing_conflict() {
+        // 'admin' is seeded in import-test.sql; usernames are compared case-insensitively.
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(
+                        new JsonObject()
+                                .put("username", "ADMIN")
+                                .put("firstname", "Ada")
+                                .put("lastname", "Lovelace")
+                                .put("email", "admin-casing@example.com")
+                                .encode())
+                .when()
+                .post("/api/auth/webauthn/register-new/options")
+                .then()
+                .statusCode(409);
+    }
+
+    @Test
     void managementEndpointsRequireAuthentication() {
         given().when().get("/api/auth/webauthn/status").then().statusCode(401);
         given().when().get("/api/auth/webauthn/credentials").then().statusCode(401);

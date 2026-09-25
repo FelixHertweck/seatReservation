@@ -26,7 +26,14 @@ import { UserFormModal } from "@/components/admin/user-form-modal";
 import { UserImportModal } from "@/components/admin/user-import-modal";
 import { UserBulkTagsModal } from "@/components/admin/user-bulk-tags-modal";
 import { TruncatedCell } from "@/components/common/truncated-cell";
-import type { UserDto, AdminUserCreationDto, AdminUserUpdateDto } from "@/api";
+import type {
+  UserDto,
+  AdminUserCreationDto,
+  AdminUserUpdateDto,
+  UserImportResolutionDto,
+  UserImportResolutionResultDto,
+  UserImportResultDto,
+} from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import { useSortableData } from "@/lib/table-sorting";
@@ -43,7 +50,10 @@ export interface UserManagementProps {
   createUser: (user: AdminUserCreationDto) => Promise<void>;
   updateUser: (id: string, user: AdminUserUpdateDto) => Promise<void>;
   deleteUser: (ids: string[]) => Promise<void>;
-  importUsers?: (users: AdminUserCreationDto[]) => Promise<void>;
+  importUsers?: (users: AdminUserCreationDto[]) => Promise<UserImportResultDto>;
+  resolveImportConflicts?: (
+    resolutions: UserImportResolutionDto[],
+  ) => Promise<UserImportResolutionResultDto[]>;
   updateUserTags?: (
     userIds: string[],
     addTags: string[],
@@ -62,6 +72,7 @@ export function UserManagement({
   updateUser,
   deleteUser,
   importUsers,
+  resolveImportConflicts,
   updateUserTags,
   isLoading = false,
   searchQuery,
@@ -636,6 +647,8 @@ export function UserManagement({
         {isImportModalOpen && importUsers && (
           <UserImportModal
             isOpen={isImportModalOpen}
+            existingUsers={allUsers ?? users}
+            onResolveConflicts={resolveImportConflicts}
             onClose={() => setIsImportModalOpen(false)}
             availableRoles={availableRoles}
             onImportUsers={importUsers}
