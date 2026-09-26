@@ -12,6 +12,12 @@ import { EventCard } from "@/components/events/event-card";
 import { useReservations } from "@/hooks/use-reservations";
 import { PageHeader } from "@/components/page-header";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
   getApiUserEventsByIdOptions,
   getApiUserLocationsByIdOptions,
 } from "@/api/@tanstack/react-query.gen";
@@ -102,25 +108,28 @@ export default function EventsPage() {
     return map;
   }, [reservations]);
 
-  const filteredEvents = useMemo(() => {
-    if (!events) return [];
+  const { filteredEvents, hiddenPastEvents } = useMemo(() => {
+    if (!events) return { filteredEvents: [], hiddenPastEvents: [] };
 
     const locationId = filters.locationId as string | undefined;
     const onlyUpcoming = filters.onlyUpcoming === true;
-    const filtered = events.filter((event) => {
+    const visible: typeof events = [];
+    const hiddenPast: typeof events = [];
+    for (const event of events) {
       const matchesQuery =
         event.name?.toLowerCase().includes(eventSearchQuery.toLowerCase()) ||
         event.description
           ?.toLowerCase()
           .includes(eventSearchQuery.toLowerCase());
       const matchesLocation = !locationId || event.locationId === locationId;
+      if (!matchesQuery || !matchesLocation) continue;
       const eventEnd = event.endTime ?? event.startTime;
       const isPast = !!eventEnd && new Date(eventEnd).getTime() < now;
-      const matchesPast = !onlyUpcoming || !isPast;
-      return matchesQuery && matchesLocation && matchesPast;
-    });
+      if (onlyUpcoming && isPast) hiddenPast.push(event);
+      else visible.push(event);
+    }
 
-    return [...filtered].sort((a, b) => {
+    const sorted = [...visible].sort((a, b) => {
       const aHasSeats = (a.reservationsAllowed ?? 0) > 0;
       const bHasSeats = (b.reservationsAllowed ?? 0) > 0;
 
@@ -128,6 +137,7 @@ export default function EventsPage() {
       if (!aHasSeats && bHasSeats) return 1;
       return 0;
     });
+    return { filteredEvents: sorted, hiddenPastEvents: hiddenPast };
   }, [events, eventSearchQuery, filters, now]);
 
   const handleEventSearch = (query: string) => {
@@ -152,7 +162,7 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="container mx-auto px-2 py-3 md:p-6">
+    <div className="container mx-auto flex flex-1 flex-col px-2 pt-3 pb-0 md:px-6 md:pt-6 md:pb-0">
       <PageHeader
         title={t("eventsPage.title")}
         description={t("eventsPage.description")}
@@ -177,7 +187,7 @@ export default function EventsPage() {
                 type: "switch" as const,
               },
             ]}
-            initialFilters={{ onlyUpcoming: true }}
+            initialFilters={filters}
             initialQuery={eventSearchQuery}
             className="w-full"
           />
@@ -186,7 +196,7 @@ export default function EventsPage() {
 
       {eventsLoading || reservationsLoading ? (
         <LoadingAnimation />
-      ) : filteredEvents.length === 0 ? (
+      ) : filteredEvents.length === 0 && hiddenPastEvents.length === 0 ? (
         <NoEventsAvailable eventsLength={events.length} />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
@@ -209,6 +219,39 @@ export default function EventsPage() {
           ))}
         </div>
       )}
+
+      {!eventsLoading &&
+        !reservationsLoading &&
+        hiddenPastEvents.length > 0 && (
+          <Accordion
+            type="single"
+            collapsible
+            className="-mb-2 mt-auto pt-8 md:-mb-4"
+          >
+            <AccordionItem value="hidden-past" className="border-b-0 border-t">
+              <AccordionTrigger className="py-2 text-xs text-muted-foreground">
+                {t("eventsPage.hiddenPastEvents", {
+                  count: hiddenPastEvents.length,
+                })}
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+                  {hiddenPastEvents.map((event) => (
+                    <EventCard
+                      key={event.id?.toString()}
+                      event={event}
+                      location={getLocation(event.locationId)}
+                      reservationCount={
+                        reservationCountByEvent.get(event.id ?? "") ?? 0
+                      }
+                      onReserve={() => setSelectedEventId(event.id ?? null)}
+                    />
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        )}
 
       {selectedEvent && (
         <EventReservationModal
