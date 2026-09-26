@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSV → User-JSON</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 860px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+  h1 { font-size: 1.4rem; }
+  label { display: block; margin-top: 1rem; font-weight: 600; }
+  input[type=text] { width: 100%; padding: .4rem; box-sizing: border-box; }
+  textarea { width: 100%; height: 220px; font-family: monospace; box-sizing: border-box; }
+  button { margin: .5rem .5rem 0 0; padding: .5rem 1rem; cursor: pointer; }
+  #status { margin-top: 1rem; color: #555; white-space: pre-wrap; }
+  .warn { color: #b45309; }
+  .hint { font-weight: normal; color: #666; font-size: .9rem; }
+</style>
+</head>
+<body>
+<h1>CSV → JSON (AdminUserCreationDto)</h1>
+<p class="hint">Delimiter <code>;</code> · Columns: firstname; lastname; password; email (optional). Header row optional. Everything runs locally in your browser.</p>
+
+<label for="file">CSV file</label>
+<input type="file" id="file" accept=".csv,text/csv,text/plain">
+
+<label for="csv">…or paste CSV here</label>
+<textarea id="csv" placeholder="firstname;lastname;password;email"></textarea>
+
+<label for="roles">Roles <span class="hint">(comma-separated)</span></label>
+<input type="text" id="roles" value="USER">
+<label for="tags">Tags <span class="hint">(comma-separated)</span></label>
+<input type="text" id="tags" value="imported">
+
+<button id="convert">Convert</button>
+<button id="download" disabled>Download output.json</button>
+<button id="copy" disabled>Copy</button>
+
+<div id="status"></div>
+<label for="out">JSON</label>
+<textarea id="out" readonly></textarea>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+
+  // RFC-4180-style parser with configurable delimiter, quotes, trimmed fields, empty lines skipped.
+  function parseCsv(text, delim) {
+    const rows = [];
+    let row = [], field = "", inQuotes = false;
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; } else inQuotes = false;
+        } else field += c;
+      } else if (c === '"') inQuotes = true;
+      else if (c === delim) { row.push(field); field = ""; }
+      else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") i++;
+        row.push(field); field = "";
+        rows.push(row); row = [];
+      } else field += c;
+    }
+    if (field !== "" || row.length) { row.push(field); rows.push(row); }
+    return rows
+      .map((r) => r.map((f) => f.trim()))
+      .filter((r) => !(r.length === 1 && r[0] === ""));
+  }
+
+  function looksLikeHeader(row) {
+    for (const v of row) {
+      const l = v.toLowerCase().trim();
+      if (!l) return false;
+      if (["firstname", "lastname", "password", "email"].some((k) => l.includes(k))) return true;
+    }
+    return false;
+  }
+
+  function createUsername(first, last) {
+    let u = (first + "." + last).toLowerCase().replace(/\s+/g, "");
+    u = u.replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss");
+    u = u.replace(/[^a-z0-9._-]/g, "");
+    return u.length > 64 ? u.slice(0, 64) : u;
+  }
+
+  const split = (s) => s.split(",").map((x) => x.trim()).filter(Boolean);
+
+  function convert(text, roles, tags) {
+    const rows = parseCsv(text, ";");
+    const warnings = [];
+    const users = [];
+    let start = 0;
+    let header = null;
+    if (rows.length && looksLikeHeader(rows[0])) {
+      header = rows[0].map((h) => h.toLowerCase());
+      start = 1;
+    }
+    // Named column if header has it, else fixed index.
+    const get = (row, name, idx) => {
+      const hi = header ? header.indexOf(name) : -1;
+      const i = hi >= 0 ? hi : idx;
+      return i < row.length ? row[i] : "";
+    };
+    for (let n = start; n < rows.length; n++) {
+      const r = rows[n];
+      const firstname = get(r, "firstname", 0);
+      const lastname = get(r, "lastname", 1);
+      const password = get(r, "password", 2);
+      const email = get(r, "email", 3);
+      if (!firstname || !lastname || !password) {
+        warnings.push("Row " + (n + 1) + " skipped (missing required fields): " + r.join(";"));
+        continue;
+      }
+      const username = createUsername(firstname, lastname);
+      if (!/^[a-zA-Z0-9._-]{3,64}$/.test(username)) {
+        warnings.push("Row " + (n + 1) + " skipped (cannot derive a valid username, got \"" + username + "\"): " + r.join(";"));
+        continue;
+      }
+      users.push({
+        username: username,
+        email: email || null,
+        password: password,
+        firstname: firstname,
+        lastname: lastname,
+        sendEmailVerification: false,
+        emailVerified: false,
+        roles: roles,
+        tags: tags,
+      });
+    }
+    return { users, warnings };
+  }
+
+  let lastJson = "";
+
+  function run() {
+    const roles = split($("roles").value);
+    if (roles.length === 0) {
+      lastJson = "";
+      $("out").value = "";
+      $("download").disabled = $("copy").disabled = true;
+      $("status").innerHTML = "";
+      const d = document.createElement("div");
+      d.className = "warn";
+      d.textContent = "At least one role is required.";
+      $("status").append(d);
+      return;
+    }
+    const { users, warnings } = convert($("csv").value, roles, split($("tags").value));
+    lastJson = JSON.stringify(users, null, 2);
+    $("out").value = lastJson;
+    $("status").innerHTML = "";
+    $("status").append(users.length + " user(s) converted.");
+    warnings.forEach((w) => {
+      const d = document.createElement("div");
+      d.className = "warn";
+      d.textContent = w;
+      $("status").append(d);
+    });
+    $("download").disabled = $("copy").disabled = users.length === 0;
+  }
+
+  $("file").addEventListener("change", (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => { $("csv").value = reader.result; run(); };
+    reader.readAsText(f, "UTF-8");
+  });
+  $("convert").addEventListener("click", run);
+  $("download").addEventListener("click", () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([lastJson], { type: "application/json" }));
+    a.download = "output.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  $("copy").addEventListener("click", () => navigator.clipboard.writeText(lastJson));
+})();
+</script>
+</body>
+</html>
