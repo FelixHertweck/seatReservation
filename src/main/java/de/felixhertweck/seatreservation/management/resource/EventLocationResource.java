@@ -39,7 +39,10 @@ import jakarta.ws.rs.core.MediaType;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationUpdateDTO;
+import de.felixhertweck.seatreservation.management.dto.LayoutBatchRequestDTO;
+import de.felixhertweck.seatreservation.management.dto.LayoutBatchResponseDTO;
 import de.felixhertweck.seatreservation.management.service.EventLocationService;
+import de.felixhertweck.seatreservation.management.service.LayoutBatchService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
@@ -58,12 +61,16 @@ public class EventLocationResource {
     private static final Logger LOG = Logger.getLogger(EventLocationResource.class);
 
     private final EventLocationService eventLocationService;
+    private final LayoutBatchService layoutBatchService;
     private final UserSecurityContext userSecurityContext;
 
     @Inject
     public EventLocationResource(
-            EventLocationService eventLocationService, UserSecurityContext userSecurityContext) {
+            EventLocationService eventLocationService,
+            LayoutBatchService layoutBatchService,
+            UserSecurityContext userSecurityContext) {
         this.eventLocationService = eventLocationService;
+        this.layoutBatchService = layoutBatchService;
         this.userSecurityContext = userSecurityContext;
     }
 
@@ -142,6 +149,30 @@ public class EventLocationResource {
                 eventLocationService.updateEventLocation(id, dto, currentUser);
         LOG.infof("Event location with ID %s updated successfully.", id);
         return result;
+    }
+
+    @POST
+    @Path("/{id}/layout-operations")
+    @APIResponse(
+            responseCode = "200",
+            description = "All operations applied in order, in one transaction",
+            content = @Content(schema = @Schema(implementation = LayoutBatchResponseDTO.class)))
+    @APIResponse(responseCode = "400", description = "Invalid operation; nothing was applied")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Event location or an operation's target not found")
+    public LayoutBatchResponseDTO applyLayoutOperations(
+            @PathParam("id") UUID id, @Valid LayoutBatchRequestDTO dto) {
+        LOG.debugf(
+                "Received POST request to /api/manager/eventlocations/%s/layout-operations with"
+                        + " %d operations.",
+                id, dto.getOperations().size());
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
+        return layoutBatchService.apply(id, dto, currentUser);
     }
 
     @DELETE
