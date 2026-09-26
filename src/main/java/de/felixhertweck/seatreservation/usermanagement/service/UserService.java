@@ -612,9 +612,14 @@ public class UserService {
             }
         }
 
+        // Admins may clear the email address; an empty value is stored as null.
+        String email = user.getEmail();
+        if (email != null && email.trim().isEmpty()) {
+            email = null;
+        }
         updateUserCore(
                 existingUser,
-                user.getEmail(),
+                email,
                 user.getFirstname(),
                 user.getLastname(),
                 user.getPassword(),

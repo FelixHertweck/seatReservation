@@ -30,7 +30,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public class AdminUserUpdateDTO {
     @NoHtmlSanitize
-    @Email(regexp = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", message = "Invalid email format")
+    @Email(regexp = "^$|^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", message = "Invalid email format")
     private final String email;
 
     @NotNull(message = "emailVerified cannot be null")
