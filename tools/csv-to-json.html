@@ -113,8 +113,13 @@
         warnings.push("Row " + (n + 1) + " skipped (missing required fields): " + r.join(";"));
         continue;
       }
+      const username = createUsername(firstname, lastname);
+      if (!/^[a-zA-Z0-9._-]{3,64}$/.test(username)) {
+        warnings.push("Row " + (n + 1) + " skipped (cannot derive a valid username, got \"" + username + "\"): " + r.join(";"));
+        continue;
+      }
       users.push({
-        username: createUsername(firstname, lastname),
+        username: username,
         email: email || null,
         password: password,
         firstname: firstname,
@@ -131,7 +136,19 @@
   let lastJson = "";
 
   function run() {
-    const { users, warnings } = convert($("csv").value, split($("roles").value), split($("tags").value));
+    const roles = split($("roles").value);
+    if (roles.length === 0) {
+      lastJson = "";
+      $("out").value = "";
+      $("download").disabled = $("copy").disabled = true;
+      $("status").innerHTML = "";
+      const d = document.createElement("div");
+      d.className = "warn";
+      d.textContent = "At least one role is required.";
+      $("status").append(d);
+      return;
+    }
+    const { users, warnings } = convert($("csv").value, roles, split($("tags").value));
     lastJson = JSON.stringify(users, null, 2);
     $("out").value = lastJson;
     $("status").innerHTML = "";
