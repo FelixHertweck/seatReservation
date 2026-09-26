@@ -175,6 +175,27 @@
           }
         }
       },
+      "AreaOperationDTO" : {
+        "type" : "object",
+        "required" : [ "action" ],
+        "properties" : {
+          "action" : {
+            "$ref" : "#/components/schemas/LayoutOperationAction"
+          },
+          "id" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "ref" : {
+            "type" : "string"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/AreaRequestDTO"
+          },
+          "entity" : {
+            "$ref" : "#/components/schemas/LayoutEntityType"
+          }
+        }
+      },
       "AreaRequestDTO" : {
         "type" : "object",
         "required" : [ "name", "eventLocationId" ],
@@ -430,6 +451,27 @@
           },
           "retryAfter" : {
             "$ref" : "#/components/schemas/Instant"
+          }
+        }
+      },
+      "EntranceOperationDTO" : {
+        "type" : "object",
+        "required" : [ "action" ],
+        "properties" : {
+          "action" : {
+            "$ref" : "#/components/schemas/LayoutOperationAction"
+          },
+          "id" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "ref" : {
+            "type" : "string"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/EntranceRequestDTO"
+          },
+          "entity" : {
+            "$ref" : "#/components/schemas/LayoutEntityType"
           }
         }
       },
@@ -873,6 +915,102 @@
         "format" : "date-time",
         "examples" : [ "2022-03-10T16:15:50Z" ]
       },
+      "LayoutBatchRequestDTO" : {
+        "type" : "object",
+        "required" : [ "operations" ],
+        "properties" : {
+          "operations" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LayoutOperationDTO"
+            },
+            "maxItems" : 10000,
+            "minItems" : 1
+          }
+        }
+      },
+      "LayoutBatchResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "batchId" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LayoutOperationResultDTO"
+            }
+          }
+        }
+      },
+      "LayoutEntityType" : {
+        "type" : "string",
+        "enum" : [ "LOCATION", "ENTRANCE", "AREA", "MARKER", "SEAT" ]
+      },
+      "LayoutOperationAction" : {
+        "type" : "string",
+        "enum" : [ "CREATE", "UPDATE", "DELETE" ]
+      },
+      "LayoutOperationDTO" : {
+        "oneOf" : [ {
+          "$ref" : "#/components/schemas/LocationOperationDTO"
+        }, {
+          "$ref" : "#/components/schemas/EntranceOperationDTO"
+        }, {
+          "$ref" : "#/components/schemas/AreaOperationDTO"
+        }, {
+          "$ref" : "#/components/schemas/MarkerOperationDTO"
+        }, {
+          "$ref" : "#/components/schemas/SeatOperationDTO"
+        } ],
+        "type" : "object",
+        "discriminator" : {
+          "propertyName" : "entity",
+          "mapping" : {
+            "LOCATION" : "#/components/schemas/LocationOperationDTO",
+            "ENTRANCE" : "#/components/schemas/EntranceOperationDTO",
+            "AREA" : "#/components/schemas/AreaOperationDTO",
+            "MARKER" : "#/components/schemas/MarkerOperationDTO",
+            "SEAT" : "#/components/schemas/SeatOperationDTO"
+          }
+        },
+        "required" : [ "action", "entity" ],
+        "properties" : {
+          "action" : {
+            "$ref" : "#/components/schemas/LayoutOperationAction"
+          },
+          "id" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "ref" : {
+            "type" : "string"
+          },
+          "entity" : {
+            "$ref" : "#/components/schemas/LayoutEntityType"
+          }
+        }
+      },
+      "LayoutOperationResultDTO" : {
+        "type" : "object",
+        "properties" : {
+          "sequenceNo" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "entity" : {
+            "$ref" : "#/components/schemas/LayoutEntityType"
+          },
+          "action" : {
+            "$ref" : "#/components/schemas/LayoutOperationAction"
+          },
+          "id" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "ref" : {
+            "type" : "string"
+          }
+        }
+      },
       "LimitedUserInfoDTO" : {
         "type" : "object",
         "properties" : {
@@ -888,6 +1026,27 @@
             "items" : {
               "type" : "string"
             }
+          }
+        }
+      },
+      "LocationOperationDTO" : {
+        "type" : "object",
+        "required" : [ "action" ],
+        "properties" : {
+          "action" : {
+            "$ref" : "#/components/schemas/LayoutOperationAction"
+          },
+          "id" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "ref" : {
+            "type" : "string"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/EventLocationUpdateDTO"
+          },
+          "entity" : {
+            "$ref" : "#/components/schemas/LayoutEntityType"
           }
         }
       },
@@ -1039,6 +1198,27 @@
             "type" : "integer",
             "format" : "int64",
             "description" : "Total contingent seats granted"
+          }
+        }
+      },
+      "MarkerOperationDTO" : {
+        "type" : "object",
+        "required" : [ "action" ],
+        "properties" : {
+          "action" : {
+            "$ref" : "#/components/schemas/LayoutOperationAction"
+          },
+          "id" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "ref" : {
+            "type" : "string"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/MakerRequestDTO"
+          },
+          "entity" : {
+            "$ref" : "#/components/schemas/LayoutEntityType"
           }
         }
       },
@@ -1324,6 +1504,33 @@
           },
           "areaId" : {
             "$ref" : "#/components/schemas/UUID"
+          }
+        }
+      },
+      "SeatOperationDTO" : {
+        "type" : "object",
+        "required" : [ "action" ],
+        "properties" : {
+          "action" : {
+            "$ref" : "#/components/schemas/LayoutOperationAction"
+          },
+          "id" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "ref" : {
+            "type" : "string"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/SeatRequestDTO"
+          },
+          "areaRef" : {
+            "type" : "string"
+          },
+          "entranceRef" : {
+            "type" : "string"
+          },
+          "entity" : {
+            "$ref" : "#/components/schemas/LayoutEntityType"
           }
         }
       },
@@ -3581,6 +3788,57 @@
           }
         },
         "summary" : "Update Event Location",
+        "tags" : [ "Event Location Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/manager/eventlocations/{id}/layout-operations" : {
+      "post" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LayoutBatchRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "All operations applied in order, in one transaction",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LayoutBatchResponseDTO"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid operation; nothing was applied"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event location or an operation's target not found"
+          }
+        },
+        "summary" : "Apply Layout Operations",
         "tags" : [ "Event Location Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]

@@ -203,6 +203,30 @@ export const AreaDTOSchema = {
     }
 } as const;
 
+export const AreaOperationDTOSchema = {
+    type: 'object',
+    required: [
+        'action'
+    ],
+    properties: {
+        action: {
+            $ref: '#/components/schemas/LayoutOperationAction'
+        },
+        id: {
+            $ref: '#/components/schemas/UUID'
+        },
+        ref: {
+            type: 'string'
+        },
+        data: {
+            $ref: '#/components/schemas/AreaRequestDTO'
+        },
+        entity: {
+            $ref: '#/components/schemas/LayoutEntityType'
+        }
+    }
+} as const;
+
 export const AreaRequestDTOSchema = {
     type: 'object',
     required: [
@@ -487,6 +511,30 @@ export const EmailCooldownDTOSchema = {
         },
         retryAfter: {
             $ref: '#/components/schemas/Instant'
+        }
+    }
+} as const;
+
+export const EntranceOperationDTOSchema = {
+    type: 'object',
+    required: [
+        'action'
+    ],
+    properties: {
+        action: {
+            $ref: '#/components/schemas/LayoutOperationAction'
+        },
+        id: {
+            $ref: '#/components/schemas/UUID'
+        },
+        ref: {
+            type: 'string'
+        },
+        data: {
+            $ref: '#/components/schemas/EntranceRequestDTO'
+        },
+        entity: {
+            $ref: '#/components/schemas/LayoutEntityType'
         }
     }
 } as const;
@@ -993,6 +1041,129 @@ export const InstantSchema = {
     ]
 } as const;
 
+export const LayoutBatchRequestDTOSchema = {
+    type: 'object',
+    required: [
+        'operations'
+    ],
+    properties: {
+        operations: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/LayoutOperationDTO'
+            },
+            maxItems: 10000,
+            minItems: 1
+        }
+    }
+} as const;
+
+export const LayoutBatchResponseDTOSchema = {
+    type: 'object',
+    properties: {
+        batchId: {
+            $ref: '#/components/schemas/UUID'
+        },
+        results: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/LayoutOperationResultDTO'
+            }
+        }
+    }
+} as const;
+
+export const LayoutEntityTypeSchema = {
+    type: 'string',
+    enum: [
+        'LOCATION',
+        'ENTRANCE',
+        'AREA',
+        'MARKER',
+        'SEAT'
+    ]
+} as const;
+
+export const LayoutOperationActionSchema = {
+    type: 'string',
+    enum: [
+        'CREATE',
+        'UPDATE',
+        'DELETE'
+    ]
+} as const;
+
+export const LayoutOperationDTOSchema = {
+    oneOf: [
+        {
+            $ref: '#/components/schemas/LocationOperationDTO'
+        },
+        {
+            $ref: '#/components/schemas/EntranceOperationDTO'
+        },
+        {
+            $ref: '#/components/schemas/AreaOperationDTO'
+        },
+        {
+            $ref: '#/components/schemas/MarkerOperationDTO'
+        },
+        {
+            $ref: '#/components/schemas/SeatOperationDTO'
+        }
+    ],
+    type: 'object',
+    discriminator: {
+        propertyName: 'entity',
+        mapping: {
+            LOCATION: '#/components/schemas/LocationOperationDTO',
+            ENTRANCE: '#/components/schemas/EntranceOperationDTO',
+            AREA: '#/components/schemas/AreaOperationDTO',
+            MARKER: '#/components/schemas/MarkerOperationDTO',
+            SEAT: '#/components/schemas/SeatOperationDTO'
+        }
+    },
+    required: [
+        'action',
+        'entity'
+    ],
+    properties: {
+        action: {
+            $ref: '#/components/schemas/LayoutOperationAction'
+        },
+        id: {
+            $ref: '#/components/schemas/UUID'
+        },
+        ref: {
+            type: 'string'
+        },
+        entity: {
+            $ref: '#/components/schemas/LayoutEntityType'
+        }
+    }
+} as const;
+
+export const LayoutOperationResultDTOSchema = {
+    type: 'object',
+    properties: {
+        sequenceNo: {
+            type: 'integer',
+            format: 'int32'
+        },
+        entity: {
+            $ref: '#/components/schemas/LayoutEntityType'
+        },
+        action: {
+            $ref: '#/components/schemas/LayoutOperationAction'
+        },
+        id: {
+            $ref: '#/components/schemas/UUID'
+        },
+        ref: {
+            type: 'string'
+        }
+    }
+} as const;
+
 export const LimitedUserInfoDTOSchema = {
     type: 'object',
     properties: {
@@ -1008,6 +1179,30 @@ export const LimitedUserInfoDTOSchema = {
             items: {
                 type: 'string'
             }
+        }
+    }
+} as const;
+
+export const LocationOperationDTOSchema = {
+    type: 'object',
+    required: [
+        'action'
+    ],
+    properties: {
+        action: {
+            $ref: '#/components/schemas/LayoutOperationAction'
+        },
+        id: {
+            $ref: '#/components/schemas/UUID'
+        },
+        ref: {
+            type: 'string'
+        },
+        data: {
+            $ref: '#/components/schemas/EventLocationUpdateDTO'
+        },
+        entity: {
+            $ref: '#/components/schemas/LayoutEntityType'
         }
     }
 } as const;
@@ -1177,6 +1372,30 @@ export const ManagementOverviewStatsDTOSchema = {
             type: 'integer',
             format: 'int64',
             description: 'Total contingent seats granted'
+        }
+    }
+} as const;
+
+export const MarkerOperationDTOSchema = {
+    type: 'object',
+    required: [
+        'action'
+    ],
+    properties: {
+        action: {
+            $ref: '#/components/schemas/LayoutOperationAction'
+        },
+        id: {
+            $ref: '#/components/schemas/UUID'
+        },
+        ref: {
+            type: 'string'
+        },
+        data: {
+            $ref: '#/components/schemas/MakerRequestDTO'
+        },
+        entity: {
+            $ref: '#/components/schemas/LayoutEntityType'
         }
     }
 } as const;
@@ -1524,6 +1743,36 @@ export const SeatDTOSchema = {
         },
         areaId: {
             $ref: '#/components/schemas/UUID'
+        }
+    }
+} as const;
+
+export const SeatOperationDTOSchema = {
+    type: 'object',
+    required: [
+        'action'
+    ],
+    properties: {
+        action: {
+            $ref: '#/components/schemas/LayoutOperationAction'
+        },
+        id: {
+            $ref: '#/components/schemas/UUID'
+        },
+        ref: {
+            type: 'string'
+        },
+        data: {
+            $ref: '#/components/schemas/SeatRequestDTO'
+        },
+        areaRef: {
+            type: 'string'
+        },
+        entranceRef: {
+            type: 'string'
+        },
+        entity: {
+            $ref: '#/components/schemas/LayoutEntityType'
         }
     }
 } as const;
