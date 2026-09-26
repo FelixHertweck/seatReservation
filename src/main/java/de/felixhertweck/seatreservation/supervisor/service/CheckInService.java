@@ -321,7 +321,10 @@ public class CheckInService {
                                 .findAuthorizedEvents(userRepository.getReference(currentUser.id()))
                                 .stream();
 
+        // Once an event is over there is nothing left to supervise, so it drops out of the list.
+        Instant now = Instant.now();
         return authorizedEvents
+                .filter(e -> e.getEndTime() == null || e.getEndTime().isAfter(now))
                 .map(SupervisorEventResponseDTO::new)
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
     }

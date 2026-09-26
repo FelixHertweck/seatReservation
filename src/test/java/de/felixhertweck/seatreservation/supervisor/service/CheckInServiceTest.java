@@ -530,4 +530,22 @@ class CheckInServiceTest {
                 checkInService.getAllEventsForSupervisor(auth(supervisor));
         assertEquals(1, events.size());
     }
+
+    @Test
+    void testGetAllEventsForSupervisor_excludesEndedEvents() {
+        User supervisor = new User();
+        supervisor.id = id(1);
+        Event ended = new Event();
+        ended.id = id(10);
+        ended.setEndTime(java.time.Instant.now().minusSeconds(60));
+        Event running = new Event();
+        running.id = id(20);
+        running.setEndTime(java.time.Instant.now().plusSeconds(3600));
+        when(userRepository.getReference(supervisor.id)).thenReturn(supervisor);
+        when(eventRepository.findAuthorizedEvents(supervisor)).thenReturn(List.of(ended, running));
+
+        var events = checkInService.getAllEventsForSupervisor(auth(supervisor));
+        assertEquals(1, events.size());
+        assertEquals(running.id, events.get(0).id());
+    }
 }
