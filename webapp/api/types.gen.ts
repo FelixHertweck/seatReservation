@@ -54,14 +54,6 @@ export type AreaDto = {
     boundary?: Array<CoordinateDto>;
 };
 
-export type AreaOperationDto = {
-    action: LayoutOperationAction;
-    id?: Uuid;
-    ref?: string;
-    data?: AreaRequestDto;
-    entity?: LayoutEntityType;
-};
-
 export type AreaRequestDto = {
     name: string;
     boundary?: Array<CoordinateDto>;
@@ -145,14 +137,6 @@ export type CoordinateDto = {
 export type EmailCooldownDto = {
     message?: string;
     retryAfter?: Instant;
-};
-
-export type EntranceOperationDto = {
-    action: LayoutOperationAction;
-    id?: Uuid;
-    ref?: string;
-    data?: EntranceRequestDto;
-    entity?: LayoutEntityType;
 };
 
 export type EntranceRequestDto = {
@@ -344,11 +328,18 @@ export const LayoutOperationAction = {
 
 export type LayoutOperationAction = typeof LayoutOperationAction[keyof typeof LayoutOperationAction];
 
-export type LayoutOperationDto = (LocationOperationDto | EntranceOperationDto | AreaOperationDto | MarkerOperationDto | SeatOperationDto) & {
+export type LayoutOperationDto = {
+    entity: LayoutEntityType;
     action: LayoutOperationAction;
     id?: Uuid;
     ref?: string;
-    entity: LayoutEntityType;
+    location?: EventLocationUpdateDto;
+    entrance?: EntranceRequestDto;
+    area?: AreaRequestDto;
+    marker?: MakerRequestDto;
+    seat?: SeatRequestDto;
+    areaRef?: string;
+    entranceRef?: string;
 };
 
 export type LayoutOperationResultDto = {
@@ -363,14 +354,6 @@ export type LimitedUserInfoDto = {
     id?: Uuid;
     username?: string;
     tags?: Array<string>;
-};
-
-export type LocationOperationDto = {
-    action: LayoutOperationAction;
-    id?: Uuid;
-    ref?: string;
-    data?: EventLocationUpdateDto;
-    entity?: LayoutEntityType;
 };
 
 export type LoginLockedDto = {
@@ -480,14 +463,6 @@ export type ManagementOverviewStatsDto = {
      * Total contingent seats granted
      */
     contingentGranted?: bigint;
-};
-
-export type MarkerOperationDto = {
-    action: LayoutOperationAction;
-    id?: Uuid;
-    ref?: string;
-    data?: MakerRequestDto;
-    entity?: LayoutEntityType;
 };
 
 export const NotificationCategory = { BOOKING: 'BOOKING', EVENT_REMINDER: 'EVENT_REMINDER' } as const;
@@ -665,16 +640,6 @@ export type SeatDto = {
     area?: string;
     entranceId?: Uuid;
     areaId?: Uuid;
-};
-
-export type SeatOperationDto = {
-    action: LayoutOperationAction;
-    id?: Uuid;
-    ref?: string;
-    data?: SeatRequestDto;
-    areaRef?: string;
-    entranceRef?: string;
-    entity?: LayoutEntityType;
 };
 
 export type SeatRequestDto = {

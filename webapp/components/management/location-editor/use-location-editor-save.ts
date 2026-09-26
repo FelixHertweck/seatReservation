@@ -297,7 +297,7 @@ export function useLocationEditorSave({
           entity: "LOCATION",
           action: "UPDATE",
           id: eventLocationId,
-          data: {
+          location: {
             name: s.meta.name,
             address: s.meta.address,
             managerIds: s.meta.managerIds,
@@ -315,7 +315,7 @@ export function useLocationEditorSave({
             action: e.serverId ? "UPDATE" : "CREATE",
             id: e.serverId,
             ref: e.localId,
-            data: { name: e.name, eventLocationId },
+            entrance: { name: e.name, eventLocationId },
           },
           { kind: "entrance", localId: e.localId },
         );
@@ -327,7 +327,7 @@ export function useLocationEditorSave({
             action: a.serverId ? "UPDATE" : "CREATE",
             id: a.serverId,
             ref: a.localId,
-            data: {
+            area: {
               name: a.name,
               boundary: a.boundary.map((p) => ({
                 xCoordinate: p.x,
@@ -353,7 +353,7 @@ export function useLocationEditorSave({
             areaRef: area && !area.serverId ? area.localId : undefined,
             entranceRef:
               entrance && !entrance.serverId ? entrance.localId : undefined,
-            data: {
+            seat: {
               seatNumber: seat.seatNumber,
               seatRow: seat.seatRow,
               eventLocationId,
@@ -372,7 +372,7 @@ export function useLocationEditorSave({
             action: m.serverId ? "UPDATE" : "CREATE",
             id: m.serverId,
             ref: m.localId,
-            data: {
+            marker: {
               label: m.label,
               coordinate: { xCoordinate: m.x, yCoordinate: m.y },
               eventLocationId,

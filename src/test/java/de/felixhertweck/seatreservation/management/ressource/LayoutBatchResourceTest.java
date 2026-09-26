@@ -129,7 +129,7 @@ public class LayoutBatchResourceTest {
     private String createSeat(String number, String areaRef, String entranceRef) {
         return """
         {"entity":"SEAT","action":"CREATE","ref":"s%s","areaRef":"%s","entranceRef":"%s",
-         "data":{"seatNumber":"%s","seatRow":"A","eventLocationId":"%s",
+         "seat":{"seatNumber":"%s","seatRow":"A","eventLocationId":"%s",
                  "coordinate":{"xCoordinate":1,"yCoordinate":2}}}\
         """
                 .formatted(number, areaRef, entranceRef, number, location.id);
@@ -141,13 +141,13 @@ public class LayoutBatchResourceTest {
                 """
                 {"operations":[
                   {"entity":"AREA","action":"CREATE","ref":"a1",
-                   "data":{"name":"Front","eventLocationId":"%1$s","boundary":[]}},
+                   "area":{"name":"Front","eventLocationId":"%1$s","boundary":[]}},
                   {"entity":"ENTRANCE","action":"CREATE","ref":"e1",
-                   "data":{"name":"North","eventLocationId":"%1$s"}},
+                   "entrance":{"name":"North","eventLocationId":"%1$s"}},
                   %2$s,
                   %3$s,
                   {"entity":"MARKER","action":"CREATE","ref":"m1",
-                   "data":{"label":"Stage","eventLocationId":"%1$s",
+                   "marker":{"label":"Stage","eventLocationId":"%1$s",
                            "coordinate":{"xCoordinate":5,"yCoordinate":5}}}
                 ]}\
                 """
@@ -197,9 +197,9 @@ public class LayoutBatchResourceTest {
                 """
                 {"operations":[
                   {"entity":"ENTRANCE","action":"CREATE","ref":"e1",
-                   "data":{"name":"North","eventLocationId":"%1$s"}},
+                   "entrance":{"name":"North","eventLocationId":"%1$s"}},
                   {"entity":"ENTRANCE","action":"CREATE","ref":"e2",
-                   "data":{"name":"  ","eventLocationId":"%1$s"}}
+                   "entrance":{"name":"  ","eventLocationId":"%1$s"}}
                 ]}\
                 """
                         .formatted(location.id);
@@ -226,7 +226,7 @@ public class LayoutBatchResourceTest {
         String entrance =
                 """
                 {"entity":"ENTRANCE","action":"CREATE","ref":"e1",
-                 "data":{"name":"North","eventLocationId":"%s"}}\
+                 "entrance":{"name":"North","eventLocationId":"%s"}}\
                 """
                         .formatted(location.id);
         given().contentType(ContentType.JSON)
@@ -246,7 +246,7 @@ public class LayoutBatchResourceTest {
                 """
                 {"operations":[
                   {"entity":"ENTRANCE","action":"UPDATE","id":"%s",
-                   "data":{"name":"Hijacked","eventLocationId":"%s"}}
+                   "entrance":{"name":"Hijacked","eventLocationId":"%s"}}
                 ]}\
                 """
                         .formatted(foreign, location.id);
@@ -262,7 +262,7 @@ public class LayoutBatchResourceTest {
                 """
                 {"operations":[
                   {"entity":"ENTRANCE","action":"CREATE",
-                   "data":{"name":"North","eventLocationId":"%s"}}
+                   "entrance":{"name":"North","eventLocationId":"%s"}}
                 ]}\
                 """
                         .formatted(otherLocation.id);

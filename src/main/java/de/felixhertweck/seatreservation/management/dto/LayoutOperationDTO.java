@@ -20,57 +20,28 @@
 package de.felixhertweck.seatreservation.management.dto;
 
 import java.util.UUID;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.quarkus.runtime.annotations.RegisterForReflection;
-import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
-import org.eclipse.microprofile.openapi.annotations.media.DiscriminatorMapping;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
- * One step of a {@link LayoutBatchRequestDTO}. Subclasses wrap the regular request DTO of their
- * entity, so no second set of field definitions has to be maintained. The discriminator property is
- * {@code entity}.
+ * One step of a {@link LayoutBatchRequestDTO}. Exactly the payload field matching {@code entity} is
+ * used; it is the regular request DTO of that entity, so no second set of field definitions has to
+ * be maintained.
  *
  * <ul>
- *   <li>{@code CREATE}: {@code data} required, {@code ref} optional. Later operations of the same
- *       batch can point at the created entity via that ref.
- *   <li>{@code UPDATE}: {@code id} and {@code data} required.
+ *   <li>{@code CREATE}: payload required, {@code ref} optional. Later operations of the same batch
+ *       can point at the created entity via that ref.
+ *   <li>{@code UPDATE}: {@code id} and payload required ({@code LOCATION} needs no {@code id}).
  *   <li>{@code DELETE}: {@code id} required.
  * </ul>
  */
 @RegisterForReflection
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.EXISTING_PROPERTY,
-        property = "entity")
-@JsonSubTypes({
-    @JsonSubTypes.Type(value = LocationOperationDTO.class, name = "LOCATION"),
-    @JsonSubTypes.Type(value = EntranceOperationDTO.class, name = "ENTRANCE"),
-    @JsonSubTypes.Type(value = AreaOperationDTO.class, name = "AREA"),
-    @JsonSubTypes.Type(value = MarkerOperationDTO.class, name = "MARKER"),
-    @JsonSubTypes.Type(value = SeatOperationDTO.class, name = "SEAT")
-})
-@Schema(
-        type = SchemaType.OBJECT,
-        oneOf = {
-            LocationOperationDTO.class,
-            EntranceOperationDTO.class,
-            AreaOperationDTO.class,
-            MarkerOperationDTO.class,
-            SeatOperationDTO.class
-        },
-        discriminatorProperty = "entity",
-        discriminatorMapping = {
-            @DiscriminatorMapping(value = "LOCATION", schema = LocationOperationDTO.class),
-            @DiscriminatorMapping(value = "ENTRANCE", schema = EntranceOperationDTO.class),
-            @DiscriminatorMapping(value = "AREA", schema = AreaOperationDTO.class),
-            @DiscriminatorMapping(value = "MARKER", schema = MarkerOperationDTO.class),
-            @DiscriminatorMapping(value = "SEAT", schema = SeatOperationDTO.class)
-        })
-public abstract class LayoutOperationDTO {
+public class LayoutOperationDTO {
+
+    @NotNull(message = "Operation entity must not be null")
+    private LayoutEntityType entity;
 
     @NotNull(message = "Operation action must not be null")
     private LayoutOperationAction action;
@@ -81,11 +52,29 @@ public abstract class LayoutOperationDTO {
     /** Client-chosen key of a CREATE, unique per entity type within one batch. */
     private String ref;
 
-    protected LayoutOperationDTO() {}
+    @Valid private EventLocationUpdateDTO location;
+    @Valid private EntranceRequestDTO entrance;
+    @Valid private AreaRequestDTO area;
+    @Valid private MakerRequestDTO marker;
+    @Valid private SeatRequestDTO seat;
 
-    /** Discriminator, fixed per subclass. Read-only: on input it only selects the subclass. */
-    @Schema(required = true)
-    public abstract LayoutEntityType getEntity();
+    /** Seat only: ref of an area created earlier in the batch; replaces {@code seat.areaId}. */
+    private String areaRef;
+
+    /**
+     * Seat only: ref of an entrance created earlier in the batch; replaces {@code seat.entranceId}.
+     */
+    private String entranceRef;
+
+    public LayoutOperationDTO() {}
+
+    public LayoutEntityType getEntity() {
+        return entity;
+    }
+
+    public void setEntity(LayoutEntityType entity) {
+        this.entity = entity;
+    }
 
     public LayoutOperationAction getAction() {
         return action;
@@ -109,5 +98,61 @@ public abstract class LayoutOperationDTO {
 
     public void setRef(String ref) {
         this.ref = ref;
+    }
+
+    public EventLocationUpdateDTO getLocation() {
+        return location;
+    }
+
+    public void setLocation(EventLocationUpdateDTO location) {
+        this.location = location;
+    }
+
+    public EntranceRequestDTO getEntrance() {
+        return entrance;
+    }
+
+    public void setEntrance(EntranceRequestDTO entrance) {
+        this.entrance = entrance;
+    }
+
+    public AreaRequestDTO getArea() {
+        return area;
+    }
+
+    public void setArea(AreaRequestDTO area) {
+        this.area = area;
+    }
+
+    public MakerRequestDTO getMarker() {
+        return marker;
+    }
+
+    public void setMarker(MakerRequestDTO marker) {
+        this.marker = marker;
+    }
+
+    public SeatRequestDTO getSeat() {
+        return seat;
+    }
+
+    public void setSeat(SeatRequestDTO seat) {
+        this.seat = seat;
+    }
+
+    public String getAreaRef() {
+        return areaRef;
+    }
+
+    public void setAreaRef(String areaRef) {
+        this.areaRef = areaRef;
+    }
+
+    public String getEntranceRef() {
+        return entranceRef;
+    }
+
+    public void setEntranceRef(String entranceRef) {
+        this.entranceRef = entranceRef;
     }
 }

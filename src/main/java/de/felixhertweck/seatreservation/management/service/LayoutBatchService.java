@@ -33,17 +33,16 @@ import jakarta.transaction.Transactional;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.felixhertweck.seatreservation.common.exception.ValidationException;
-import de.felixhertweck.seatreservation.management.dto.AreaOperationDTO;
-import de.felixhertweck.seatreservation.management.dto.EntranceOperationDTO;
+import de.felixhertweck.seatreservation.management.dto.AreaRequestDTO;
+import de.felixhertweck.seatreservation.management.dto.EntranceRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.LayoutBatchRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.LayoutBatchResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.LayoutEntityType;
 import de.felixhertweck.seatreservation.management.dto.LayoutOperationAction;
 import de.felixhertweck.seatreservation.management.dto.LayoutOperationDTO;
 import de.felixhertweck.seatreservation.management.dto.LayoutOperationResultDTO;
-import de.felixhertweck.seatreservation.management.dto.LocationOperationDTO;
-import de.felixhertweck.seatreservation.management.dto.MarkerOperationDTO;
-import de.felixhertweck.seatreservation.management.dto.SeatOperationDTO;
+import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
+import de.felixhertweck.seatreservation.management.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.model.entity.LayoutChangeLog;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
@@ -132,62 +131,62 @@ public class LayoutBatchService {
             UUID locationId,
             Map<LayoutEntityType, Map<String, UUID>> refs,
             AuthenticatedUser manager) {
+        LayoutEntityType entity = op.getEntity();
         LayoutOperationAction action = op.getAction();
         UUID id = op.getId();
         if (action != LayoutOperationAction.CREATE) {
-            if (id == null) {
+            if (id == null && entity != LayoutEntityType.LOCATION) {
                 throw new ValidationException("Operation " + action + " requires an id");
             }
-            if (!(op instanceof LocationOperationDTO)) {
-                requireBelongsToLocation(op.getEntity(), id, locationId);
+            if (entity != LayoutEntityType.LOCATION) {
+                requireBelongsToLocation(entity, id, locationId);
             }
         }
         if (action == LayoutOperationAction.CREATE && op.getRef() != null) {
-            Map<String, UUID> known = refs.computeIfAbsent(op.getEntity(), k -> new HashMap<>());
+            Map<String, UUID> known = refs.computeIfAbsent(entity, k -> new HashMap<>());
             if (known.containsKey(op.getRef())) {
-                throw new ValidationException(
-                        "Duplicate ref '" + op.getRef() + "' for " + op.getEntity());
+                throw new ValidationException("Duplicate ref '" + op.getRef() + "' for " + entity);
             }
         }
 
         UUID resultId =
-                switch (op) {
-                    case LocationOperationDTO o -> executeLocation(o, locationId, manager);
-                    case EntranceOperationDTO o -> executeEntrance(o, locationId, manager);
-                    case AreaOperationDTO o -> executeArea(o, locationId, manager);
-                    case MarkerOperationDTO o -> executeMarker(o, locationId, manager);
-                    case SeatOperationDTO o -> executeSeat(o, locationId, refs, manager);
-                    default ->
-                            throw new ValidationException(
-                                    "Unsupported operation type " + op.getClass().getSimpleName());
+                switch (entity) {
+                    case LOCATION -> executeLocation(op, locationId, manager);
+                    case ENTRANCE -> executeEntrance(op, locationId, manager);
+                    case AREA -> executeArea(op, locationId, manager);
+                    case MARKER -> executeMarker(op, locationId, manager);
+                    case SEAT -> executeSeat(op, locationId, refs, manager);
                 };
 
         if (action == LayoutOperationAction.CREATE && op.getRef() != null) {
-            refs.get(op.getEntity()).put(op.getRef(), resultId);
+            refs.get(entity).put(op.getRef(), resultId);
         }
         return resultId;
     }
 
-    private UUID executeLocation(LocationOperationDTO op, UUID locationId, AuthenticatedUser m) {
+    private UUID executeLocation(LayoutOperationDTO op, UUID locationId, AuthenticatedUser m) {
         if (op.getAction() != LayoutOperationAction.UPDATE) {
             throw new ValidationException("LOCATION only supports UPDATE");
         }
         if (op.getId() != null && !op.getId().equals(locationId)) {
             throw new ValidationException("Location id does not match the batch's location");
         }
-        requireData(op.getData(), op);
-        return eventLocationService.updateEventLocation(locationId, op.getData(), m).id();
+        return eventLocationService
+                .updateEventLocation(locationId, require(op.getLocation(), op), m)
+                .id();
     }
 
-    private UUID executeEntrance(EntranceOperationDTO op, UUID locationId, AuthenticatedUser m) {
+    private UUID executeEntrance(LayoutOperationDTO op, UUID locationId, AuthenticatedUser m) {
         return switch (op.getAction()) {
             case CREATE -> {
-                requireLocation(requireData(op.getData(), op).getEventLocationId(), locationId);
-                yield entranceService.createEntrance(op.getData(), m).id();
+                EntranceRequestDTO dto = require(op.getEntrance(), op);
+                requireLocation(dto.getEventLocationId(), locationId);
+                yield entranceService.createEntrance(dto, m).id();
             }
             case UPDATE -> {
-                requireLocation(requireData(op.getData(), op).getEventLocationId(), locationId);
-                yield entranceService.updateEntrance(op.getId(), op.getData(), m).id();
+                EntranceRequestDTO dto = require(op.getEntrance(), op);
+                requireLocation(dto.getEventLocationId(), locationId);
+                yield entranceService.updateEntrance(op.getId(), dto, m).id();
             }
             case DELETE -> {
                 entranceService.deleteEntrances(List.of(op.getId()), m);
@@ -196,15 +195,17 @@ public class LayoutBatchService {
         };
     }
 
-    private UUID executeArea(AreaOperationDTO op, UUID locationId, AuthenticatedUser m) {
+    private UUID executeArea(LayoutOperationDTO op, UUID locationId, AuthenticatedUser m) {
         return switch (op.getAction()) {
             case CREATE -> {
-                requireLocation(requireData(op.getData(), op).getEventLocationId(), locationId);
-                yield areaService.createArea(op.getData(), m).id();
+                AreaRequestDTO dto = require(op.getArea(), op);
+                requireLocation(dto.getEventLocationId(), locationId);
+                yield areaService.createArea(dto, m).id();
             }
             case UPDATE -> {
-                requireLocation(requireData(op.getData(), op).getEventLocationId(), locationId);
-                yield areaService.updateArea(op.getId(), op.getData(), m).id();
+                AreaRequestDTO dto = require(op.getArea(), op);
+                requireLocation(dto.getEventLocationId(), locationId);
+                yield areaService.updateArea(op.getId(), dto, m).id();
             }
             case DELETE -> {
                 areaService.deleteAreas(List.of(op.getId()), m);
@@ -213,15 +214,17 @@ public class LayoutBatchService {
         };
     }
 
-    private UUID executeMarker(MarkerOperationDTO op, UUID locationId, AuthenticatedUser m) {
+    private UUID executeMarker(LayoutOperationDTO op, UUID locationId, AuthenticatedUser m) {
         return switch (op.getAction()) {
             case CREATE -> {
-                requireLocation(requireData(op.getData(), op).getEventLocationId(), locationId);
-                yield markerService.createMarker(op.getData(), m).id();
+                MakerRequestDTO dto = require(op.getMarker(), op);
+                requireLocation(dto.getEventLocationId(), locationId);
+                yield markerService.createMarker(dto, m).id();
             }
             case UPDATE -> {
-                requireLocation(requireData(op.getData(), op).getEventLocationId(), locationId);
-                yield markerService.updateMarker(op.getId(), op.getData(), m).id();
+                MakerRequestDTO dto = require(op.getMarker(), op);
+                requireLocation(dto.getEventLocationId(), locationId);
+                yield markerService.updateMarker(op.getId(), dto, m).id();
             }
             case DELETE -> {
                 markerService.deleteMarkers(List.of(op.getId()), m);
@@ -231,19 +234,16 @@ public class LayoutBatchService {
     }
 
     private UUID executeSeat(
-            SeatOperationDTO op,
+            LayoutOperationDTO op,
             UUID locationId,
             Map<LayoutEntityType, Map<String, UUID>> refs,
             AuthenticatedUser m) {
         return switch (op.getAction()) {
-            case CREATE -> {
-                prepareSeat(op, locationId, refs);
-                yield seatService.createSeatManager(op.getData(), m).id();
-            }
-            case UPDATE -> {
-                prepareSeat(op, locationId, refs);
-                yield seatService.updateSeatForManager(op.getId(), op.getData(), m).id();
-            }
+            case CREATE -> seatService.createSeatManager(prepareSeat(op, locationId, refs), m).id();
+            case UPDATE ->
+                    seatService
+                            .updateSeatForManager(op.getId(), prepareSeat(op, locationId, refs), m)
+                            .id();
             case DELETE -> {
                 seatService.deleteSeatForManager(List.of(op.getId()), m);
                 yield op.getId();
@@ -252,17 +252,17 @@ public class LayoutBatchService {
     }
 
     /** Checks the target location and substitutes refs to entities created earlier in the batch. */
-    private void prepareSeat(
-            SeatOperationDTO op, UUID locationId, Map<LayoutEntityType, Map<String, UUID>> refs) {
-        requireLocation(requireData(op.getData(), op).getEventLocationId(), locationId);
+    private SeatRequestDTO prepareSeat(
+            LayoutOperationDTO op, UUID locationId, Map<LayoutEntityType, Map<String, UUID>> refs) {
+        SeatRequestDTO dto = require(op.getSeat(), op);
+        requireLocation(dto.getEventLocationId(), locationId);
         if (op.getAreaRef() != null) {
-            op.getData().setAreaId(resolveRef(refs, LayoutEntityType.AREA, op.getAreaRef()));
+            dto.setAreaId(resolveRef(refs, LayoutEntityType.AREA, op.getAreaRef()));
         }
         if (op.getEntranceRef() != null) {
-            op.getData()
-                    .setEntranceId(
-                            resolveRef(refs, LayoutEntityType.ENTRANCE, op.getEntranceRef()));
+            dto.setEntranceId(resolveRef(refs, LayoutEntityType.ENTRANCE, op.getEntranceRef()));
         }
+        return dto;
     }
 
     private UUID resolveRef(
@@ -275,12 +275,12 @@ public class LayoutBatchService {
         return id;
     }
 
-    private <T> T requireData(T data, LayoutOperationDTO op) {
-        if (data == null) {
+    private <T> T require(T payload, LayoutOperationDTO op) {
+        if (payload == null) {
             throw new ValidationException(
-                    "Operation " + op.getAction() + " " + op.getEntity() + " requires data");
+                    "Operation " + op.getAction() + " " + op.getEntity() + " requires its payload");
         }
-        return data;
+        return payload;
     }
 
     private void requireLocation(UUID dtoLocationId, UUID locationId) {

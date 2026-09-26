@@ -175,27 +175,6 @@
           }
         }
       },
-      "AreaOperationDTO" : {
-        "type" : "object",
-        "required" : [ "action" ],
-        "properties" : {
-          "action" : {
-            "$ref" : "#/components/schemas/LayoutOperationAction"
-          },
-          "id" : {
-            "$ref" : "#/components/schemas/UUID"
-          },
-          "ref" : {
-            "type" : "string"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/AreaRequestDTO"
-          },
-          "entity" : {
-            "$ref" : "#/components/schemas/LayoutEntityType"
-          }
-        }
-      },
       "AreaRequestDTO" : {
         "type" : "object",
         "required" : [ "name", "eventLocationId" ],
@@ -451,27 +430,6 @@
           },
           "retryAfter" : {
             "$ref" : "#/components/schemas/Instant"
-          }
-        }
-      },
-      "EntranceOperationDTO" : {
-        "type" : "object",
-        "required" : [ "action" ],
-        "properties" : {
-          "action" : {
-            "$ref" : "#/components/schemas/LayoutOperationAction"
-          },
-          "id" : {
-            "$ref" : "#/components/schemas/UUID"
-          },
-          "ref" : {
-            "type" : "string"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/EntranceRequestDTO"
-          },
-          "entity" : {
-            "$ref" : "#/components/schemas/LayoutEntityType"
           }
         }
       },
@@ -952,30 +910,12 @@
         "enum" : [ "CREATE", "UPDATE", "DELETE" ]
       },
       "LayoutOperationDTO" : {
-        "oneOf" : [ {
-          "$ref" : "#/components/schemas/LocationOperationDTO"
-        }, {
-          "$ref" : "#/components/schemas/EntranceOperationDTO"
-        }, {
-          "$ref" : "#/components/schemas/AreaOperationDTO"
-        }, {
-          "$ref" : "#/components/schemas/MarkerOperationDTO"
-        }, {
-          "$ref" : "#/components/schemas/SeatOperationDTO"
-        } ],
         "type" : "object",
-        "discriminator" : {
-          "propertyName" : "entity",
-          "mapping" : {
-            "LOCATION" : "#/components/schemas/LocationOperationDTO",
-            "ENTRANCE" : "#/components/schemas/EntranceOperationDTO",
-            "AREA" : "#/components/schemas/AreaOperationDTO",
-            "MARKER" : "#/components/schemas/MarkerOperationDTO",
-            "SEAT" : "#/components/schemas/SeatOperationDTO"
-          }
-        },
-        "required" : [ "action", "entity" ],
+        "required" : [ "entity", "action" ],
         "properties" : {
+          "entity" : {
+            "$ref" : "#/components/schemas/LayoutEntityType"
+          },
           "action" : {
             "$ref" : "#/components/schemas/LayoutOperationAction"
           },
@@ -985,8 +925,26 @@
           "ref" : {
             "type" : "string"
           },
-          "entity" : {
-            "$ref" : "#/components/schemas/LayoutEntityType"
+          "location" : {
+            "$ref" : "#/components/schemas/EventLocationUpdateDTO"
+          },
+          "entrance" : {
+            "$ref" : "#/components/schemas/EntranceRequestDTO"
+          },
+          "area" : {
+            "$ref" : "#/components/schemas/AreaRequestDTO"
+          },
+          "marker" : {
+            "$ref" : "#/components/schemas/MakerRequestDTO"
+          },
+          "seat" : {
+            "$ref" : "#/components/schemas/SeatRequestDTO"
+          },
+          "areaRef" : {
+            "type" : "string"
+          },
+          "entranceRef" : {
+            "type" : "string"
           }
         }
       },
@@ -1026,27 +984,6 @@
             "items" : {
               "type" : "string"
             }
-          }
-        }
-      },
-      "LocationOperationDTO" : {
-        "type" : "object",
-        "required" : [ "action" ],
-        "properties" : {
-          "action" : {
-            "$ref" : "#/components/schemas/LayoutOperationAction"
-          },
-          "id" : {
-            "$ref" : "#/components/schemas/UUID"
-          },
-          "ref" : {
-            "type" : "string"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/EventLocationUpdateDTO"
-          },
-          "entity" : {
-            "$ref" : "#/components/schemas/LayoutEntityType"
           }
         }
       },
@@ -1198,27 +1135,6 @@
             "type" : "integer",
             "format" : "int64",
             "description" : "Total contingent seats granted"
-          }
-        }
-      },
-      "MarkerOperationDTO" : {
-        "type" : "object",
-        "required" : [ "action" ],
-        "properties" : {
-          "action" : {
-            "$ref" : "#/components/schemas/LayoutOperationAction"
-          },
-          "id" : {
-            "$ref" : "#/components/schemas/UUID"
-          },
-          "ref" : {
-            "type" : "string"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/MakerRequestDTO"
-          },
-          "entity" : {
-            "$ref" : "#/components/schemas/LayoutEntityType"
           }
         }
       },
@@ -1504,33 +1420,6 @@
           },
           "areaId" : {
             "$ref" : "#/components/schemas/UUID"
-          }
-        }
-      },
-      "SeatOperationDTO" : {
-        "type" : "object",
-        "required" : [ "action" ],
-        "properties" : {
-          "action" : {
-            "$ref" : "#/components/schemas/LayoutOperationAction"
-          },
-          "id" : {
-            "$ref" : "#/components/schemas/UUID"
-          },
-          "ref" : {
-            "type" : "string"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/SeatRequestDTO"
-          },
-          "areaRef" : {
-            "type" : "string"
-          },
-          "entranceRef" : {
-            "type" : "string"
-          },
-          "entity" : {
-            "$ref" : "#/components/schemas/LayoutEntityType"
           }
         }
       },
