@@ -104,6 +104,9 @@ email:
   # Optional BCC address for event notifications to users (leave empty to disable)
   bcc-address: ""
  
+  # Optional Reply-To address set on every outgoing mail (leave empty to disable)
+  reply-to: "${MAIL_REPLY_TO:}"
+
   # Template for entrance information text
   entrance-info-template: "Please use entrance {entrance} for seats {seats}"
 
