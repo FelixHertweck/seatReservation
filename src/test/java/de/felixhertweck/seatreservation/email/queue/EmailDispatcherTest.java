@@ -22,6 +22,7 @@ package de.felixhertweck.seatreservation.email.queue;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -67,6 +68,7 @@ class EmailDispatcherTest {
         emailDispatcher.retryBackoffSeconds = 60;
         emailDispatcher.maxBackoffSeconds = 3600;
         emailDispatcher.sendingTimeoutSeconds = 300;
+        emailDispatcher.replyTo = Optional.empty();
     }
 
     @Test
@@ -182,6 +184,40 @@ class EmailDispatcherTest {
         assertEquals(List.of("cc@test.com"), mail.getCc());
         assertEquals(List.of("bcc@test.com"), mail.getBcc());
         assertTrue(mail.getAttachments().isEmpty());
+    }
+
+    @Test
+    void testBuildMailSetsReplyToWhenConfigured() {
+        UUID emailId = UUID.randomUUID();
+        OutboundEmail email = new OutboundEmail();
+        email.id = emailId;
+        email.setSubject("Test Subject");
+        email.setHtmlBody("<h1>Hello!</h1>");
+        email.setTo(List.of("to@test.com"));
+        emailDispatcher.replyTo = Optional.of("reply@test.com");
+
+        when(outboundEmailRepository.findById(emailId)).thenReturn(email);
+
+        Mail mail = emailDispatcher.buildMail(emailId);
+
+        assertEquals("reply@test.com", mail.getReplyTo());
+    }
+
+    @Test
+    void testBuildMailIgnoresBlankReplyTo() {
+        UUID emailId = UUID.randomUUID();
+        OutboundEmail email = new OutboundEmail();
+        email.id = emailId;
+        email.setSubject("Test Subject");
+        email.setHtmlBody("<h1>Hello!</h1>");
+        email.setTo(List.of("to@test.com"));
+        emailDispatcher.replyTo = Optional.of(" ");
+
+        when(outboundEmailRepository.findById(emailId)).thenReturn(email);
+
+        Mail mail = emailDispatcher.buildMail(emailId);
+
+        assertNull(mail.getReplyTo());
     }
 
     @Test

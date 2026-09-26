@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.email.queue;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -83,6 +84,9 @@ public class EmailDispatcher {
 
     @ConfigProperty(name = "email.queue.immediate-trigger", defaultValue = "true")
     boolean immediateTriggerEnabled;
+
+    @ConfigProperty(name = "email.reply-to")
+    Optional<String> replyTo;
 
     /** Guards against piling up concurrent drain loops when many mails are enqueued at once. */
     private final AtomicBoolean draining = new AtomicBoolean(false);
@@ -247,6 +251,7 @@ public class EmailDispatcher {
         email.getTo().forEach(mail::addTo);
         email.getCc().forEach(mail::addCc);
         email.getBcc().forEach(mail::addBcc);
+        replyTo.filter(address -> !address.isBlank()).ifPresent(mail::setReplyTo);
 
         for (OutboundEmailAttachment attachment : email.getAttachments()) {
             if (attachment.isInline()) {

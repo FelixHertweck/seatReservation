@@ -80,6 +80,7 @@ services:
       # Email configuration
       - MAIL_FROM=${MAIL_FROM}
       - MAIL_HOST=${MAIL_HOST}
+      - MAIL_REPLY_TO=${MAIL_REPLY_TO:-}
       - MAIL_PORT=${MAIL_PORT}
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
