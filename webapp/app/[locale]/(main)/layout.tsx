@@ -35,7 +35,7 @@ export default async function MainLayout({
             </div>
             <PageHeaderNavSlot />
           </header>
-          <main className="flex-1 p-4 lg:p-6 md:peer-data-[state=collapsed]:p-3 md:peer-data-[state=expanded]:p-6">
+          <main className="flex flex-1 flex-col [&>*]:w-full p-4 lg:p-6 md:peer-data-[state=collapsed]:p-3 md:peer-data-[state=expanded]:p-6">
             {children}
           </main>
           <AppFooter locale={locale} />

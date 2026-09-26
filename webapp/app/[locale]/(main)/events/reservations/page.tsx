@@ -19,6 +19,12 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/custom-ui/button";
 import { CalendarDays } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface SelectedReservation {
   reservation: UserReservationResponseDto;
@@ -117,8 +123,10 @@ export default function MyReservationsPage() {
     [locations],
   );
 
-  const groupedReservations = useMemo(() => {
-    if (!reservations || !events) return [];
+  const { groupedReservations, hiddenPastReservations } = useMemo(() => {
+    if (!reservations || !events) {
+      return { groupedReservations: [], hiddenPastReservations: [] };
+    }
 
     const query = userSearchQuery.toLowerCase();
     const eventIdFilter = filters.eventId as string | undefined;
@@ -128,6 +136,7 @@ export default function MyReservationsPage() {
     // any other state means the default "on" still applies.
     const onlyUpcoming = filters.onlyUpcoming === true;
 
+    const hiddenPast: UserReservationResponseDto[] = [];
     const filtered = reservations.filter((reservation) => {
       const event = events.find((e) => e.id === reservation.eventId);
       const matchesQuery =
@@ -138,24 +147,34 @@ export default function MyReservationsPage() {
         !locationIdFilter || event?.locationId === locationIdFilter;
       const eventEnd = event?.endTime ?? event?.startTime;
       const isPast = !!eventEnd && new Date(eventEnd).getTime() < now;
-      const matchesPast = !onlyUpcoming || !isPast;
-      return matchesQuery && matchesEvent && matchesLocation && matchesPast;
+      if (!matchesQuery || !matchesEvent || !matchesLocation) return false;
+      if (onlyUpcoming && isPast) {
+        hiddenPast.push(reservation);
+        return false;
+      }
+      return true;
     });
 
-    const grouped = filtered.reduce(
-      (acc, reservation) => {
-        const eventId = reservation.eventId?.toString();
-        if (!eventId) return acc;
-        if (!acc[eventId]) {
-          acc[eventId] = [];
-        }
-        acc[eventId].push(reservation);
-        return acc;
-      },
-      {} as Record<string, UserReservationResponseDto[]>,
-    );
+    const groupByEvent = (list: UserReservationResponseDto[]) => {
+      const grouped = list.reduce(
+        (acc, reservation) => {
+          const eventId = reservation.eventId?.toString();
+          if (!eventId) return acc;
+          if (!acc[eventId]) {
+            acc[eventId] = [];
+          }
+          acc[eventId].push(reservation);
+          return acc;
+        },
+        {} as Record<string, UserReservationResponseDto[]>,
+      );
+      return Object.values(grouped);
+    };
 
-    return Object.values(grouped);
+    return {
+      groupedReservations: groupByEvent(filtered),
+      hiddenPastReservations: groupByEvent(hiddenPast),
+    };
   }, [reservations, userSearchQuery, filters, events, now]);
 
   const totalEventCount = useMemo(
@@ -214,8 +233,33 @@ export default function MyReservationsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventIdFromUrl, eventsLoading, isLoggedIn, events]);
 
+  const renderReservationCard = (
+    eventReservations: UserReservationResponseDto[],
+  ) => {
+    const firstReservation = eventReservations[0];
+    const event = events?.find((e) => e.id === firstReservation.eventId);
+    const location = locations?.find((l) => l.id === event?.locationId);
+    return (
+      <ReservationCard
+        key={firstReservation.eventId?.toString()}
+        reservations={eventReservations}
+        event={event}
+        location={location}
+        eventName={event?.name}
+        locationName={location?.name}
+        bookingDeadline={event?.bookingDeadline}
+        onViewSeats={handleViewReservationSeats}
+        viewEventHref={
+          firstReservation.eventId
+            ? `/events?eventId=${firstReservation.eventId}`
+            : undefined
+        }
+      />
+    );
+  };
+
   return (
-    <div className="container mx-auto px-2 py-3 md:p-6">
+    <div className="container mx-auto flex flex-1 flex-col px-2 pt-3 pb-0 md:px-6 md:pt-6 md:pb-0">
       <PageHeader
         title={t("reservationsPage.title")}
         description={t("reservationsPage.description")}
@@ -250,10 +294,7 @@ export default function MyReservationsPage() {
                 type: "switch" as const,
               },
             ]}
-            initialFilters={{
-              ...(eventIdFromUrl ? { eventId: eventIdFromUrl } : {}),
-              onlyUpcoming: true,
-            }}
+            initialFilters={filters}
             initialQuery={userSearchQuery}
             className="w-full"
           />
@@ -262,7 +303,8 @@ export default function MyReservationsPage() {
 
       {reservationsLoading ? (
         <LoadingAnimation />
-      ) : groupedReservations.length === 0 ? (
+      ) : groupedReservations.length === 0 &&
+        hiddenPastReservations.length === 0 ? (
         <NoReservationAvailable reservationLength={reservations.length} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 lg:gap-4">
@@ -272,31 +314,29 @@ export default function MyReservationsPage() {
               total: totalEventCount,
             })}
           </p>
-          {groupedReservations.map((eventReservations) => {
-            const firstReservation = eventReservations[0];
-            const event = events?.find(
-              (e) => e.id === firstReservation.eventId,
-            );
-            const location = locations?.find((l) => l.id === event?.locationId);
-            return (
-              <ReservationCard
-                key={firstReservation.eventId?.toString()}
-                reservations={eventReservations}
-                event={event}
-                location={location}
-                eventName={event?.name}
-                locationName={location?.name}
-                bookingDeadline={event?.bookingDeadline}
-                onViewSeats={handleViewReservationSeats}
-                viewEventHref={
-                  firstReservation.eventId
-                    ? `/events?eventId=${firstReservation.eventId}`
-                    : undefined
-                }
-              />
-            );
-          })}
+          {groupedReservations.map(renderReservationCard)}
         </div>
+      )}
+
+      {!reservationsLoading && hiddenPastReservations.length > 0 && (
+        <Accordion
+          type="single"
+          collapsible
+          className="-mb-2 mt-auto pt-8 md:-mb-4"
+        >
+          <AccordionItem value="hidden-past" className="border-b-0 border-t">
+            <AccordionTrigger className="py-2 text-xs text-muted-foreground">
+              {t("reservationsPage.hiddenPastReservations", {
+                count: hiddenPastReservations.length,
+              })}
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 lg:gap-4">
+                {hiddenPastReservations.map(renderReservationCard)}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       )}
 
       {selectedReservation && (
