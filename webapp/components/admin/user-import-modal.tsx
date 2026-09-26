@@ -24,6 +24,7 @@ import type {
   UserImportResultDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import { validateOptionalEmail, validateUsername } from "@/lib/validation";
 import { UserFormModal } from "@/components/admin/user-form-modal";
 import { UserConflictResolverModal } from "@/components/admin/user-conflict-resolver-modal";
 import { useAuth } from "@/hooks/use-auth";
@@ -149,6 +150,13 @@ export function UserImportModal({
       for (const user of dataToImport) {
         if (!user.username || !user.firstname || !user.lastname) {
           throw new Error(t("userImportModal.userDataValidationError"));
+        }
+
+        const fieldErrorKey =
+          validateUsername(user.username) ??
+          validateOptionalEmail(user.email ?? "");
+        if (fieldErrorKey) {
+          throw new Error(`${user.username}: ${t(fieldErrorKey)}`);
         }
 
         // Validate roles if provided

@@ -122,7 +122,27 @@
     }
   },
   "validation": {
-    "usernameHint": "3-64 Zeichen: Buchstaben, Zahlen, Punkte, Unterstriche, Bindestriche"
+    "title": "Validierungsfehler",
+    "usernameHint": "3-64 Zeichen: Buchstaben, Zahlen, Punkte, Unterstriche, Bindestriche",
+    "emailRequiredForVerification": "Zum Senden der Bestätigungs-E-Mail ist eine E-Mail-Adresse erforderlich",
+    "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+    "passwordRequired": "Ein Passwort ist erforderlich",
+    "rolesRequired": "Bitte mindestens eine Rolle auswählen",
+    "nameRequired": "Der Name darf nicht leer sein",
+    "addressRequired": "Die Adresse darf nicht leer sein",
+    "seatRowRequired": "Die Sitzreihe darf nicht leer sein",
+    "allowanceCountInvalid": "Die erlaubten Reservierungen müssen eine ganze Zahl von 0 oder mehr sein",
+    "event": {
+      "nameRequired": "Der Veranstaltungsname darf nicht leer sein",
+      "descriptionRequired": "Die Beschreibung darf nicht leer sein",
+      "locationRequired": "Bitte wählen Sie einen Veranstaltungsort aus",
+      "datesRequired": "Bitte gültige Zeiten für Beginn, Ende, Buchungsstart und Buchungsschluss eingeben",
+      "startBeforeEnd": "Der Beginn muss vor dem Ende liegen",
+      "deadlineBeforeEnd": "Der Buchungsschluss muss vor dem Ende der Veranstaltung liegen",
+      "bookingStartBeforeDeadline": "Der Buchungsstart muss vor dem Buchungsschluss liegen",
+      "reminderInvalid": "Das Erinnerungsdatum ist ungültig",
+      "reminderBeforeStart": "Das Erinnerungsdatum muss vor dem Beginn der Veranstaltung liegen"
+    }
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -310,6 +330,7 @@
     "title": "Veranstaltungen",
     "description": "Veranstaltungen durchsuchen und Plätze reservieren",
     "locationFilterLabel": "Ort",
+    "hiddenPastEvents": "Ausgeblendete vergangene Veranstaltungen ({{count}})",
     "onlyUpcomingFilterLabel": "Nur aktive anzeigen",
     "resultsCount": "{{shown}} von {{total}} Veranstaltungen angezeigt",
     "noEventsAvailable": "Derzeit sind keine Veranstaltungen verfügbar.",

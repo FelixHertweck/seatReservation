@@ -31,6 +31,8 @@ import type {
   UserDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import { isBlank } from "@/lib/validation";
+import { toast } from "sonner";
 
 interface LocationFormModalProps {
   location?: EventLocationResponseDto | null;
@@ -66,8 +68,8 @@ export function LocationFormModal({
     setIsLoading(true);
     try {
       const payload: EventLocationRequestDto = {
-        name: formData.name,
-        address: formData.address,
+        name: formData.name.trim(),
+        address: formData.address.trim(),
         managerIds: formData.managerIds || [],
       };
       await onSubmit(payload);
@@ -80,6 +82,15 @@ export function LocationFormModal({
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) {
       e.preventDefault();
+    }
+    const errorKey = isBlank(formData.name)
+      ? "validation.nameRequired"
+      : isBlank(formData.address)
+        ? "validation.addressRequired"
+        : null;
+    if (errorKey) {
+      toast.error(t("validation.title"), { description: t(errorKey) });
+      return;
     }
     if (venueChanged) {
       setShowConfirmModal(true);

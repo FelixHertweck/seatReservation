@@ -48,6 +48,8 @@ import type {
 } from "@/api";
 import { UserMultiSelect } from "@/components/common/user-multi-select";
 import { useT } from "@/lib/i18n/hooks";
+import { isBlank, validateEventTimes } from "@/lib/validation";
+import { toast } from "sonner";
 
 interface EventFormModalProps {
   allLocations: EventLocationResponseDto[];
@@ -108,8 +110,8 @@ export function EventFormModal({
     setIsLoading(true);
     try {
       const eventData: EventRequestDto = {
-        name: formData.name,
-        description: formData.description,
+        name: formData.name.trim(),
+        description: formData.description.trim(),
         startTime: new Date(formData.startTime),
         endTime: new Date(formData.endTime),
         bookingDeadline: new Date(formData.bookingDeadline),
@@ -134,6 +136,21 @@ export function EventFormModal({
   const handleSubmit = async (e?: React.FormEvent | React.KeyboardEvent) => {
     if (e) {
       e.preventDefault();
+    }
+
+    // Mirrors the backend rules; needed because Enter submits bypass native form validation.
+    const errorKey = isBlank(formData.name)
+      ? "validation.event.nameRequired"
+      : isBlank(formData.description)
+        ? "validation.event.descriptionRequired"
+        : !formData.eventLocationId
+          ? "validation.event.locationRequired"
+          : validateEventTimes(formData);
+    if (errorKey) {
+      toast.error(t("validation.title"), {
+        description: t(errorKey),
+      });
+      return;
     }
 
     const originalStartTime = event?.startTime
@@ -387,7 +404,7 @@ export function EventFormModal({
                     type="datetime-local"
                     value={formData.bookingStartTime}
                     min="1900-01-01T00:00"
-                    max={formData.bookingDeadline || formData.startTime}
+                    max={formData.bookingDeadline || formData.endTime}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
@@ -407,7 +424,7 @@ export function EventFormModal({
                     type="datetime-local"
                     value={formData.bookingDeadline}
                     min={formData.bookingStartTime}
-                    max={formData.startTime}
+                    max={formData.endTime}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
@@ -427,7 +444,6 @@ export function EventFormModal({
                   id="reminderSendDate"
                   type="datetime-local"
                   value={formData.reminderSendDate}
-                  min={formData.bookingStartTime}
                   max={formData.startTime}
                   onChange={(e) =>
                     setFormData((prev) => ({
