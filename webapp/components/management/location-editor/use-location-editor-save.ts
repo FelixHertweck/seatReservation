@@ -6,20 +6,13 @@ import { toast } from "sonner";
 
 import { useT } from "@/lib/i18n/hooks";
 import type { ErrorWithResponse } from "@/components/init-query-client";
-import type { EventLocationResponseDto, EventLocationUpdateDto } from "@/api";
+import type {
+  EventLocationResponseDto,
+  EventLocationUpdateDto,
+  LayoutOperationDto,
+} from "@/api";
 import {
-  postApiManagerSeatsMutation,
-  putApiManagerSeatsByIdMutation,
-  deleteApiManagerSeatsMutation,
-  postApiManagerMarkersMutation,
-  putApiManagerMarkersByIdMutation,
-  deleteApiManagerMarkersMutation,
-  postApiManagerAreasMutation,
-  putApiManagerAreasByIdMutation,
-  deleteApiManagerAreasMutation,
-  postApiManagerEntrancesMutation,
-  putApiManagerEntrancesByIdMutation,
-  deleteApiManagerEntrancesMutation,
+  postApiManagerEventlocationsByIdLayoutOperationsMutation,
   putApiManagerEventlocationsByIdMutation,
   getApiManagerSeatsQueryKey,
   getApiManagerMarkersQueryKey,
@@ -65,24 +58,10 @@ export function useLocationEditorSave({
     stateRef.current = state;
   }, [state]);
 
-  const eventLocationId = state.meta.serverId;
   const [isSaving, setIsSaving] = useState(false);
 
-  const seatCreate = useMutation({ ...postApiManagerSeatsMutation() });
-  const seatUpdate = useMutation({ ...putApiManagerSeatsByIdMutation() });
-  const seatDelete = useMutation({ ...deleteApiManagerSeatsMutation() });
-  const markerCreate = useMutation({ ...postApiManagerMarkersMutation() });
-  const markerUpdate = useMutation({ ...putApiManagerMarkersByIdMutation() });
-  const markerDelete = useMutation({ ...deleteApiManagerMarkersMutation() });
-  const areaCreate = useMutation({ ...postApiManagerAreasMutation() });
-  const areaUpdate = useMutation({ ...putApiManagerAreasByIdMutation() });
-  const areaDelete = useMutation({ ...deleteApiManagerAreasMutation() });
-  const entranceCreate = useMutation({ ...postApiManagerEntrancesMutation() });
-  const entranceUpdate = useMutation({
-    ...putApiManagerEntrancesByIdMutation(),
-  });
-  const entranceDelete = useMutation({
-    ...deleteApiManagerEntrancesMutation(),
+  const layoutOperations = useMutation({
+    ...postApiManagerEventlocationsByIdLayoutOperationsMutation(),
   });
   const metaUpdate = useMutation({
     ...putApiManagerEventlocationsByIdMutation(),
@@ -97,50 +76,10 @@ export function useLocationEditorSave({
     queryClient.invalidateQueries({
       queryKey: getApiManagerEntrancesQueryKey(),
     });
+    queryClient.invalidateQueries({
+      queryKey: getApiManagerEventlocationsQueryKey(),
+    });
   }, [queryClient]);
-
-  const markError = useCallback(
-    (kind: EntityKind, localId: LocalId, err: unknown) => {
-      const error = err as ErrorWithResponse;
-      dispatch({ type: "SET_SYNC_STATE", kind, localId, syncState: "error" });
-      toast.error(t("management.locationEditor.saveFailed"), {
-        description: error?.response?.description || t("common.error.default"),
-      });
-    },
-    [dispatch, t],
-  );
-
-  const resolveEntranceId = useCallback(
-    (ref: LocalId | undefined): string | undefined =>
-      ref
-        ? stateRef.current.entrances.find((e) => e.localId === ref)?.serverId
-        : undefined,
-    [],
-  );
-  const resolveAreaId = useCallback(
-    (ref: LocalId | undefined): string | undefined =>
-      ref
-        ? stateRef.current.areas.find((a) => a.localId === ref)?.serverId
-        : undefined,
-    [],
-  );
-
-  const seatBody = useCallback(
-    (
-      seat: Pick<
-        EditorSeat,
-        "seatNumber" | "seatRow" | "x" | "y" | "entranceRef" | "areaRef"
-      >,
-    ) => ({
-      seatNumber: seat.seatNumber,
-      eventLocationId,
-      coordinate: { xCoordinate: seat.x, yCoordinate: seat.y },
-      seatRow: seat.seatRow,
-      entranceId: resolveEntranceId(seat.entranceRef),
-      areaId: resolveAreaId(seat.areaRef),
-    }),
-    [eventLocationId, resolveEntranceId, resolveAreaId],
-  );
 
   // ---- local-only mutators ----
 
@@ -332,302 +271,185 @@ export function useLocationEditorSave({
 
   // ---- saveAll: the only place that talks to the network ----
 
-  const areaBody = useCallback(
-    (area: Pick<EditorArea, "name" | "boundary">) => ({
-      name: area.name,
-      boundary: area.boundary.map((p) => ({
-        xCoordinate: p.x,
-        yCoordinate: p.y,
-      })),
-      eventLocationId,
-    }),
-    [eventLocationId],
-  );
+  const buildOperations = useCallback(
+    (
+      s: LocationEditorState,
+    ): {
+      operations: LayoutOperationDto[];
+      // Per operation: which local entity it belongs to (absent for
+      // location/delete operations), used to reconcile the response.
+      targets: ({ kind: EntityKind; localId: LocalId } | undefined)[];
+    } => {
+      const eventLocationId = s.meta.serverId;
+      const operations: LayoutOperationDto[] = [];
+      const targets: ({ kind: EntityKind; localId: LocalId } | undefined)[] =
+        [];
+      const push = (
+        op: LayoutOperationDto,
+        target?: { kind: EntityKind; localId: LocalId },
+      ) => {
+        operations.push(op);
+        targets.push(target);
+      };
 
-  const markerBody = useCallback(
-    (marker: Pick<EditorMarker, "label" | "x" | "y">) => ({
-      label: marker.label,
-      coordinate: { xCoordinate: marker.x, yCoordinate: marker.y },
-      eventLocationId,
-    }),
-    [eventLocationId],
-  );
-
-  const entranceBody = useCallback(
-    (entrance: Pick<EditorEntrance, "name">) => ({
-      name: entrance.name,
-      eventLocationId,
-    }),
-    [eventLocationId],
-  );
-
-  const saveEntranceOnce = useCallback(
-    async (entrance: EditorEntrance) => {
-      try {
-        if (!entrance.serverId) {
-          const created = await entranceCreate.mutateAsync({
-            body: entranceBody(entrance),
-          });
-          dispatch({
-            type: "RECONCILE",
-            kind: "entrance",
-            localId: entrance.localId,
-            serverId: created.id!,
-          });
-        } else {
-          await entranceUpdate.mutateAsync({
-            path: { id: entrance.serverId },
-            body: entranceBody(entrance),
-          });
-          dispatch({
-            type: "SET_SYNC_STATE",
-            kind: "entrance",
-            localId: entrance.localId,
-            syncState: "synced",
-          });
-        }
-        return true;
-      } catch (err) {
-        markError("entrance", entrance.localId, err);
-        return false;
-      }
-    },
-    [entranceCreate, entranceUpdate, entranceBody, dispatch, markError],
-  );
-
-  const saveAreaOnce = useCallback(
-    async (area: EditorArea) => {
-      try {
-        if (!area.serverId) {
-          const created = await areaCreate.mutateAsync({
-            body: areaBody(area),
-          });
-          dispatch({
-            type: "RECONCILE",
-            kind: "area",
-            localId: area.localId,
-            serverId: created.id!,
-          });
-        } else {
-          await areaUpdate.mutateAsync({
-            path: { id: area.serverId },
-            body: areaBody(area),
-          });
-          dispatch({
-            type: "SET_SYNC_STATE",
-            kind: "area",
-            localId: area.localId,
-            syncState: "synced",
-          });
-        }
-        return true;
-      } catch (err) {
-        markError("area", area.localId, err);
-        return false;
-      }
-    },
-    [areaCreate, areaUpdate, areaBody, dispatch, markError],
-  );
-
-  const saveSeatOnce = useCallback(
-    async (localId: LocalId) => {
-      const seat = stateRef.current.seats.find((s) => s.localId === localId);
-      if (!seat) return true;
-      try {
-        if (!seat.serverId) {
-          const created = await seatCreate.mutateAsync({
-            body: seatBody(seat),
-          });
-          dispatch({
-            type: "RECONCILE",
-            kind: "seat",
-            localId,
-            serverId: created.id!,
-          });
-        } else {
-          await seatUpdate.mutateAsync({
-            path: { id: seat.serverId },
-            body: seatBody(seat),
-          });
-          dispatch({
-            type: "SET_SYNC_STATE",
-            kind: "seat",
-            localId,
-            syncState: "synced",
-          });
-        }
-        return true;
-      } catch (err) {
-        markError("seat", localId, err);
-        return false;
-      }
-    },
-    [seatCreate, seatUpdate, seatBody, dispatch, markError],
-  );
-
-  const saveMarkerOnce = useCallback(
-    async (localId: LocalId) => {
-      const marker = stateRef.current.markers.find(
-        (m) => m.localId === localId,
-      );
-      if (!marker) return true;
-      try {
-        if (!marker.serverId) {
-          const created = await markerCreate.mutateAsync({
-            body: markerBody(marker),
-          });
-          dispatch({
-            type: "RECONCILE",
-            kind: "marker",
-            localId,
-            serverId: created.id!,
-          });
-        } else {
-          await markerUpdate.mutateAsync({
-            path: { id: marker.serverId },
-            body: markerBody(marker),
-          });
-          dispatch({
-            type: "SET_SYNC_STATE",
-            kind: "marker",
-            localId,
-            syncState: "synced",
-          });
-        }
-        return true;
-      } catch (err) {
-        markError("marker", localId, err);
-        return false;
-      }
-    },
-    [markerCreate, markerUpdate, markerBody, dispatch, markError],
-  );
-
-  const deletePending = useCallback(
-    async (
-      mutation: {
-        mutateAsync: (args: { query: { ids: string[] } }) => Promise<unknown>;
-      },
-      ids: string[],
-    ): Promise<boolean> => {
-      if (ids.length === 0) return true;
-      try {
-        await mutation.mutateAsync({ query: { ids } });
-        return true;
-      } catch (err) {
-        const error = err as ErrorWithResponse;
-        toast.error(t("management.locationEditor.saveFailed"), {
-          description:
-            error?.response?.description || t("common.error.default"),
+      if (s.metaDirty) {
+        push({
+          entity: "LOCATION",
+          action: "UPDATE",
+          id: eventLocationId,
+          location: {
+            name: s.meta.name,
+            address: s.meta.address,
+            managerIds: s.meta.managerIds,
+          },
         });
-        return false;
       }
-    },
-    [t],
-  );
 
-  const saveMetaOnce = useCallback(async () => {
-    const meta = stateRef.current.meta;
-    const body: EventLocationUpdateDto = {
-      name: meta.name,
-      address: meta.address,
-      managerIds: meta.managerIds,
-    };
-    try {
-      const data = await metaUpdate.mutateAsync({
-        path: { id: meta.serverId },
-        body,
-      });
-      queryClient.setQueriesData(
-        { queryKey: getApiManagerEventlocationsQueryKey() },
-        (oldData: EventLocationResponseDto[] | undefined) =>
-          oldData
-            ? oldData.map((location) =>
-                location.id === data.id ? data : location,
-              )
-            : oldData,
-      );
-      return true;
-    } catch (err) {
-      const error = err as ErrorWithResponse;
-      toast.error(t("management.locationEditor.saveFailed"), {
-        description: error?.response?.description || t("common.error.default"),
-      });
-      return false;
-    }
-  }, [metaUpdate, queryClient, t]);
+      // The server applies operations strictly in this order: whatever a
+      // later operation refers to (new entrance/area) is created before it,
+      // and deletions come last so nothing still references what is removed.
+      for (const e of s.entrances.filter((x) => x.syncState !== "synced")) {
+        push(
+          {
+            entity: "ENTRANCE",
+            action: e.serverId ? "UPDATE" : "CREATE",
+            id: e.serverId,
+            ref: e.localId,
+            entrance: { name: e.name, eventLocationId },
+          },
+          { kind: "entrance", localId: e.localId },
+        );
+      }
+      for (const a of s.areas.filter((x) => x.syncState !== "synced")) {
+        push(
+          {
+            entity: "AREA",
+            action: a.serverId ? "UPDATE" : "CREATE",
+            id: a.serverId,
+            ref: a.localId,
+            area: {
+              name: a.name,
+              boundary: a.boundary.map((p) => ({
+                xCoordinate: p.x,
+                yCoordinate: p.y,
+              })),
+              eventLocationId,
+            },
+          },
+          { kind: "area", localId: a.localId },
+        );
+      }
+      for (const seat of s.seats.filter((x) => x.syncState !== "synced")) {
+        const area = s.areas.find((a) => a.localId === seat.areaRef);
+        const entrance = s.entrances.find(
+          (e) => e.localId === seat.entranceRef,
+        );
+        push(
+          {
+            entity: "SEAT",
+            action: seat.serverId ? "UPDATE" : "CREATE",
+            id: seat.serverId,
+            ref: seat.localId,
+            areaRef: area && !area.serverId ? area.localId : undefined,
+            entranceRef:
+              entrance && !entrance.serverId ? entrance.localId : undefined,
+            seat: {
+              seatNumber: seat.seatNumber,
+              seatRow: seat.seatRow,
+              eventLocationId,
+              coordinate: { xCoordinate: seat.x, yCoordinate: seat.y },
+              areaId: area?.serverId,
+              entranceId: entrance?.serverId,
+            },
+          },
+          { kind: "seat", localId: seat.localId },
+        );
+      }
+      for (const m of s.markers.filter((x) => x.syncState !== "synced")) {
+        push(
+          {
+            entity: "MARKER",
+            action: m.serverId ? "UPDATE" : "CREATE",
+            id: m.serverId,
+            ref: m.localId,
+            marker: {
+              label: m.label,
+              coordinate: { xCoordinate: m.x, yCoordinate: m.y },
+              eventLocationId,
+            },
+          },
+          { kind: "marker", localId: m.localId },
+        );
+      }
+
+      const deletions = s.pendingDeletions;
+      for (const id of deletions.seat)
+        push({ entity: "SEAT", action: "DELETE", id });
+      for (const id of deletions.marker)
+        push({ entity: "MARKER", action: "DELETE", id });
+      for (const id of deletions.area)
+        push({ entity: "AREA", action: "DELETE", id });
+      for (const id of deletions.entrance)
+        push({ entity: "ENTRANCE", action: "DELETE", id });
+
+      return { operations, targets };
+    },
+    [],
+  );
 
   const saveAll = useCallback(async () => {
     setIsSaving(true);
     try {
-      const initial = stateRef.current;
+      const current = stateRef.current;
+      const { operations, targets } = buildOperations(current);
 
-      // Entrances and areas have no dependencies on other entity kinds and
-      // must be reconciled before seats, which reference them by server id.
-      const entranceResults = await Promise.all(
-        initial.entrances
-          .filter((e) => e.syncState !== "synced")
-          .map(saveEntranceOnce),
-      );
-      const areaResults = await Promise.all(
-        initial.areas.filter((a) => a.syncState !== "synced").map(saveAreaOnce),
-      );
+      if (operations.length > 0) {
+        // One request, one transaction: on failure nothing was changed, so
+        // every entity stays dirty and the save can simply be retried.
+        let response;
+        try {
+          response = await layoutOperations.mutateAsync({
+            path: { id: current.meta.serverId },
+            body: { operations },
+          });
+        } catch (err) {
+          const error = err as ErrorWithResponse;
+          toast.error(t("management.locationEditor.saveFailed"), {
+            description:
+              error?.response?.description || t("common.error.default"),
+          });
+          return;
+        }
 
-      const afterDeps = stateRef.current;
-      const seatResults = await Promise.all(
-        afterDeps.seats
-          .filter((s) => s.syncState !== "synced")
-          .map((s) => saveSeatOnce(s.localId)),
-      );
-      const markerResults = await Promise.all(
-        afterDeps.markers
-          .filter((m) => m.syncState !== "synced")
-          .map((m) => saveMarkerOnce(m.localId)),
-      );
-
-      const deletionResults = await Promise.all([
-        deletePending(seatDelete, initial.pendingDeletions.seat),
-        deletePending(markerDelete, initial.pendingDeletions.marker),
-        deletePending(areaDelete, initial.pendingDeletions.area),
-        deletePending(entranceDelete, initial.pendingDeletions.entrance),
-      ]);
-
-      const metaOk = initial.metaDirty ? await saveMetaOnce() : true;
-
-      invalidateAll();
-
-      const allOk =
-        metaOk &&
-        [
-          ...entranceResults,
-          ...areaResults,
-          ...seatResults,
-          ...markerResults,
-          ...deletionResults,
-        ].every(Boolean);
-
-      if (allOk) {
-        dispatch({ type: "SAVE_SUCCESS" });
-        toast.success(t("management.locationEditor.saveSuccess"));
+        targets.forEach((target, i) => {
+          if (!target) return;
+          const created = operations[i].action === "CREATE";
+          const serverId = response.results?.[i]?.id;
+          if (created && serverId) {
+            dispatch({
+              type: "RECONCILE",
+              kind: target.kind,
+              localId: target.localId,
+              serverId,
+            });
+          } else {
+            dispatch({
+              type: "SET_SYNC_STATE",
+              kind: target.kind,
+              localId: target.localId,
+              syncState: "synced",
+            });
+          }
+        });
+        invalidateAll();
       }
+
+      dispatch({ type: "SAVE_SUCCESS" });
+      toast.success(t("management.locationEditor.saveSuccess"));
     } finally {
       setIsSaving(false);
     }
-  }, [
-    saveEntranceOnce,
-    saveAreaOnce,
-    saveSeatOnce,
-    saveMarkerOnce,
-    saveMetaOnce,
-    deletePending,
-    seatDelete,
-    markerDelete,
-    areaDelete,
-    entranceDelete,
-    invalidateAll,
-    dispatch,
-    t,
-  ]);
+  }, [buildOperations, layoutOperations, invalidateAll, dispatch, t]);
 
   return useMemo(
     () => ({

@@ -993,6 +993,123 @@ export const InstantSchema = {
     ]
 } as const;
 
+export const LayoutBatchRequestDTOSchema = {
+    type: 'object',
+    required: [
+        'operations'
+    ],
+    properties: {
+        operations: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/LayoutOperationDTO'
+            },
+            maxItems: 10000,
+            minItems: 1
+        }
+    }
+} as const;
+
+export const LayoutBatchResponseDTOSchema = {
+    type: 'object',
+    properties: {
+        batchId: {
+            $ref: '#/components/schemas/UUID'
+        },
+        results: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/LayoutOperationResultDTO'
+            }
+        }
+    }
+} as const;
+
+export const LayoutEntityTypeSchema = {
+    type: 'string',
+    enum: [
+        'LOCATION',
+        'ENTRANCE',
+        'AREA',
+        'MARKER',
+        'SEAT'
+    ]
+} as const;
+
+export const LayoutOperationActionSchema = {
+    type: 'string',
+    enum: [
+        'CREATE',
+        'UPDATE',
+        'DELETE'
+    ]
+} as const;
+
+export const LayoutOperationDTOSchema = {
+    type: 'object',
+    required: [
+        'entity',
+        'action'
+    ],
+    properties: {
+        entity: {
+            $ref: '#/components/schemas/LayoutEntityType'
+        },
+        action: {
+            $ref: '#/components/schemas/LayoutOperationAction'
+        },
+        id: {
+            $ref: '#/components/schemas/UUID'
+        },
+        ref: {
+            type: 'string'
+        },
+        location: {
+            $ref: '#/components/schemas/EventLocationUpdateDTO'
+        },
+        entrance: {
+            $ref: '#/components/schemas/EntranceRequestDTO'
+        },
+        area: {
+            $ref: '#/components/schemas/AreaRequestDTO'
+        },
+        marker: {
+            $ref: '#/components/schemas/MakerRequestDTO'
+        },
+        seat: {
+            $ref: '#/components/schemas/SeatRequestDTO'
+        },
+        areaRef: {
+            type: 'string'
+        },
+        entranceRef: {
+            type: 'string'
+        }
+    }
+} as const;
+
+export const LayoutOperationResultDTOSchema = {
+    type: 'object',
+    properties: {
+        sequenceNo: {
+            type: 'integer',
+            format: 'int32'
+        },
+        entity: {
+            $ref: '#/components/schemas/LayoutEntityType'
+        },
+        action: {
+            $ref: '#/components/schemas/LayoutOperationAction'
+        },
+        id: {
+            $ref: '#/components/schemas/UUID'
+        },
+        ref: {
+            type: 'string'
+        }
+    }
+} as const;
+
 export const LimitedUserInfoDTOSchema = {
     type: 'object',
     properties: {

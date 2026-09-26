@@ -301,6 +301,55 @@ export type ImportSeatDto = {
 
 export type Instant = Date;
 
+export type LayoutBatchRequestDto = {
+    operations: Array<LayoutOperationDto>;
+};
+
+export type LayoutBatchResponseDto = {
+    batchId?: Uuid;
+    results?: Array<LayoutOperationResultDto>;
+};
+
+export const LayoutEntityType = {
+    LOCATION: 'LOCATION',
+    ENTRANCE: 'ENTRANCE',
+    AREA: 'AREA',
+    MARKER: 'MARKER',
+    SEAT: 'SEAT'
+} as const;
+
+export type LayoutEntityType = typeof LayoutEntityType[keyof typeof LayoutEntityType];
+
+export const LayoutOperationAction = {
+    CREATE: 'CREATE',
+    UPDATE: 'UPDATE',
+    DELETE: 'DELETE'
+} as const;
+
+export type LayoutOperationAction = typeof LayoutOperationAction[keyof typeof LayoutOperationAction];
+
+export type LayoutOperationDto = {
+    entity: LayoutEntityType;
+    action: LayoutOperationAction;
+    id?: Uuid;
+    ref?: string;
+    location?: EventLocationUpdateDto;
+    entrance?: EntranceRequestDto;
+    area?: AreaRequestDto;
+    marker?: MakerRequestDto;
+    seat?: SeatRequestDto;
+    areaRef?: string;
+    entranceRef?: string;
+};
+
+export type LayoutOperationResultDto = {
+    sequenceNo?: number;
+    entity?: LayoutEntityType;
+    action?: LayoutOperationAction;
+    id?: Uuid;
+    ref?: string;
+};
+
 export type LimitedUserInfoDto = {
     id?: Uuid;
     username?: string;
@@ -2131,6 +2180,43 @@ export type PutApiManagerEventlocationsByIdResponses = {
 };
 
 export type PutApiManagerEventlocationsByIdResponse = PutApiManagerEventlocationsByIdResponses[keyof PutApiManagerEventlocationsByIdResponses];
+
+export type PostApiManagerEventlocationsByIdLayoutOperationsData = {
+    body: LayoutBatchRequestDto;
+    path: {
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/manager/eventlocations/{id}/layout-operations';
+};
+
+export type PostApiManagerEventlocationsByIdLayoutOperationsErrors = {
+    /**
+     * Invalid operation; nothing was applied
+     */
+    400: unknown;
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
+     */
+    403: unknown;
+    /**
+     * Not Found: Event location or an operation's target not found
+     */
+    404: unknown;
+};
+
+export type PostApiManagerEventlocationsByIdLayoutOperationsResponses = {
+    /**
+     * All operations applied in order, in one transaction
+     */
+    200: LayoutBatchResponseDto;
+};
+
+export type PostApiManagerEventlocationsByIdLayoutOperationsResponse = PostApiManagerEventlocationsByIdLayoutOperationsResponses[keyof PostApiManagerEventlocationsByIdLayoutOperationsResponses];
 
 export type DeleteApiManagerEventsData = {
     body?: never;
