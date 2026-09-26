@@ -330,7 +330,6 @@
     "title": "Events",
     "description": "Browse events and reserve seats",
     "locationFilterLabel": "Location",
-    "hiddenPastEvents": "Hidden past events ({{count}})",
     "onlyUpcomingFilterLabel": "Only show active",
     "resultsCount": "Showing {{shown}} of {{total}} events",
     "noEventsAvailable": "No events are currently available.",

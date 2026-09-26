@@ -313,6 +313,12 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
         </Select>
       </div>
 
+      {!rowLabelValid && (
+        <p className="text-xs text-destructive">
+          {t("validation.seatRowRequired")}
+        </p>
+      )}
+
       <Button
         size="sm"
         className="w-full"

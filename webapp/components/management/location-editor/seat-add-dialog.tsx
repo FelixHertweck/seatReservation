@@ -95,6 +95,11 @@ function SingleSeatForm({
           />
         </div>
       </div>
+      {seatNumber.trim() && !seatRow.trim() && (
+        <p className="text-xs text-destructive">
+          {t("validation.seatRowRequired")}
+        </p>
+      )}
       {occupied && (
         <p className="text-xs text-destructive">
           {t("management.locationEditor.positionOccupied")}

@@ -330,7 +330,6 @@
     "title": "Veranstaltungen",
     "description": "Veranstaltungen durchsuchen und Plätze reservieren",
     "locationFilterLabel": "Ort",
-    "hiddenPastEvents": "Ausgeblendete vergangene Veranstaltungen ({{count}})",
     "onlyUpcomingFilterLabel": "Nur aktive anzeigen",
     "resultsCount": "{{shown}} von {{total}} Veranstaltungen angezeigt",
     "noEventsAvailable": "Derzeit sind keine Veranstaltungen verfügbar.",
