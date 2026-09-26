@@ -86,6 +86,14 @@ export function AllowanceFormModal({
       return;
     }
 
+    // Whole number >= 0 (rejects decimals, exponents and negatives typed into the number input)
+    if (!/^\d+$/.test(allowedReservations.trim())) {
+      toast.error(t("validation.title"), {
+        description: t("validation.allowanceCountInvalid"),
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const eventId = selectedEventId;
@@ -226,6 +234,8 @@ export function AllowanceFormModal({
             <Input
               id="allowedReservations"
               type="number"
+              min={0}
+              step={1}
               value={allowedReservations}
               onChange={(e) => setAllowedReservations(e.target.value)}
             />

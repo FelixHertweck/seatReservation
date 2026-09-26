@@ -52,7 +52,7 @@ function SingleSeatForm({
   const occupied = isCellOccupied(state, nx, ny);
 
   const handleAdd = () => {
-    if (!seatNumber.trim() || occupied) return;
+    if (!seatNumber.trim() || !seatRow.trim() || occupied) return;
     autosave.addSeat({
       seatNumber: seatNumber.trim(),
       seatRow: seatRow.trim(),
@@ -95,6 +95,11 @@ function SingleSeatForm({
           />
         </div>
       </div>
+      {seatNumber.trim() && !seatRow.trim() && (
+        <p className="text-xs text-destructive">
+          {t("validation.seatRowRequired")}
+        </p>
+      )}
       {occupied && (
         <p className="text-xs text-destructive">
           {t("management.locationEditor.positionOccupied")}
@@ -104,7 +109,7 @@ function SingleSeatForm({
         size="sm"
         className="w-full"
         onClick={handleAdd}
-        disabled={!seatNumber.trim() || occupied}
+        disabled={!seatNumber.trim() || !seatRow.trim() || occupied}
       >
         <Plus className="h-4 w-4" />
         {t("management.locationEditor.seats.addButton")}

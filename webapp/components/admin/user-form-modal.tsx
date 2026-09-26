@@ -18,6 +18,12 @@ import { X } from "lucide-react";
 import type { UserDto, AdminUserUpdateDto, AdminUserCreationDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { customSerializer } from "@/lib/jsonBodySerializer";
+import {
+  PASSWORD_MIN_LENGTH,
+  validateOptionalEmail,
+  validateUsername,
+} from "@/lib/validation";
+import { toast } from "sonner";
 
 interface UserFormModalProps {
   user: UserDto | AdminUserCreationDto | Partial<UserDto> | null;
@@ -81,7 +87,7 @@ export function UserFormModal({
 
   const isPasswordTooShort =
     formState.password.length > 0 &&
-    formState.password.length < 8 &&
+    formState.password.length < PASSWORD_MIN_LENGTH &&
     formState.password !== "••••••••";
 
   const handleRoleChange = (role: string, checked: boolean) => {
@@ -111,6 +117,33 @@ export function UserFormModal({
   };
 
   const handleSubmit = async () => {
+    // Also runs on Enter, which bypasses the disabled state of the submit button.
+    let errorKey: string | null = null;
+    if (isCreating) {
+      errorKey = validateUsername(formState.username);
+      if (!errorKey && !formState.password) {
+        errorKey = "validation.passwordRequired";
+      }
+    }
+    if (!errorKey && isPasswordTooShort) {
+      errorKey = "userFormModal.passwordTooShort";
+    }
+    errorKey ??= validateOptionalEmail(formState.email);
+    if (!errorKey && formState.selectedRoles.length === 0) {
+      errorKey = "validation.rolesRequired";
+    }
+    if (
+      !errorKey &&
+      formState.emailStatus === "send" &&
+      !formState.email.trim()
+    ) {
+      errorKey = "validation.emailRequiredForVerification";
+    }
+    if (errorKey) {
+      toast.error(t("validation.title"), { description: t(errorKey) });
+      return;
+    }
+
     setIsFormLoading(true);
 
     const emailVerified = formState.emailStatus === "verified";
@@ -123,7 +156,7 @@ export function UserFormModal({
         username: formState.username,
         firstname: formState.firstname,
         lastname: formState.lastname,
-        email: formState.email,
+        email: formState.email.trim(),
         password: formState.password,
         roles: formState.selectedRoles,
         tags: formState.tags,
@@ -134,7 +167,7 @@ export function UserFormModal({
       userData = {
         firstname: formState.firstname,
         lastname: formState.lastname,
-        email: formState.email,
+        email: formState.email.trim(),
         roles: formState.selectedRoles,
         tags: formState.tags,
         sendEmailVerification,

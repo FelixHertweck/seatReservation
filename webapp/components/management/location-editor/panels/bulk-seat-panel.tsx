@@ -153,8 +153,11 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
     ],
   );
 
+  // The backend rejects seats without a row; the grid layout derives row letters itself (block).
+  const rowLabelValid = layout === "block" || seatRowLabel.trim().length > 0;
+
   const handleInsert = () => {
-    if (preview.length === 0) return;
+    if (preview.length === 0 || !rowLabelValid) return;
     autosave.addSeatsBulk(preview);
   };
 
@@ -310,10 +313,16 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
         </Select>
       </div>
 
+      {!rowLabelValid && (
+        <p className="text-xs text-destructive">
+          {t("validation.seatRowRequired")}
+        </p>
+      )}
+
       <Button
         size="sm"
         className="w-full"
-        disabled={preview.length === 0}
+        disabled={preview.length === 0 || !rowLabelValid}
         onClick={handleInsert}
       >
         <Layers className="h-4 w-4" />

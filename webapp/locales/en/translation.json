@@ -122,7 +122,27 @@
     }
   },
   "validation": {
-    "usernameHint": "3-64 characters: letters, numbers, dots, underscores, hyphens"
+    "title": "Validation Error",
+    "usernameHint": "3-64 characters: letters, numbers, dots, underscores, hyphens",
+    "emailRequiredForVerification": "An email address is required to send a verification email",
+    "emailInvalid": "Please enter a valid email address",
+    "passwordRequired": "A password is required",
+    "rolesRequired": "Select at least one role",
+    "nameRequired": "Name must not be empty",
+    "addressRequired": "Address must not be empty",
+    "seatRowRequired": "Seat row must not be empty",
+    "allowanceCountInvalid": "Allowed reservations must be a whole number of 0 or more",
+    "event": {
+      "nameRequired": "Event name must not be empty",
+      "descriptionRequired": "Description must not be empty",
+      "locationRequired": "Please select a location",
+      "datesRequired": "Please enter valid dates for start, end, booking start and booking deadline",
+      "startBeforeEnd": "The start time must be before the end time",
+      "deadlineBeforeEnd": "The booking deadline must be before the end time",
+      "bookingStartBeforeDeadline": "The booking start must be before the booking deadline",
+      "reminderInvalid": "The reminder date is not valid",
+      "reminderBeforeStart": "The reminder date must be before the event start"
+    }
   },
   "notFound": {
     "title": "Page not found",

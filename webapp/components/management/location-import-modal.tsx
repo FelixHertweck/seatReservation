@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/custom-ui/label";
 import type { EventLocationRequestDto, EventLocationResponseDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import { isBlank } from "@/lib/validation";
 
 interface LocationImportModalProps {
   isOpen: boolean;
@@ -46,7 +47,12 @@ export function LocationImportModal({
     try {
       const parsedData = JSON.parse(jsonData);
 
-      if (!parsedData.name || !parsedData.address) {
+      if (
+        typeof parsedData.name !== "string" ||
+        typeof parsedData.address !== "string" ||
+        isBlank(parsedData.name) ||
+        isBlank(parsedData.address)
+      ) {
         throw new Error(t("locationImportModal.locationDataValidationError"));
       }
       await onImportLocation(parsedData as EventLocationRequestDto);
