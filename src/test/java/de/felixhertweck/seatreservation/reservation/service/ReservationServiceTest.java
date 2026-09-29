@@ -69,6 +69,7 @@ import de.felixhertweck.seatreservation.reservation.dto.UserReservationResponseD
 import de.felixhertweck.seatreservation.reservation.dto.UserReservationsRequestDTO;
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
+import de.felixhertweck.seatreservation.reservation.exception.ReservationEmailRequiredException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatPendingException;
@@ -264,7 +265,7 @@ class ReservationServiceTest {
     }
 
     @Test
-    void createReservationForUser_IllegalStateException_EmailNotVerified() {
+    void createReservationForUser_EmailNotVerifiedException_EmailNotVerified() {
         currentUser.setEmailVerified(false);
         UserReservationsRequestDTO dto = new UserReservationsRequestDTO();
         dto.setEventId(event.id);
@@ -272,7 +273,7 @@ class ReservationServiceTest {
 
         var exception =
                 assertThrows(
-                        ValidationException.class,
+                        ReservationEmailRequiredException.class,
                         () -> reservationService.createReservationForUser(dto, currentUser));
 
         assertEquals(
