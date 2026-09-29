@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/custom-ui/dialog";
+import { EmailRequiredDialog } from "@/components/common/email-required-dialog";
 import {
   Drawer,
   DrawerContent,
@@ -34,6 +35,8 @@ import { getApiUserEventsByIdQueryKey } from "@/api/@tanstack/react-query.gen";
 import { useT } from "@/lib/i18n/hooks";
 import { findSeatStatus } from "@/lib/reservationSeat";
 import { useSeatCart } from "@/hooks/use-seat-cart";
+import { isReservationEmailRequiredError } from "@/lib/reservation-errors";
+import { savePendingReservationSelection } from "@/lib/pending-reservation-selection";
 
 interface EventReservationModalProps {
   event: UserEventResponseDto;
@@ -47,6 +50,9 @@ interface EventReservationModalProps {
     eventId: string,
     seatIds: string[],
   ) => Promise<UserReservationResponseDto[]>;
+  // Seat IDs to automatically re-select and re-hold on mount (e.g. after the user was sent
+  // away to add a verified email mid-reservation and has now come back).
+  restoreSeatIds?: string[];
 }
 
 export function EventReservationModal({
@@ -58,6 +64,7 @@ export function EventReservationModal({
   isFetching = false,
   onClose,
   onReserve,
+  restoreSeatIds,
 }: EventReservationModalProps) {
   const t = useT();
   const queryClient = useQueryClient();
@@ -70,6 +77,7 @@ export function EventReservationModal({
     null,
   );
   const [isSeatDrawerOpen, setIsSeatDrawerOpen] = useState(false);
+  const [showEmailRequiredDialog, setShowEmailRequiredDialog] = useState(false);
 
   const selectedSeatsRef = useRef<SeatDto[]>(selectedSeats);
   const expiryTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
@@ -180,173 +188,207 @@ export function EventReservationModal({
     setHighlightedSeatId((prev) => (prev === seatId ? null : seatId));
   };
 
+  const hasRestoredSeatsRef = useRef(false);
+
+  // Re-select and re-hold seats from an interrupted reservation attempt (e.g. the user was
+  // sent to add a verified email and has now come back) as soon as the seat list is available.
+  // Seats already taken by someone else in the meantime are silently skipped.
+  useEffect(() => {
+    if (hasRestoredSeatsRef.current) return;
+    if (!restoreSeatIds || restoreSeatIds.length === 0) return;
+    if (seats.length === 0) return;
+    hasRestoredSeatsRef.current = true;
+    restoreSeatIds.forEach((seatId) => {
+      const seat = seats.find((s) => s.id === seatId);
+      if (seat) handleSeatSelect(seat);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restoreSeatIds, seats]);
+
   const handleReserve = async () => {
     if (!event.id || selectedSeats.length === 0 || isCancelled) return;
 
     setIsLoading(true);
+    const seatIds = selectedSeats
+      .map((seat) => seat.id!)
+      .filter((id) => id !== undefined);
     try {
-      const seatIds = selectedSeats
-        .map((seat) => seat.id!)
-        .filter((id) => id !== undefined);
       await onReserve(event.id, seatIds);
       selectedSeatsRef.current = [];
       expiryTimersRef.current.forEach((timer) => clearTimeout(timer));
       expiryTimersRef.current.clear();
       onClose();
+    } catch (error) {
+      if (isReservationEmailRequiredError(error)) {
+        savePendingReservationSelection(event.id, seatIds);
+        setShowEmailRequiredDialog(true);
+      }
+      // Any other error already got a toast from useEvents.createReservation.
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent
-        className="flex flex-col sm:flex sm:flex-col w-full sm:w-[95vw] max-w-full sm:max-w-7xl max-h-full sm:max-h-[90vh] h-full sm:h-[85vh] overflow-hidden p-3 md:p-6"
-        onInteractOutside={(e) => e.preventDefault()}
-      >
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            {t("eventReservationModal.title", { eventName: event.name })}
-          </DialogTitle>
-          <DialogDescription>
-            {t("eventReservationModal.description", {
-              availableSeats: event.reservationsAllowed,
-            })}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open onOpenChange={onClose}>
+        <DialogContent
+          className="flex flex-col sm:flex sm:flex-col w-full sm:w-[95vw] max-w-full sm:max-w-7xl max-h-full sm:max-h-[90vh] h-full sm:h-[85vh] overflow-hidden p-3 md:p-6"
+          onInteractOutside={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              {t("eventReservationModal.title", { eventName: event.name })}
+            </DialogTitle>
+            <DialogDescription>
+              {t("eventReservationModal.description", {
+                availableSeats: event.reservationsAllowed,
+              })}
+            </DialogDescription>
+          </DialogHeader>
 
-        {isCancelled && (
-          <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {t("eventReservationModal.cancelledNotice")}
-          </div>
-        )}
+          {isCancelled && (
+            <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {t("eventReservationModal.cancelledNotice")}
+            </div>
+          )}
 
-        <div className="flex-1 flex flex-col min-h-0 min-w-0 max-w-full overflow-hidden">
-          <SeatmapLegend
-            layout="bar"
-            areas={location?.areas ?? []}
-            showSelected
-            showUserReserved
-            showPending
-          />
-
-          <div className="flex-1 min-h-0 min-w-0 max-w-full relative flex flex-col overflow-hidden">
-            {isFetching && location?.seats && (
-              <LiveSyncBadge className="absolute top-2 left-2 z-20 pointer-events-none" />
-            )}
-            <SeatMap
-              seats={seats}
-              seatStatuses={event.seatStatuses ?? []}
-              markers={location?.markers ?? []}
+          <div className="flex-1 flex flex-col min-h-0 min-w-0 max-w-full overflow-hidden">
+            <SeatmapLegend
+              layout="bar"
               areas={location?.areas ?? []}
-              selectedSeats={selectedSeats}
-              userReservedSeats={userReservedSeats}
-              highlightedSeatId={highlightedSeatId}
-              onSeatSelect={handleSeatSelect}
-              isLoading={
-                !location ||
-                !location.seats ||
-                !event.seatStatuses ||
-                isLocationLoading ||
-                isEventLoading
-              }
+              showSelected
+              showUserReserved
+              showPending
             />
-          </div>
 
-          <div className="flex justify-between items-center gap-2 pt-2 border-t">
-            <div className="flex-1 min-w-0">
-              {selectedSeats.length > 0 && (
-                <Drawer
-                  open={isSeatDrawerOpen}
-                  onOpenChange={setIsSeatDrawerOpen}
-                  direction={isMobile ? "bottom" : "right"}
-                >
-                  <DrawerTrigger asChild>
-                    <button
-                      type="button"
-                      className="rounded-md border bg-seatmap px-3 py-1.5 text-sm hover:bg-secondary transition-colors"
-                    >
-                      {selectedSeats.length === 1
-                        ? t("eventReservationModal.selectedSeatButton")
-                        : t("eventReservationModal.selectedSeatsButton", {
-                            count: selectedSeats.length,
-                          })}
-                    </button>
-                  </DrawerTrigger>
-                  <DrawerContent>
-                    <DrawerHeader>
-                      <DrawerTitle>
-                        {t("eventReservationModal.selectedSeatsTitle")}
-                      </DrawerTitle>
-                    </DrawerHeader>
-                    <div className="flex flex-col gap-1.5 px-4 pb-6 max-h-[50vh] overflow-y-auto">
-                      {selectedSeats.map((seat) => {
-                        const isHighlighted = highlightedSeatId === seat.id;
-                        return (
-                          <div
-                            key={seat.id?.toString()}
-                            className={cn(
-                              "flex items-center justify-between gap-2 rounded-md border px-2 py-2 text-sm transition-colors",
-                              isHighlighted
-                                ? "bg-primary/10 border-primary"
-                                : "bg-seatmap hover:bg-secondary",
-                            )}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (seat.id) handleSeatChipClick(seat.id);
-                                setIsSeatDrawerOpen(false);
-                              }}
-                              className="flex-1 text-left px-1"
-                            >
-                              {seat.seatNumber +
-                                (seat.seatRow ? " (" + seat.seatRow + ")" : "")}
-                            </button>
-                            <button
-                              type="button"
-                              aria-label={t(
-                                "eventReservationModal.removeSeatAriaLabel",
-                              )}
-                              onClick={() => handleSeatSelect(seat)}
-                              className="rounded-full p-1 hover:bg-destructive/20 hover:text-destructive transition-colors"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </DrawerContent>
-                </Drawer>
+            <div className="flex-1 min-h-0 min-w-0 max-w-full relative flex flex-col overflow-hidden">
+              {isFetching && location?.seats && (
+                <LiveSyncBadge className="absolute top-2 left-2 z-20 pointer-events-none" />
               )}
-            </div>
-            <div className="flex gap-2 flex-shrink-0">
-              <Button
-                variant="outline"
-                onClick={onClose}
-                className="bg-transparent text-sm md:text-base px-3 py-2"
-              >
-                {t("eventReservationModal.cancelButton")}
-              </Button>
-              <Button
-                onClick={handleReserve}
-                isLoading={isLoading}
-                disabled={
-                  selectedSeats.length === 0 || isLoading || isCancelled
+              <SeatMap
+                seats={seats}
+                seatStatuses={event.seatStatuses ?? []}
+                markers={location?.markers ?? []}
+                areas={location?.areas ?? []}
+                selectedSeats={selectedSeats}
+                userReservedSeats={userReservedSeats}
+                highlightedSeatId={highlightedSeatId}
+                onSeatSelect={handleSeatSelect}
+                isLoading={
+                  !location ||
+                  !location.seats ||
+                  !event.seatStatuses ||
+                  isLocationLoading ||
+                  isEventLoading
                 }
-                className="text-sm md:text-base px-3 py-2"
-              >
-                {selectedSeats.length === 1
-                  ? t("eventReservationModal.reserveSeatButton")
-                  : t("eventReservationModal.reserveSeatsButton", {
-                      count: selectedSeats.length,
-                    })}
-              </Button>
+              />
+            </div>
+
+            <div className="flex justify-between items-center gap-2 pt-2 border-t">
+              <div className="flex-1 min-w-0">
+                {selectedSeats.length > 0 && (
+                  <Drawer
+                    open={isSeatDrawerOpen}
+                    onOpenChange={setIsSeatDrawerOpen}
+                    direction={isMobile ? "bottom" : "right"}
+                  >
+                    <DrawerTrigger asChild>
+                      <button
+                        type="button"
+                        className="rounded-md border bg-seatmap px-3 py-1.5 text-sm hover:bg-secondary transition-colors"
+                      >
+                        {selectedSeats.length === 1
+                          ? t("eventReservationModal.selectedSeatButton")
+                          : t("eventReservationModal.selectedSeatsButton", {
+                              count: selectedSeats.length,
+                            })}
+                      </button>
+                    </DrawerTrigger>
+                    <DrawerContent>
+                      <DrawerHeader>
+                        <DrawerTitle>
+                          {t("eventReservationModal.selectedSeatsTitle")}
+                        </DrawerTitle>
+                      </DrawerHeader>
+                      <div className="flex flex-col gap-1.5 px-4 pb-6 max-h-[50vh] overflow-y-auto">
+                        {selectedSeats.map((seat) => {
+                          const isHighlighted = highlightedSeatId === seat.id;
+                          return (
+                            <div
+                              key={seat.id?.toString()}
+                              className={cn(
+                                "flex items-center justify-between gap-2 rounded-md border px-2 py-2 text-sm transition-colors",
+                                isHighlighted
+                                  ? "bg-primary/10 border-primary"
+                                  : "bg-seatmap hover:bg-secondary",
+                              )}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (seat.id) handleSeatChipClick(seat.id);
+                                  setIsSeatDrawerOpen(false);
+                                }}
+                                className="flex-1 text-left px-1"
+                              >
+                                {seat.seatNumber +
+                                  (seat.seatRow
+                                    ? " (" + seat.seatRow + ")"
+                                    : "")}
+                              </button>
+                              <button
+                                type="button"
+                                aria-label={t(
+                                  "eventReservationModal.removeSeatAriaLabel",
+                                )}
+                                onClick={() => handleSeatSelect(seat)}
+                                className="rounded-full p-1 hover:bg-destructive/20 hover:text-destructive transition-colors"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </DrawerContent>
+                  </Drawer>
+                )}
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
+                <Button
+                  variant="outline"
+                  onClick={onClose}
+                  className="bg-transparent text-sm md:text-base px-3 py-2"
+                >
+                  {t("eventReservationModal.cancelButton")}
+                </Button>
+                <Button
+                  onClick={handleReserve}
+                  isLoading={isLoading}
+                  disabled={
+                    selectedSeats.length === 0 || isLoading || isCancelled
+                  }
+                  className="text-sm md:text-base px-3 py-2"
+                >
+                  {selectedSeats.length === 1
+                    ? t("eventReservationModal.reserveSeatButton")
+                    : t("eventReservationModal.reserveSeatsButton", {
+                        count: selectedSeats.length,
+                      })}
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      {showEmailRequiredDialog && (
+        <EmailRequiredDialog
+          open={showEmailRequiredDialog}
+          onOpenChange={setShowEmailRequiredDialog}
+        />
+      )}
+    </>
   );
 }
