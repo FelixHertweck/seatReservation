@@ -24,6 +24,11 @@ import { toast } from "sonner";
 import type { UserProfileUpdateDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { validateRequiredEmail } from "@/lib/validation";
+import {
+  FieldError,
+  invalidFieldClassName,
+} from "@/components/custom-ui/field-error";
 import { useRouter, useParams } from "next/navigation";
 import { PasskeySection } from "@/components/profile/passkey-section";
 import { TwoFactorSection } from "@/components/profile/two-factor-section";
@@ -121,6 +126,8 @@ export default function ProfilePage() {
     ? isPasswordValid && doPasswordsMatch
     : true;
 
+  const emailErrorKey = validateRequiredEmail(formData.email);
+
   const handlePasswordUpdate = async () => {
     if (!isPasswordValid || !doPasswordsMatch) {
       toast.error(t("profilePage.passwordValidationErrorTitle"), {
@@ -173,6 +180,11 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (emailErrorKey) {
+      toast.error(t("validation.title"), { description: t(emailErrorKey) });
+      return;
+    }
 
     if (showPasswordSection && !isPasswordUpdateValid) {
       toast.error(t("profilePage.passwordValidationErrorTitle"), {
@@ -298,8 +310,12 @@ export default function ProfilePage() {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, email: e.target.value }))
                   }
-                  className="mb-2"
+                  aria-invalid={!!emailErrorKey}
+                  className={invalidFieldClassName(!!emailErrorKey, "mb-2")}
                 />
+              )}
+              {emailErrorKey && (
+                <FieldError className="mb-2">{t(emailErrorKey)}</FieldError>
               )}
               <EmailSubButtons
                 email={formData.email}
@@ -442,7 +458,12 @@ export default function ProfilePage() {
                       : t("profilePage.saveChangesButton")
                   }
                   isLoading={isUpdating}
-                  disabled={isUpdating || !hasUnsavedChanges}
+                  disabled={
+                    isUpdating ||
+                    !hasUnsavedChanges ||
+                    !isPasswordUpdateValid ||
+                    !!emailErrorKey
+                  }
                 >
                   <Save className="mr-2 h-4 w-4" />
                   {t("profilePage.saveChangesButton")}

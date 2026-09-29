@@ -54,3 +54,10 @@ export function validateOptionalEmail(email: string): string | null {
   if (!trimmed) return null;
   return EMAIL_PATTERN.test(trimmed) ? null : "validation.emailInvalid";
 }
+
+/** Mirrors UserProfileUpdateDTO: a user's own email is required, unlike the admin form. */
+export function validateRequiredEmail(email: string): string | null {
+  const trimmed = email.trim();
+  if (!trimmed) return "validation.emailRequired";
+  return EMAIL_PATTERN.test(trimmed) ? null : "validation.emailInvalid";
+}
