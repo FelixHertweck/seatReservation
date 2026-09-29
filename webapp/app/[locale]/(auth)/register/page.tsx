@@ -291,7 +291,11 @@ export default function RegisterPage() {
               className="w-full"
               isLoading={isLoading}
               disabled={
-                isLoading || isDisabled || isPasswordTooShort || !altchaPayload
+                isLoading ||
+                isDisabled ||
+                isPasswordTooShort ||
+                usernameAvailable === false ||
+                !altchaPayload
               }
             >
               {ButtonLabel(t, isDisabled, usePasskey && isPasskeySupported)}
