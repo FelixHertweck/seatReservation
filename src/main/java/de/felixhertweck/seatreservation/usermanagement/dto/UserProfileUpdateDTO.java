@@ -26,11 +26,13 @@ import jakarta.validation.constraints.Size;
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 import de.felixhertweck.seatreservation.security.dto.PasswordPolicy;
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @RegisterForReflection
 public class UserProfileUpdateDTO {
+    // Null only for accounts an admin verified without an email; otherwise rejected by the service.
     @NoHtmlSanitize
-    @NotNull(message = "email cannot be null")
+    @Schema(nullable = true)
     @Email(regexp = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", message = "Invalid email format")
     private final String email;
 

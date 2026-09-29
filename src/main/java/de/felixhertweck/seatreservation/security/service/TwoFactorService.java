@@ -227,9 +227,9 @@ public class TwoFactorService {
             saveUser(user);
             return Optional.of(buildStatus(user, null));
         } else if (method == TwoFactorMethod.EMAIL) {
-            if (!user.isEmailVerified()) {
+            if (!user.hasVerifiedEmail()) {
                 throw new EmailNotVerifiedException(
-                        "Your account email address must be verified before you can enable"
+                        "Your account needs a verified email address before you can enable"
                                 + " email-based 2FA.");
             }
             List<String> freshBackupCodes = null;

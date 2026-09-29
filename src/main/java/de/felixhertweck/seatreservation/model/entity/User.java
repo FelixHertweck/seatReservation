@@ -203,6 +203,16 @@ public class User extends AbstractEntity {
         return Boolean.TRUE.equals(emailVerified);
     }
 
+    /** True if this account has an email address and it has been verified. */
+    public boolean hasVerifiedEmail() {
+        return email != null && !email.isBlank() && isEmailVerified();
+    }
+
+    /** True for accounts an admin deliberately created and verified without an email. */
+    public boolean isVerifiedWithoutEmail() {
+        return (email == null || email.isBlank()) && isEmailVerified();
+    }
+
     public void setEmailVerified(Boolean emailVerified) {
         this.emailVerified = emailVerified;
     }

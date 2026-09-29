@@ -2015,10 +2015,9 @@
       },
       "UserProfileUpdateDTO" : {
         "type" : "object",
-        "required" : [ "email", "firstname", "lastname" ],
         "properties" : {
           "email" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "firstname" : {
             "type" : "string"
@@ -2033,7 +2032,8 @@
           "twoFactorCode" : {
             "type" : "string"
           }
-        }
+        },
+        "required" : [ "firstname", "lastname" ]
       },
       "UserReservationResponseDTO" : {
         "type" : "object",
