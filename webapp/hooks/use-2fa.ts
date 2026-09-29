@@ -25,15 +25,16 @@ import type {
   TwoFactorRegenerateBackupCodesDto,
 } from "@/api";
 
-export function useTwoFactor() {
+export function useTwoFactor(options?: { enabled?: boolean }) {
   const t = useT();
   const queryClient = useQueryClient();
+  const enabled = options?.enabled ?? true;
 
   const {
     data: status,
     isLoading: isStatusLoading,
     refetch: refetchStatus,
-  } = useQuery(getApiUsersMe2FaOptions());
+  } = useQuery({ ...getApiUsersMe2FaOptions(), enabled });
 
   const setupTotpMutation = useMutation({
     ...postApiUsersMe2FaSetupTotpMutation(),

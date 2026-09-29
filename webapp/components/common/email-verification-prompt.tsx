@@ -11,7 +11,10 @@ import {
   DialogFooter,
 } from "@/components/custom-ui/dialog";
 import { Button } from "@/components/custom-ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
+import { useProfile } from "@/hooks/use-profile";
+import { useTwoFactor } from "@/hooks/use-2fa";
 import {
   useCooldown,
   EMAIL_RESEND_COOLDOWN_SECONDS,
@@ -20,13 +23,73 @@ import { ErrorWithResponse } from "@/components/init-query-client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
-import { BadgeCheck, MailCheck, RefreshCw, User } from "lucide-react";
+import {
+  BadgeCheck,
+  Mail,
+  MailCheck,
+  MailWarning,
+  RefreshCw,
+  User,
+} from "lucide-react";
+import { EMAIL_PATTERN } from "@/lib/validation";
+
+// The single source of truth for which of the dialog's variants to render
+type PromptMode =
+  | "loading"
+  | "needsProfileForEmail"
+  | "needsEmailInline"
+  | "verified"
+  | "verificationSent"
+  | "verificationNotSent";
 
 export function EmailVerificationPrompt() {
   const t = useT();
 
   const { user, isLoggedIn, isLoading } = useAuth();
+  const { updateProfile, isUpdating } = useProfile();
+  const { status: twoFactorStatus, isStatusLoading: isTwoFactorStatusLoading } =
+    useTwoFactor({ enabled: !user?.email });
   const currentpath = usePathname();
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
+
+  const [newEmail, setNewEmail] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+
+  const isEmailFlowLoading = !user?.email && isTwoFactorStatusLoading;
+  const requiresProfileForEmail = !!twoFactorStatus?.twoFactorEnabled;
+
+  const mode: PromptMode = useMemo(() => {
+    if (!user?.email) {
+      if (isEmailFlowLoading) return "loading";
+      if (requiresProfileForEmail) return "needsProfileForEmail";
+      return "needsEmailInline";
+    }
+    if (user.emailVerified) return "verified";
+    if (user.emailVerificationSent) return "verificationSent";
+    return "verificationNotSent";
+  }, [user, isEmailFlowLoading, requiresProfileForEmail]);
+
+  const handleUpdateEmail = async () => {
+    if (!user || !EMAIL_PATTERN.test(newEmail.trim())) return;
+    try {
+      await updateProfile({
+        email: newEmail.trim(),
+        firstname: user.firstname || "",
+        lastname: user.lastname || "",
+      });
+    } catch {
+      // Handled by toast
+      return;
+    }
+    setNewEmail("");
+    // The backend already sent a verification email for the new address
+    setIsOpen(false);
+    setTimeout(() => {
+      router.push(`/${locale}/verify`);
+    }, 700);
+  };
 
   const [timerCompleted, setTimerCompleted] = useState(false);
 
@@ -51,12 +114,12 @@ export function EmailVerificationPrompt() {
     );
   }, [timerCompleted, isLoading, isLoggedIn, user, currentpath]);
 
-  const [isOpen, setIsOpen] = useState(false);
-
   // Sync the dialog open state with the computed showPopup value
   useEffect(() => {
     setIsOpen(showPopup);
   }, [showPopup]);
+
+  const needsEmailInput = mode === "needsEmailInline";
 
   if (!showPopup) {
     return null;
@@ -65,14 +128,41 @@ export function EmailVerificationPrompt() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent noX={true} onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle>{t("emailVerificationPrompt.title")}</DialogTitle>
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="flex items-center gap-2">
+            <MailWarning className="h-5 w-5 text-primary" />
+            {t("emailVerificationPrompt.title")}
+          </DialogTitle>
           <DialogDescription>
-            <DynamicDialogContent setShowPopup={setIsOpen} />
+            <DynamicDialogContent setShowPopup={setIsOpen} mode={mode} />
           </DialogDescription>
         </DialogHeader>
+        {needsEmailInput && (
+          <div className="relative mt-3">
+            <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && EMAIL_PATTERN.test(newEmail.trim())) {
+                  handleUpdateEmail();
+                }
+              }}
+              placeholder={t("emailVerificationPrompt.emailPlaceholder")}
+              className="h-12 pl-9 text-base"
+              autoFocus
+            />
+          </div>
+        )}
         <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-end sm:space-x-2">
-          <DynamicDialogFooter setShowPopup={setIsOpen} />
+          <DynamicDialogFooter
+            setShowPopup={setIsOpen}
+            mode={mode}
+            newEmail={newEmail}
+            handleUpdateEmail={handleUpdateEmail}
+            isUpdatingEmail={isUpdating}
+          />
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -81,22 +171,33 @@ export function EmailVerificationPrompt() {
 
 function DynamicDialogContent({
   setShowPopup,
+  mode,
 }: {
   setShowPopup: (show: boolean) => void;
+  mode: PromptMode;
 }) {
   const { user } = useAuth();
   const t = useT();
 
-  if (user?.emailVerified) {
-    return (
-      <p className="text-sm text-gray-500 mt-4">
-        {t("emailVerificationPrompt.emailAlreadyVerifiedInfo")}
-      </p>
-    );
-  }
-
-  if (user?.email) {
-    if (user?.emailVerificationSent) {
+  switch (mode) {
+    case "loading":
+      return (
+        <span className="flex items-center gap-2">
+          <RefreshCw className="h-4 w-4 animate-spin" />
+          {t("emailVerificationPrompt.checkingAccountStatus")}
+        </span>
+      );
+    case "needsProfileForEmail":
+      return <>{t("emailVerificationPrompt.noEmailRegistered")}</>;
+    case "needsEmailInline":
+      return <>{t("emailVerificationPrompt.noEmailRegisteredInline")}</>;
+    case "verified":
+      return (
+        <p className="text-sm text-gray-500 mt-4">
+          {t("emailVerificationPrompt.emailAlreadyVerifiedInfo")}
+        </p>
+      );
+    case "verificationSent":
       // This case happens when the user already got a verification email
       return (
         <>
@@ -118,7 +219,7 @@ function DynamicDialogContent({
           {t("emailVerificationPrompt.changeIt")}
         </>
       );
-    } else {
+    case "verificationNotSent":
       // This case happens when the user has an email but did not get a verification email yet
       return (
         <>
@@ -138,22 +239,28 @@ function DynamicDialogContent({
           {t("emailVerificationPrompt.changeIt")}
         </>
       );
-    }
-  } else {
-    return <>{t("emailVerificationPrompt.noEmailRegistered")}</>;
   }
 }
 
 function DynamicDialogFooter({
   setShowPopup,
+  mode,
+  newEmail,
+  handleUpdateEmail,
+  isUpdatingEmail,
 }: {
   setShowPopup: (show: boolean) => void;
+  mode: PromptMode;
+  newEmail: string;
+  handleUpdateEmail: () => Promise<void>;
+  isUpdatingEmail: boolean;
 }) {
   const params = useParams();
   const locale = params.locale as string;
 
+  const t = useT();
   const router = useRouter();
-  const { user, resendConfirmation } = useAuth();
+  const { resendConfirmation } = useAuth();
   const [isSending, setIsSending] = useState(false);
   const cooldown = useCooldown();
 
@@ -192,19 +299,33 @@ function DynamicDialogFooter({
     }
   };
 
-  if (user?.emailVerified) {
-    return <EmailVerified />;
-  }
-
-  if (user?.email) {
-    if (user?.emailVerificationSent) {
+  switch (mode) {
+    case "loading":
+      return (
+        <Button className="w-full sm:w-auto" disabled isLoading>
+          {t("emailVerificationPrompt.checkingAccountStatus")}
+        </Button>
+      );
+    case "needsProfileForEmail":
+      return <NoEmailProvided handleGoToProfile={handleGoToProfile} />;
+    case "needsEmailInline":
+      return (
+        <UpdateEmailButton
+          onClick={handleUpdateEmail}
+          isUpdating={isUpdatingEmail}
+          disabled={!EMAIL_PATTERN.test(newEmail.trim())}
+        />
+      );
+    case "verified":
+      return <EmailVerified />;
+    case "verificationSent":
       return (
         <EmailVerificationAlreadySent
           handleGoToProfile={handleGoToProfile}
           handleGoToVerify={handleGoToVerify}
         />
       );
-    } else {
+    case "verificationNotSent":
       return (
         <EmailVerificationNotSent
           handleGoToProfile={handleGoToProfile}
@@ -214,9 +335,6 @@ function DynamicDialogFooter({
           remainingSeconds={cooldown.remainingSeconds}
         />
       );
-    }
-  } else {
-    return <NoEmailProvided handleGoToProfile={handleGoToProfile} />;
   }
 }
 
@@ -245,6 +363,30 @@ const NoEmailProvided = ({
     <Button onClick={handleGoToProfile} className="w-full sm:w-auto">
       <User className="mr-2 h-4 w-4" />
       {t("emailVerificationPrompt.goToProfileButton")}
+    </Button>
+  );
+};
+
+const UpdateEmailButton = ({
+  onClick,
+  isUpdating,
+  disabled,
+}: {
+  onClick: () => void;
+  isUpdating: boolean;
+  disabled: boolean;
+}) => {
+  const t = useT();
+
+  return (
+    <Button
+      onClick={onClick}
+      className="w-full sm:w-auto"
+      isLoading={isUpdating}
+      disabled={disabled || isUpdating}
+    >
+      <Mail className="mr-2 h-4 w-4" />
+      {t("emailVerificationPrompt.updateEmailButton")}
     </Button>
   );
 };
