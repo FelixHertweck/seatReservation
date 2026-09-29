@@ -849,12 +849,22 @@ public class UserService {
                                             "User with username " + username + " not found.");
                                 });
 
-        boolean emailChanging =
-                !Objects.equals(existingUser.getEmail(), userProfileUpdateDTO.getEmail());
+        // An empty value is treated the same as null
+        String email = userProfileUpdateDTO.getEmail();
+        if (email != null && email.trim().isEmpty()) {
+            email = null;
+        }
 
-        // Changing the email while 2FA is enabled requires proving current possession of 2FA,
-        // otherwise a hijacked session could swap the email and later use it to take over the
-        // account (e.g. via password reset).
+        // Email is required, unless an admin verified the user without one.
+        boolean keepingNoEmail = email == null && existingUser.isVerifiedWithoutEmail();
+        if (email == null && !keepingNoEmail) {
+            throw new ValidationException("Email cannot be null.");
+        }
+
+        boolean emailChanging = !Objects.equals(existingUser.getEmail(), email);
+
+        // Changing the email while 2FA is enabled requires a 2FA proof, so a hijacked session
+        // can't swap it to take over the account (e.g. via password reset).
         if (emailChanging
                 && existingUser.isTwoFactorEnabled()
                 && !twoFactorService.verifyCurrentTwoFactorCode(
@@ -864,12 +874,11 @@ public class UserService {
         }
 
         boolean markEmailAsVerified =
-                existingUser.isEmailVerified()
-                        && Objects.equals(existingUser.getEmail(), userProfileUpdateDTO.getEmail());
+                existingUser.isEmailVerified() && Objects.equals(existingUser.getEmail(), email);
 
         updateUserCore(
                 existingUser,
-                userProfileUpdateDTO.getEmail(),
+                email,
                 userProfileUpdateDTO.getFirstname(),
                 userProfileUpdateDTO.getLastname(),
                 userProfileUpdateDTO.getPassword(),

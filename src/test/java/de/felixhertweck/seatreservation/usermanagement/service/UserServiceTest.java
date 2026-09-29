@@ -1129,7 +1129,7 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
         final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, "newpassword", null, null);
+                new UserProfileUpdateDTO(null, null, "newpassword", "old@example.com", null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1518,6 +1518,167 @@ public class UserServiceTest {
         assertEquals("NewFirstName", updatedUser.firstname());
         assertTrue(existingUser.isTotpEnabled());
         assertTrue(existingUser.isTwoFactorEnabled());
+    }
+
+    @Test
+    void updateUserProfile_NullEmail_RejectedForNormalUser() {
+        User existingUser =
+                new User(
+                        "testuser",
+                        "old@example.com",
+                        true,
+                        false,
+                        "oldhash",
+                        "salt",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+        UserProfileUpdateDTO dto = new UserProfileUpdateDTO("John", "Doe", null, null, null);
+
+        when(userRepository.findByUsernameOptional("testuser"))
+                .thenReturn(Optional.of(existingUser));
+
+        assertThrows(
+                ValidationException.class, () -> userService.updateUserProfile("testuser", dto));
+        verify(userRepository, never()).persist(any(User.class));
+    }
+
+    @Test
+    void updateUserProfile_NullEmail_AllowedWhenAlreadyVerifiedWithoutEmail()
+            throws UserNotFoundException, InvalidUserException {
+        // An admin can deliberately create+verify a user without an email (e.g. a shared
+        // box-office login); such a user must still be able to save unrelated profile fields
+        // without being forced to add one.
+        User existingUser =
+                new User(
+                        "boxoffice",
+                        null,
+                        true,
+                        false,
+                        "oldhash",
+                        "salt",
+                        "Old",
+                        "Name",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+
+        UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", "Name", null, null, null);
+
+        when(userRepository.findByUsernameOptional("boxoffice"))
+                .thenReturn(Optional.of(existingUser));
+
+        UserDTO updatedUser =
+                assertDoesNotThrow(() -> userService.updateUserProfile("boxoffice", dto));
+
+        assertEquals("New", updatedUser.firstname());
+        assertNull(updatedUser.email());
+        assertTrue(existingUser.isEmailVerified());
+        verify(userRepository, times(1)).persist(existingUser);
+    }
+
+    @Test
+    void updateUserProfile_NullEmail_RejectedWhenNoEmailAndNotVerified() {
+        // Only an admin-verified account may go without an email; an unverified one must not.
+        User existingUser =
+                new User(
+                        "testuser",
+                        null,
+                        false,
+                        false,
+                        "oldhash",
+                        "salt",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+        UserProfileUpdateDTO dto = new UserProfileUpdateDTO("John", "Doe", null, null, null);
+
+        when(userRepository.findByUsernameOptional("testuser"))
+                .thenReturn(Optional.of(existingUser));
+
+        assertThrows(
+                ValidationException.class, () -> userService.updateUserProfile("testuser", dto));
+        verify(userRepository, never()).persist(any(User.class));
+    }
+
+    @Test
+    void updateUserProfile_BlankEmail_RejectedForNormalUser() {
+        User existingUser =
+                new User(
+                        "testuser",
+                        "old@example.com",
+                        true,
+                        false,
+                        "oldhash",
+                        "salt",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+        UserProfileUpdateDTO dto = new UserProfileUpdateDTO("John", "Doe", null, "   ", null);
+
+        when(userRepository.findByUsernameOptional("testuser"))
+                .thenReturn(Optional.of(existingUser));
+
+        assertThrows(
+                ValidationException.class, () -> userService.updateUserProfile("testuser", dto));
+        assertEquals("old@example.com", existingUser.getEmail());
+        verify(userRepository, never()).persist(any(User.class));
+    }
+
+    @Test
+    void updateUserProfile_BlankEmail_AllowedWhenVerifiedWithoutEmail() {
+        User existingUser =
+                new User(
+                        "boxoffice",
+                        null,
+                        true,
+                        false,
+                        "oldhash",
+                        "salt",
+                        "Old",
+                        "Name",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+        UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", "Name", null, "", null);
+
+        when(userRepository.findByUsernameOptional("boxoffice"))
+                .thenReturn(Optional.of(existingUser));
+
+        UserDTO updatedUser =
+                assertDoesNotThrow(() -> userService.updateUserProfile("boxoffice", dto));
+
+        assertNull(updatedUser.email());
+        assertTrue(existingUser.isEmailVerified());
+    }
+
+    @Test
+    void updateUserProfile_VerifiedWithoutEmail_CanAddEmailWhichThenNeedsVerification() {
+        User existingUser =
+                new User(
+                        "boxoffice",
+                        null,
+                        true,
+                        false,
+                        "oldhash",
+                        "salt",
+                        "Old",
+                        "Name",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+        UserProfileUpdateDTO dto =
+                new UserProfileUpdateDTO("Old", "Name", null, "new@example.com", null);
+
+        when(userRepository.findByUsernameOptional("boxoffice"))
+                .thenReturn(Optional.of(existingUser));
+        when(emailService.createEmailVerification(any(User.class)))
+                .thenReturn(new EmailVerification(existingUser, "token", Instant.now()));
+
+        UserDTO updatedUser = userService.updateUserProfile("boxoffice", dto);
+
+        assertEquals("new@example.com", updatedUser.email());
+        assertFalse(existingUser.isEmailVerified());
     }
 
     @Test

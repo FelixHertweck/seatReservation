@@ -53,6 +53,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
 import { useTwoFactor } from "@/hooks/use-2fa";
 import { useProfile } from "@/hooks/use-profile";
+import { hasVerifiedEmail } from "@/lib/user-email";
 import type { TwoFactorMethod, TwoFactorSetupDto } from "@/api";
 import { BackupCodesDisplay } from "@/components/common/backup-codes-display";
 import { TwoFactorCodeInput } from "@/components/common/two-factor-code-input";
@@ -80,7 +81,8 @@ export function TwoFactorSection() {
   } = useTwoFactor();
   const { user, resendConfirmation, isResendingConfirmation } = useProfile();
 
-  const isEmailVerified = !!user?.emailVerified;
+  const hasEmail = !!user?.email;
+  const isEmailReady = hasVerifiedEmail(user);
 
   const [isSetupOpen, setIsSetupOpen] = useState(false);
   const [totpSetupData, setTotpSetupData] = useState<TwoFactorSetupDto | null>(
@@ -218,8 +220,7 @@ export function TwoFactorSection() {
     }
   };
 
-  // TOTP and email are independent, equally valid factors: each gets its own row with its own
-  // Enable/Disable action, so either or both can be active at once.
+  // TOTP and email are independent, equally valid factors
   const renderMethodRow = (method: TwoFactorMethod, enabled: boolean) => {
     const Icon = method === "TOTP" ? Smartphone : Mail;
     const label =
@@ -227,7 +228,7 @@ export function TwoFactorSection() {
         ? t("twoFactor.methodTotp")
         : t("twoFactor.methodEmail");
     const emailNeedsVerification =
-      method === "EMAIL" && !enabled && !isEmailVerified;
+      method === "EMAIL" && !enabled && !isEmailReady;
 
     return (
       <div
@@ -250,7 +251,9 @@ export function TwoFactorSection() {
             )}
             {emailNeedsVerification && (
               <p className="mt-1 text-xs text-muted-foreground">
-                {t("twoFactor.emailNotVerifiedHint")}
+                {hasEmail
+                  ? t("twoFactor.emailNotVerifiedHint")
+                  : t("twoFactor.emailRequiredHint")}
               </p>
             )}
           </div>
@@ -266,15 +269,21 @@ export function TwoFactorSection() {
             {t("twoFactor.disableButton")}
           </Button>
         ) : emailNeedsVerification ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleVerifyEmailFirst}
-            isLoading={isResendingConfirmation}
-          >
-            {t("twoFactor.verifyEmailButton")}
-          </Button>
+          hasEmail ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleVerifyEmailFirst}
+              isLoading={isResendingConfirmation}
+            >
+              {t("twoFactor.verifyEmailButton")}
+            </Button>
+          ) : (
+            <Button type="button" variant="outline" size="sm" disabled>
+              {t("twoFactor.enableButton")}
+            </Button>
+          )
         ) : (
           <Button
             type="button"

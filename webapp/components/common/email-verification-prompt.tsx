@@ -109,7 +109,9 @@ export function EmailVerificationPrompt() {
       isLoggedIn &&
       user !== null &&
       user !== undefined &&
-      (!user.emailVerified || !user.email) &&
+      // A verified account with no email was deliberately set up that way by an
+      // admin (e.g. a shared box-office/supervisor login) and shouldn't be nagged.
+      !user.emailVerified &&
       !currentpath.includes("profile")
     );
   }, [timerCompleted, isLoading, isLoggedIn, user, currentpath]);

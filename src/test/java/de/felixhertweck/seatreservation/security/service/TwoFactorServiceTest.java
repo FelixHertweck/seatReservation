@@ -356,6 +356,25 @@ public class TwoFactorServiceTest {
     }
 
     @Test
+    void testEnableTwoFactor_Email_NoEmailOnFile_ThrowsEmailNotVerifiedException() {
+        // Admin-created accounts can be marked emailVerified=true with no email at all (e.g. a
+        // shared box-office login) -- that must not be usable as an email 2FA target, since any
+        // code sent to it would silently go nowhere and lock the account out.
+        User user = new User();
+        user.setUsername("noemailuser");
+        user.setEmail(null);
+        user.setEmailVerified(true);
+
+        assertThrows(
+                EmailNotVerifiedException.class,
+                () -> twoFactorService.enableTwoFactor(user, TwoFactorMethod.EMAIL, null));
+
+        assertFalse(user.isEmailEnabled());
+        assertFalse(user.isTwoFactorEnabled());
+        verify(userRepository, never()).persist(user);
+    }
+
+    @Test
     void testUpdateSettings_OnlyTogglesPasskey() {
         User user = new User();
         user.setTotpEnabled(true);

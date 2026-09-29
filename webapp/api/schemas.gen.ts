@@ -2303,14 +2303,12 @@ export const UserNotificationDTOSchema = {
 
 export const UserProfileUpdateDTOSchema = {
     type: 'object',
-    required: [
-        'email',
-        'firstname',
-        'lastname'
-    ],
     properties: {
         email: {
-            type: 'string'
+            type: [
+                'string',
+                'null'
+            ]
         },
         firstname: {
             type: 'string'
@@ -2325,7 +2323,11 @@ export const UserProfileUpdateDTOSchema = {
         twoFactorCode: {
             type: 'string'
         }
-    }
+    },
+    required: [
+        'firstname',
+        'lastname'
+    ]
 } as const;
 
 export const UserReservationResponseDTOSchema = {

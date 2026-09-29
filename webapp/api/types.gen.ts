@@ -898,7 +898,7 @@ export type UserNotificationDto = {
 };
 
 export type UserProfileUpdateDto = {
-    email: string;
+    email?: string | null;
     firstname: string;
     lastname: string;
     password?: string;

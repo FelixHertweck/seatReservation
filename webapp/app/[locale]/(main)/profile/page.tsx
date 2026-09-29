@@ -24,7 +24,8 @@ import { toast } from "sonner";
 import type { UserProfileUpdateDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
-import { validateRequiredEmail } from "@/lib/validation";
+import { validateOptionalEmail, validateRequiredEmail } from "@/lib/validation";
+import { isVerifiedWithoutEmail } from "@/lib/user-email";
 import {
   FieldError,
   invalidFieldClassName,
@@ -126,7 +127,10 @@ export default function ProfilePage() {
     ? isPasswordValid && doPasswordsMatch
     : true;
 
-  const emailErrorKey = validateRequiredEmail(formData.email);
+  const isExemptFromEmailRequirement = isVerifiedWithoutEmail(user);
+  const emailErrorKey = isExemptFromEmailRequirement
+    ? validateOptionalEmail(formData.email)
+    : validateRequiredEmail(formData.email);
 
   const handlePasswordUpdate = async () => {
     if (!isPasswordValid || !doPasswordsMatch) {
@@ -138,6 +142,8 @@ export default function ProfilePage() {
 
     await updateProfile({
       ...originalFormData,
+      email:
+        originalFormData.email.trim() === "" ? null : originalFormData.email,
       password: newPassword,
     });
 
@@ -149,6 +155,7 @@ export default function ProfilePage() {
   const performUpdate = async (twoFactorCode?: string) => {
     const updatedProfile: UserProfileUpdateDto = {
       ...formData,
+      email: formData.email.trim() === "" ? null : formData.email,
       ...(showPasswordSection && newPassword ? { password: newPassword } : {}),
       ...(twoFactorCode ? { twoFactorCode } : {}),
     };
