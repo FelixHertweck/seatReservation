@@ -5955,7 +5955,7 @@
             }
           },
           "400" : {
-            "description" : "Bad Request: Invalid input or event not bookable or reservation limit reached or user email not verified"
+            "description" : "Bad Request: Invalid input or event not bookable or reservation limit reached"
           },
           "401" : {
             "description" : "Unauthorized"
@@ -5968,6 +5968,9 @@
           },
           "409" : {
             "description" : "Conflict: Seat already reserved or blocked"
+          },
+          "422" : {
+            "description" : "Unprocessable: User must have a verified email to reserve"
           }
         },
         "summary" : "Create Reservation",

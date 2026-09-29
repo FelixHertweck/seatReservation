@@ -4157,7 +4157,7 @@ export type PostApiUserReservationsData = {
 
 export type PostApiUserReservationsErrors = {
     /**
-     * Bad Request: Invalid input or event not bookable or reservation limit reached or user email not verified
+     * Bad Request: Invalid input or event not bookable or reservation limit reached
      */
     400: unknown;
     /**
@@ -4176,6 +4176,10 @@ export type PostApiUserReservationsErrors = {
      * Conflict: Seat already reserved or blocked
      */
     409: unknown;
+    /**
+     * Unprocessable: User must have a verified email to reserve
+     */
+    422: unknown;
 };
 
 export type PostApiUserReservationsResponses = {

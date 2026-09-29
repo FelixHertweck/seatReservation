@@ -131,14 +131,17 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "400",
             description =
-                    "Bad Request: Invalid input or event not bookable or reservation limit reached"
-                            + " or user email not verified")
+                    "Bad Request: Invalid input or event not bookable or reservation limit"
+                            + " reached")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only authenticated users can access this resource")
     @APIResponse(responseCode = "404", description = "Not Found: Event or seat not found")
     @APIResponse(responseCode = "409", description = "Conflict: Seat already reserved or blocked")
+    @APIResponse(
+            responseCode = "422",
+            description = "Unprocessable: User must have a verified email to reserve")
     public List<UserReservationResponseDTO> createReservation(
             @Valid UserReservationsRequestDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();

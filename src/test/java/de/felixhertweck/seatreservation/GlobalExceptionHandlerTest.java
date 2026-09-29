@@ -40,9 +40,11 @@ import de.felixhertweck.seatreservation.management.exception.EventLocationNotFou
 import de.felixhertweck.seatreservation.management.exception.SeatNotFoundException;
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
+import de.felixhertweck.seatreservation.reservation.exception.ReservationEmailRequiredException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
+import de.felixhertweck.seatreservation.security.exceptions.EmailNotVerifiedException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.TokenService;
 import de.felixhertweck.seatreservation.usermanagement.exceptions.VerificationCodeNotFoundException;
@@ -69,6 +71,22 @@ class GlobalExceptionHandlerTest {
         assertTrue(response.getEntity() instanceof ErrorResponseDTO);
         ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
         assertEquals("User not found", errorResponse.getMessage());
+    }
+
+    @Test
+    void testReservationEmailRequiredException_ReturnsUnprocessableEntity() {
+        Response response =
+                exceptionHandler.toResponse(new ReservationEmailRequiredException("No email"));
+
+        assertEquals(422, response.getStatus());
+    }
+
+    @Test
+    void testEmailNotVerifiedException_StillReturnsForbidden() {
+        Response response =
+                exceptionHandler.toResponse(new EmailNotVerifiedException("Not verified"));
+
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
     }
 
     @Test

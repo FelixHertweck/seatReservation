@@ -46,6 +46,7 @@ import de.felixhertweck.seatreservation.management.exception.SeatNotFoundExcepti
 import de.felixhertweck.seatreservation.notification.exception.NotificationNotFoundException;
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
+import de.felixhertweck.seatreservation.reservation.exception.ReservationEmailRequiredException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatCartAccessNotGrantedException;
@@ -137,6 +138,11 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             case DuplicateUserException ignored -> status = Response.Status.CONFLICT;
             case InvalidUserException ignored -> status = Response.Status.BAD_REQUEST;
             case RegistrationDisabledException ignored -> status = Response.Status.FORBIDDEN;
+            // Must precede EmailNotVerifiedException, its superclass.
+            case ReservationEmailRequiredException ignored -> {
+                // Response.Status has no constant for 422.
+                return Response.status(422).entity(errorResponse).build();
+            }
             case EmailNotVerifiedException ignored -> status = Response.Status.FORBIDDEN;
             case InvalidTwoFactorCodeException ignored -> status = Response.Status.BAD_REQUEST;
             case TwoFactorAlreadyEnabledException ignored -> status = Response.Status.CONFLICT;

@@ -54,6 +54,7 @@ import de.felixhertweck.seatreservation.reservation.dto.UserReservationResponseD
 import de.felixhertweck.seatreservation.reservation.dto.UserReservationsRequestDTO;
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
+import de.felixhertweck.seatreservation.reservation.exception.ReservationEmailRequiredException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatPendingException;
@@ -155,8 +156,8 @@ public class ReservationService {
      * @throws EventBookingClosedException if the event booking has not started or has already ended
      * @throws SeatAlreadyReservedException if any of the requested seats are already reserved
      * @throws SeatBlockedException if any of the requested seats are blocked
-     * @throws ValidationException if the user does not have a verified email address, or if no
-     *     seats are selected
+     * @throws ReservationEmailRequiredException if the user does not have a verified email address
+     * @throws ValidationException if no seats are selected
      */
     @Transactional
     public List<UserReservationResponseDTO> createReservationForUser(
@@ -167,13 +168,11 @@ public class ReservationService {
                 currentUser.id, dto.getEventId(), dto.getSeatIds().size());
         LOG.debugf("ReservationsRequestDTO: %s", dto.toString());
 
-        if (currentUser.getEmail() == null
-                || currentUser.getEmail().trim().isEmpty()
-                || !currentUser.isEmailVerified()) {
+        if (!currentUser.hasVerifiedEmail()) {
             LOG.warnf(
                     "user ID: %s attempted to create reservation without a verified email.",
                     currentUser.id);
-            throw new ValidationException(
+            throw new ReservationEmailRequiredException(
                     "User must have a verified email address to create a reservation.");
         }
 
