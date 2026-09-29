@@ -18,6 +18,7 @@ import type {
   UserReservationResponseDto,
   UserReservationsRequestDto,
 } from "@/api";
+import { isReservationEmailRequiredError } from "@/lib/reservation-errors";
 
 interface UseEventsReturn {
   events: UserEventResponseDto[];
@@ -54,30 +55,34 @@ export function useEvents(): UseEventsReturn {
       eventId,
       seatIds,
     };
-    const request = createReservationMutation.mutateAsync({
-      body: data,
-    });
-
-    toast.promise(request, {
-      loading: t("common.loading"),
-      success: (resultData) => {
-        queryClient.setQueriesData(
-          { queryKey: getApiUserReservationsQueryKey() },
-          (oldData: UserReservationResponseDto[] | undefined) => {
-            return oldData ? [...oldData, ...resultData] : [...resultData];
-          },
-        );
-        queryClient.invalidateQueries({
-          queryKey: getApiUserEventsQueryKey(),
-        });
-        queryClient.invalidateQueries({
-          queryKey: getApiUserEventsByIdQueryKey({ path: { id: eventId } }),
-        });
-        return t("reservation.create.success.title");
-      },
-      error: t("reservation.create.error.title"),
-    });
-    return request;
+    const toastId = toast.loading(t("common.loading"));
+    try {
+      const resultData = await createReservationMutation.mutateAsync({
+        body: data,
+      });
+      queryClient.setQueriesData(
+        { queryKey: getApiUserReservationsQueryKey() },
+        (oldData: UserReservationResponseDto[] | undefined) => {
+          return oldData ? [...oldData, ...resultData] : [...resultData];
+        },
+      );
+      queryClient.invalidateQueries({
+        queryKey: getApiUserEventsQueryKey(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: getApiUserEventsByIdQueryKey({ path: { id: eventId } }),
+      });
+      toast.success(t("reservation.create.success.title"), { id: toastId });
+      return resultData;
+    } catch (error) {
+      // The caller shows a dedicated dialog for this case instead of a toast.
+      if (isReservationEmailRequiredError(error)) {
+        toast.dismiss(toastId);
+      } else {
+        toast.error(t("reservation.create.error.title"), { id: toastId });
+      }
+      throw error;
+    }
   };
 
   const getEventById = (eventId: string) => {

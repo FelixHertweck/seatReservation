@@ -21,6 +21,7 @@ import {
   getApiUserEventsByIdOptions,
   getApiUserLocationsByIdOptions,
 } from "@/api/@tanstack/react-query.gen";
+import { takePendingReservationSelection } from "@/lib/pending-reservation-selection";
 
 export default function EventsPage() {
   const t = useT();
@@ -35,6 +36,9 @@ export default function EventsPage() {
   } = useEvents();
   const { isLoading: reservationsLoading, reservations } = useReservations();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [restoreSeatIds, setRestoreSeatIds] = useState<string[] | undefined>(
+    undefined,
+  );
   const [eventSearchQuery, setEventSearchQuery] = useState<string>("");
   const [filters, setFilters] = useState<Record<string, unknown>>({
     onlyUpcoming: true,
@@ -44,11 +48,16 @@ export default function EventsPage() {
   // Open modal if eventId is in URL query parameters on initial load
   useEffect(() => {
     if (eventsLoading) return;
-    const eventId = searchParams.get("eventId");
+
+    const pending = takePendingReservationSelection();
+    const eventId = searchParams.get("eventId") ?? pending?.eventId;
     if (!eventId) return;
 
     if (events.some((event) => event.id === eventId)) {
       setSelectedEventId(eventId);
+      if (pending?.eventId === eventId) {
+        setRestoreSeatIds(pending.seatIds);
+      }
     } else {
       router.replace("/events");
     }
@@ -156,6 +165,7 @@ export default function EventsPage() {
 
   const closeModal = () => {
     setSelectedEventId(null);
+    setRestoreSeatIds(undefined);
     if (searchParams.get("eventId")) {
       router.replace("/events");
     }
@@ -262,6 +272,11 @@ export default function EventsPage() {
           isEventLoading={isEventDetailLoading}
           isFetching={isEventFetching || isLocationFetching}
           onClose={closeModal}
+          restoreSeatIds={
+            restoreSeatIds && selectedEventId === selectedEvent.id
+              ? restoreSeatIds
+              : undefined
+          }
           onReserve={async (eventId, seatIds) => {
             const res = await createReservation(eventId, seatIds);
             router.push(`/events/reservations?eventId=${eventId}&showQr=true`);
