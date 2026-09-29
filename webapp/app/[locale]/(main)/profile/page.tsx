@@ -76,9 +76,9 @@ export default function ProfilePage() {
 
   if (
     user &&
-    (user.firstname !== originalFormData.firstname ||
-      user.lastname !== originalFormData.lastname ||
-      user.email !== originalFormData.email)
+    ((user.firstname || "") !== originalFormData.firstname ||
+      (user.lastname || "") !== originalFormData.lastname ||
+      (user.email || "") !== originalFormData.email)
   ) {
     const newData: FormData = {
       firstname: user.firstname || "",
