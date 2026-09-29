@@ -12,6 +12,10 @@ import { Button } from "@/components/custom-ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/custom-ui/label";
 import {
+  FieldError,
+  invalidFieldClassName,
+} from "@/components/custom-ui/field-error";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -64,6 +68,11 @@ export function AllowanceFormModal({
   );
   const [isLoading, setIsLoading] = useState(false);
 
+  // Whole number >= 0 (rejects decimals, exponents and negatives typed into the number input)
+  const isAllowanceCountInvalid =
+    allowedReservations.trim() !== "" &&
+    !/^\d+$/.test(allowedReservations.trim());
+
   useEffect(() => {
     if (allowance && !isCreating) {
       setSelectedUserIds([allowance.userId?.toString() || ""]);
@@ -86,8 +95,7 @@ export function AllowanceFormModal({
       return;
     }
 
-    // Whole number >= 0 (rejects decimals, exponents and negatives typed into the number input)
-    if (!/^\d+$/.test(allowedReservations.trim())) {
+    if (isAllowanceCountInvalid) {
       toast.error(t("validation.title"), {
         description: t("validation.allowanceCountInvalid"),
       });
@@ -238,7 +246,12 @@ export function AllowanceFormModal({
               step={1}
               value={allowedReservations}
               onChange={(e) => setAllowedReservations(e.target.value)}
+              aria-invalid={isAllowanceCountInvalid}
+              className={invalidFieldClassName(isAllowanceCountInvalid)}
             />
+            {isAllowanceCountInvalid && (
+              <FieldError>{t("validation.allowanceCountInvalid")}</FieldError>
+            )}
           </div>
         </div>
         <DialogFooter>
@@ -252,7 +265,8 @@ export function AllowanceFormModal({
               isLoading ||
               selectedUserIds.length === 0 ||
               !selectedEventId ||
-              !allowedReservations
+              !allowedReservations ||
+              isAllowanceCountInvalid
             }
           >
             {isCreating

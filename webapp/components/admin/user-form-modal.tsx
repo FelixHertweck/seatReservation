@@ -11,6 +11,10 @@ import {
 import { Button } from "@/components/custom-ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/custom-ui/label";
+import {
+  FieldError,
+  invalidFieldClassName,
+} from "@/components/custom-ui/field-error";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
@@ -85,12 +89,41 @@ export function UserFormModal({
 
   const [isFormLoading, setIsFormLoading] = useState(false);
 
+  const [touched, setTouched] = useState({
+    username: false,
+    password: false,
+    roles: false,
+    emailStatus: false,
+  });
+  const markTouched = (field: keyof typeof touched) =>
+    setTouched((prev) => (prev[field] ? prev : { ...prev, [field]: true }));
+
   const isPasswordTooShort =
     formState.password.length > 0 &&
     formState.password.length < PASSWORD_MIN_LENGTH &&
     formState.password !== "••••••••";
 
+  const isPasswordMissing = isCreating && !formState.password;
+
+  const usernameErrorKey = isCreating
+    ? validateUsername(formState.username)
+    : null;
+  const emailErrorKey = validateOptionalEmail(formState.email);
+  const isRolesMissing = formState.selectedRoles.length === 0;
+  const isEmailRequiredForVerification =
+    formState.emailStatus === "send" && !formState.email.trim();
+
+  // Only surface these as red once the user has interacted with the field —
+  // they're empty/unset by default, so showing them immediately on open
+  // would flag a pristine form as invalid.
+  const showUsernameError = touched.username && !!usernameErrorKey;
+  const showPasswordMissing = touched.password && isPasswordMissing;
+  const showRolesMissing = touched.roles && isRolesMissing;
+  const showEmailRequiredForVerification =
+    touched.emailStatus && isEmailRequiredForVerification;
+
   const handleRoleChange = (role: string, checked: boolean) => {
+    markTouched("roles");
     setFormState((prev) => ({
       ...prev,
       selectedRoles: checked
@@ -118,28 +151,22 @@ export function UserFormModal({
 
   const handleSubmit = async () => {
     // Also runs on Enter, which bypasses the disabled state of the submit button.
-    let errorKey: string | null = null;
-    if (isCreating) {
-      errorKey = validateUsername(formState.username);
-      if (!errorKey && !formState.password) {
-        errorKey = "validation.passwordRequired";
-      }
-    }
-    if (!errorKey && isPasswordTooShort) {
-      errorKey = "userFormModal.passwordTooShort";
-    }
-    errorKey ??= validateOptionalEmail(formState.email);
-    if (!errorKey && formState.selectedRoles.length === 0) {
-      errorKey = "validation.rolesRequired";
-    }
-    if (
-      !errorKey &&
-      formState.emailStatus === "send" &&
-      !formState.email.trim()
-    ) {
-      errorKey = "validation.emailRequiredForVerification";
-    }
+    const errorKey =
+      usernameErrorKey ??
+      (isPasswordMissing ? "validation.passwordRequired" : null) ??
+      (isPasswordTooShort ? "userFormModal.passwordTooShort" : null) ??
+      emailErrorKey ??
+      (isRolesMissing ? "validation.rolesRequired" : null) ??
+      (isEmailRequiredForVerification
+        ? "validation.emailRequiredForVerification"
+        : null);
     if (errorKey) {
+      setTouched({
+        username: true,
+        password: true,
+        roles: true,
+        emailStatus: true,
+      });
       toast.error(t("validation.title"), { description: t(errorKey) });
       return;
     }
@@ -232,7 +259,13 @@ export function UserFormModal({
                 disabled={!isCreating} // Username typically not editable after creation
                 autoCapitalize="none"
                 autoComplete="username"
+                onBlur={() => markTouched("username")}
+                aria-invalid={showUsernameError}
+                className={invalidFieldClassName(showUsernameError)}
               />
+              {showUsernameError && (
+                <FieldError>{t(usernameErrorKey as string)}</FieldError>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">
@@ -261,11 +294,17 @@ export function UserFormModal({
                     setFormState((prev) => ({ ...prev, password: "" }));
                   }
                 }}
+                onBlur={() => markTouched("password")}
+                aria-invalid={isPasswordTooShort || showPasswordMissing}
+                className={invalidFieldClassName(
+                  isPasswordTooShort || showPasswordMissing,
+                )}
               />
               {isPasswordTooShort && (
-                <p className="text-sm text-destructive">
-                  {t("userFormModal.passwordTooShort")}
-                </p>
+                <FieldError>{t("userFormModal.passwordTooShort")}</FieldError>
+              )}
+              {showPasswordMissing && (
+                <FieldError>{t("validation.passwordRequired")}</FieldError>
               )}
               {!isCreating && (
                 <p className="text-xs text-muted-foreground">
@@ -321,7 +360,10 @@ export function UserFormModal({
                 onChange={(e) =>
                   setFormState((prev) => ({ ...prev, email: e.target.value }))
                 }
+                aria-invalid={!!emailErrorKey}
+                className={invalidFieldClassName(!!emailErrorKey)}
               />
+              {emailErrorKey && <FieldError>{t(emailErrorKey)}</FieldError>}
             </div>
           </div>
 
@@ -332,12 +374,13 @@ export function UserFormModal({
             </h3>
             <RadioGroup
               value={formState.emailStatus}
-              onValueChange={(value) =>
+              onValueChange={(value) => {
+                markTouched("emailStatus");
                 setFormState((prev) => ({
                   ...prev,
                   emailStatus: value as EmailStatus,
-                }))
-              }
+                }));
+              }}
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
@@ -364,11 +407,16 @@ export function UserFormModal({
                 </Label>
               </div>
             </RadioGroup>
-            {formState.emailStatus === "send" && (
-              <p className="text-xs text-muted-foreground">
-                {t("userFormModal.sendEmailVerificationDesc")}
-              </p>
-            )}
+            {formState.emailStatus === "send" &&
+              (showEmailRequiredForVerification ? (
+                <FieldError>
+                  {t("validation.emailRequiredForVerification")}
+                </FieldError>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  {t("userFormModal.sendEmailVerificationDesc")}
+                </p>
+              ))}
           </div>
 
           {/* Roles */}
@@ -385,6 +433,10 @@ export function UserFormModal({
                     onCheckedChange={(checked) =>
                       handleRoleChange(role, !!checked)
                     }
+                    aria-invalid={showRolesMissing}
+                    className={
+                      showRolesMissing ? "border-destructive" : undefined
+                    }
                   />
                   <Label htmlFor={`role-${role}`} className="font-normal">
                     {role}
@@ -392,6 +444,9 @@ export function UserFormModal({
                 </div>
               ))}
             </div>
+            {showRolesMissing && (
+              <FieldError>{t("validation.rolesRequired")}</FieldError>
+            )}
           </div>
 
           {/* Tags */}
@@ -445,7 +500,15 @@ export function UserFormModal({
           <Button
             onClick={handleSubmit}
             isLoading={isFormLoading}
-            disabled={isFormLoading || isPasswordTooShort}
+            disabled={
+              isFormLoading ||
+              isPasswordTooShort ||
+              isPasswordMissing ||
+              !!usernameErrorKey ||
+              !!emailErrorKey ||
+              isRolesMissing ||
+              isEmailRequiredForVerification
+            }
           >
             {isCreating
               ? t("userFormModal.createUserButton")
