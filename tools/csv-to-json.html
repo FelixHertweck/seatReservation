@@ -31,6 +31,9 @@
 <label for="tags">Tags <span class="hint">(comma-separated)</span></label>
 <input type="text" id="tags" value="imported">
 
+<label><input type="checkbox" id="firstOnlyFirst"> Firstname: use only the first name <span class="hint">(“Hans Peter” → “Hans”)</span></label>
+<label><input type="checkbox" id="lastOnlyFirst"> Lastname: use only the first name <span class="hint">(“Müller Schmidt” → “Müller”)</span></label>
+
 <button id="convert">Convert</button>
 <button id="download" disabled>Download output.json</button>
 <button id="copy" disabled>Copy</button>
@@ -38,6 +41,11 @@
 <div id="status"></div>
 <label for="out">JSON</label>
 <textarea id="out" readonly></textarea>
+
+<label for="names">Usernames <span class="hint">(one per line)</span></label>
+<textarea id="names" readonly></textarea>
+<button id="copyNames" disabled>Copy usernames</button>
+<button id="downloadNames" disabled>Download usernames.txt</button>
 
 <script>
 (function () {
@@ -87,7 +95,9 @@
 
   const split = (s) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
-  function convert(text, roles, tags) {
+  const firstWord = (s) => s.split(/\s+/)[0] || "";
+
+  function convert(text, roles, tags, opts) {
     const rows = parseCsv(text, ";");
     const warnings = [];
     const users = [];
@@ -105,8 +115,10 @@
     };
     for (let n = start; n < rows.length; n++) {
       const r = rows[n];
-      const firstname = get(r, "firstname", 0);
-      const lastname = get(r, "lastname", 1);
+      let firstname = get(r, "firstname", 0);
+      let lastname = get(r, "lastname", 1);
+      if (opts.firstOnlyFirst) firstname = firstWord(firstname);
+      if (opts.lastOnlyFirst) lastname = firstWord(lastname);
       const password = get(r, "password", 2);
       const email = get(r, "email", 3);
       if (!firstname || !lastname || !password) {
@@ -134,13 +146,17 @@
   }
 
   let lastJson = "";
+  let lastNames = "";
 
   function run() {
     const roles = split($("roles").value);
     if (roles.length === 0) {
       lastJson = "";
+      lastNames = "";
       $("out").value = "";
+      $("names").value = "";
       $("download").disabled = $("copy").disabled = true;
+      $("downloadNames").disabled = $("copyNames").disabled = true;
       $("status").innerHTML = "";
       const d = document.createElement("div");
       d.className = "warn";
@@ -148,9 +164,14 @@
       $("status").append(d);
       return;
     }
-    const { users, warnings } = convert($("csv").value, roles, split($("tags").value));
+    const { users, warnings } = convert($("csv").value, roles, split($("tags").value), {
+      firstOnlyFirst: $("firstOnlyFirst").checked,
+      lastOnlyFirst: $("lastOnlyFirst").checked,
+    });
     lastJson = JSON.stringify(users, null, 2);
     $("out").value = lastJson;
+    lastNames = users.map((u) => u.username).join("\n");
+    $("names").value = lastNames;
     $("status").innerHTML = "";
     $("status").append(users.length + " user(s) converted.");
     warnings.forEach((w) => {
@@ -160,6 +181,7 @@
       $("status").append(d);
     });
     $("download").disabled = $("copy").disabled = users.length === 0;
+    $("downloadNames").disabled = $("copyNames").disabled = users.length === 0;
   }
 
   $("file").addEventListener("change", (e) => {
@@ -170,6 +192,8 @@
     reader.readAsText(f, "UTF-8");
   });
   $("convert").addEventListener("click", run);
+  $("firstOnlyFirst").addEventListener("change", run);
+  $("lastOnlyFirst").addEventListener("change", run);
   $("download").addEventListener("click", () => {
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([lastJson], { type: "application/json" }));
@@ -178,6 +202,14 @@
     URL.revokeObjectURL(a.href);
   });
   $("copy").addEventListener("click", () => navigator.clipboard.writeText(lastJson));
+  $("downloadNames").addEventListener("click", () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([lastNames + "\n"], { type: "text/plain" }));
+    a.download = "usernames.txt";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  $("copyNames").addEventListener("click", () => navigator.clipboard.writeText(lastNames));
 })();
 </script>
 </body>
