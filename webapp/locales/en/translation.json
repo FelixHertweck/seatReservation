@@ -448,6 +448,8 @@
     "removesAdminWarning": "With this choice the user loses the ADMIN role.",
     "whatToApply": "Which values should be taken from the import?",
     "noDifferences": "No differences in name, email, roles and tags.",
+    "onlyChanged": "Only with changes",
+    "noChangesShort": "No changes",
     "setPassword": "Set the password from the import",
     "field": {
       "firstname": "First name",
