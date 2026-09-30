@@ -88,6 +88,7 @@ export function UserConflictResolverModal({
   );
   const [checkedKeys, setCheckedKeys] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
+  const [onlyChanged, setOnlyChanged] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
   const [results, setResults] = useState<
     UserImportResolutionResultDto[] | null
@@ -102,16 +103,6 @@ export function UserConflictResolverModal({
   const actionLabel = (action: ResolutionAction) =>
     t(`userConflictResolver.action.${action}`);
 
-  const visibleConflicts = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return conflicts.filter(
-      (c) =>
-        !query ||
-        c.user.username.toLowerCase().includes(query) ||
-        `${c.user.firstname} ${c.user.lastname}`.toLowerCase().includes(query),
-    );
-  }, [conflicts, search]);
-
   const focused = conflicts.find((c) => keyOf(c) === focusedKey);
 
   const counts = useMemo(() => {
@@ -121,20 +112,6 @@ export function UserConflictResolverModal({
     }
     return result;
   }, [conflicts, decisions]);
-
-  const allVisibleChecked =
-    visibleConflicts.length > 0 &&
-    visibleConflicts.every((c) => checkedKeys.has(keyOf(c)));
-
-  const toggleAllVisible = () =>
-    setCheckedKeys((prev) => {
-      const next = new Set(prev);
-      for (const c of visibleConflicts) {
-        if (allVisibleChecked) next.delete(keyOf(c));
-        else next.add(keyOf(c));
-      }
-      return next;
-    });
 
   const toggleChecked = (conflict: ImportConflict) =>
     setCheckedKeys((prev) => {
@@ -227,6 +204,38 @@ export function UserConflictResolverModal({
     }
     return rows;
   };
+
+  // The password cannot be compared, so it does not count as a difference.
+  const changeCountOf = (conflict: ImportConflict) =>
+    changeRows(conflict).length;
+
+  const visibleConflicts = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return conflicts.filter((c) => {
+      const matchesSearch =
+        !query ||
+        c.user.username.toLowerCase().includes(query) ||
+        `${c.user.firstname} ${c.user.lastname}`.toLowerCase().includes(query);
+      if (!matchesSearch) return false;
+      return !onlyChanged || changeCountOf(c) > 0;
+    });
+    // changeRows only depends on the conflict data here, not on the decisions.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conflicts, search, onlyChanged]);
+
+  const allVisibleChecked =
+    visibleConflicts.length > 0 &&
+    visibleConflicts.every((c) => checkedKeys.has(keyOf(c)));
+
+  const toggleAllVisible = () =>
+    setCheckedKeys((prev) => {
+      const next = new Set(prev);
+      for (const c of visibleConflicts) {
+        if (allVisibleChecked) next.delete(keyOf(c));
+        else next.add(keyOf(c));
+      }
+      return next;
+    });
 
   const toggleRow = (conflict: ImportConflict, row: ChangeRow) => {
     if (row.key === "tags") {
@@ -349,40 +358,46 @@ export function UserConflictResolverModal({
             </div>
           </div>
         ) : (
-          <div className="mt-2 space-y-8">
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-[340px_1fr]">
+          <div className="mt-1 space-y-4">
+            <div className="grid grid-cols-1 gap-6 md:h-[60vh] md:grid-cols-[300px_1fr]">
               {/* Left: selectable list with bulk actions */}
-              <div className="space-y-4">
+              <div className="flex min-h-0 flex-col gap-3">
                 <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-2 top-2 h-4 w-4 text-muted-foreground" />
                   <Input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder={t("userConflictResolver.search")}
-                    className="pl-8"
+                    className="h-8 pl-8 text-sm"
                   />
                 </div>
 
                 <div className="flex items-center justify-between gap-2">
-                  <label className="flex items-center gap-3 text-sm">
+                  <label className="flex items-center gap-2 text-xs">
                     <Checkbox
                       checked={allVisibleChecked}
                       onCheckedChange={toggleAllVisible}
                     />
                     {t("userConflictResolver.selectAll")}
+                    {checkedKeys.size > 0 && ` (${checkedKeys.size})`}
                   </label>
-                  <span className="text-xs text-muted-foreground">
-                    {t("userConflictResolver.selectedCount", {
-                      count: checkedKeys.size,
-                    })}
-                  </span>
+                  <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Checkbox
+                      checked={onlyChanged}
+                      onCheckedChange={(checked) =>
+                        setOnlyChanged(checked === true)
+                      }
+                    />
+                    {t("userConflictResolver.onlyChanged")}
+                  </label>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2">
                   {ACTIONS.map((action) => (
                     <Button
                       key={action}
                       type="button"
+                      size="sm"
                       variant="outline"
                       disabled={checkedConflicts.length === 0}
                       onClick={() => setAction(checkedConflicts, action)}
@@ -393,15 +408,23 @@ export function UserConflictResolverModal({
                   ))}
                 </div>
 
-                <div className="max-h-[46vh] space-y-3 overflow-y-auto pr-2">
+                <div className="max-h-[50vh] min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1 md:max-h-none">
                   {visibleConflicts.map((c) => {
                     const key = keyOf(c);
                     const action = decisionOf(c).action;
+                    const changeCount = changeCountOf(c);
                     return (
                       <div
                         key={key}
                         role="button"
                         tabIndex={0}
+                        title={
+                          changeCount === 0
+                            ? t("userConflictResolver.noChangesShort")
+                            : changeRows(c)
+                                .map((row) => row.label)
+                                .join(", ")
+                        }
                         onClick={() => setFocusedKey(key)}
                         onKeyDown={(e) => {
                           // Ignore keys pressed on the nested checkbox.
@@ -412,8 +435,9 @@ export function UserConflictResolverModal({
                           }
                         }}
                         className={cn(
-                          "flex cursor-pointer items-center gap-4 rounded-md border px-4 py-3 text-sm hover:bg-muted",
+                          "flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-sm hover:bg-muted",
                           key === focusedKey && "border-primary bg-muted",
+                          changeCount === 0 && "opacity-60",
                         )}
                       >
                         <span onClick={(e) => e.stopPropagation()}>
@@ -451,15 +475,15 @@ export function UserConflictResolverModal({
 
               {/* Right: what happens with the focused user */}
               {focused && (
-                <div className="space-y-6">
-                  <div className="space-y-1">
+                <div className="min-h-0 space-y-4 overflow-y-auto pr-1">
+                  <div className="space-y-0.5">
                     <p className="font-semibold">{focused.user.username}</p>
                     <p className="text-sm text-muted-foreground">
                       {focused.user.firstname} {focused.user.lastname}
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="flex flex-wrap gap-2">
                     {ACTIONS.map((action) => {
                       const active = decisionOf(focused).action === action;
                       const disabled =
@@ -468,6 +492,7 @@ export function UserConflictResolverModal({
                         <Button
                           key={action}
                           type="button"
+                          size="sm"
                           variant={
                             active
                               ? action === "replace"
@@ -496,14 +521,14 @@ export function UserConflictResolverModal({
                   )}
 
                   {decisionOf(focused).action === "replace" && (
-                    <div className="flex gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm">
+                    <div className="flex gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm">
                       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
                       <span>{t("userConflictResolver.replaceWarning")}</span>
                     </div>
                   )}
 
                   {decisionOf(focused).action === "update" && (
-                    <div className="space-y-5">
+                    <div className="space-y-3">
                       <p className="text-sm text-muted-foreground">
                         {t("userConflictResolver.whatToApply")}
                       </p>
@@ -517,13 +542,13 @@ export function UserConflictResolverModal({
                           {changeRows(focused).map((row) => (
                             <label
                               key={row.key}
-                              className="flex cursor-pointer items-center gap-4 px-4 py-4 text-sm"
+                              className="flex cursor-pointer items-center gap-3 px-3 py-2 text-sm"
                             >
                               <Checkbox
                                 checked={row.apply}
                                 onCheckedChange={() => toggleRow(focused, row)}
                               />
-                              <span className="w-24 shrink-0 font-medium">
+                              <span className="w-20 shrink-0 font-medium">
                                 {row.label}
                               </span>
                               <span
@@ -548,7 +573,7 @@ export function UserConflictResolverModal({
                         </div>
                       )}
 
-                      <label className="flex cursor-pointer items-center gap-3 text-sm">
+                      <label className="flex cursor-pointer items-center gap-2 text-sm">
                         <Checkbox
                           checked={
                             decisionOf(focused).fields.password === "import"
@@ -565,7 +590,7 @@ export function UserConflictResolverModal({
                       </label>
 
                       {removesAdmin(focused) && (
-                        <div className="flex gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm">
+                        <div className="flex gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm">
                           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
                           <span>
                             {t("userConflictResolver.removesAdminWarning")}
@@ -578,20 +603,26 @@ export function UserConflictResolverModal({
               )}
             </div>
 
-            <div className="space-y-5 border-t pt-6">
-              <p className="text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
+              <p className="text-sm text-muted-foreground">
                 {t("userConflictResolver.summary", {
                   updateCount: counts.update,
                   replaceCount: counts.replace,
                   skipCount: counts.skip,
                 })}
               </p>
-              <div className="flex justify-end gap-3">
-                <Button type="button" variant="outline" onClick={handleClose}>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleClose}
+                >
                   {t("common.cancel")}
                 </Button>
                 <Button
                   type="button"
+                  size="sm"
                   onClick={handleApply}
                   isLoading={isApplying}
                   disabled={!canApply}

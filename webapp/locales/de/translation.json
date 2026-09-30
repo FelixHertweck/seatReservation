@@ -448,6 +448,8 @@
     "removesAdminWarning": "Mit dieser Auswahl verliert der Nutzer die Rolle ADMIN.",
     "whatToApply": "Welche Werte sollen aus dem Import übernommen werden?",
     "noDifferences": "Keine Unterschiede bei Name, E-Mail, Rollen und Tags.",
+    "onlyChanged": "Nur mit Änderungen",
+    "noChangesShort": "Keine Änderungen",
     "setPassword": "Passwort aus dem Import setzen",
     "field": {
       "firstname": "Vorname",
