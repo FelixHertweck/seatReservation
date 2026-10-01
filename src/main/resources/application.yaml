@@ -113,9 +113,14 @@ email:
   header:
     confirmation: "Please Confirm Your Email Address"
     password-changed: "Your Password Has Been Changed"
+    password-reset: "Password Reset Request"
+    username-recovery: "Username Recovery Request"
+    two-factor: "Two-Factor Authentication Code"
     reservation-confirmation: "Your Reservation Confirmation"
+    boxoffice-confirmation: "Your Box Office Reservation Confirmation"
     reservation-update: "Your Reservation Update"
     event-rescheduled: "Important: Your Event Schedule Has Changed"
+    event-cancelled: "Important: Your Event Has Been Cancelled"
     reminder: "Reminder: Your event is starting soon!"
     reservation-overview: "Reservation overview for your event:"
 
