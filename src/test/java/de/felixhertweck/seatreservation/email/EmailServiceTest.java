@@ -352,7 +352,7 @@ class EmailServiceTest {
         assertEquals(1, sentMails.size());
 
         Mail sentMail = sentMails.getFirst();
-        assertEquals("Box Office Reservation Confirmation", sentMail.getSubject());
+        assertEquals("Your Box Office Reservation Confirmation", sentMail.getSubject());
         assertTrue(sentMail.getHtml().contains("Jane Doe"));
         assertTrue(sentMail.getHtml().contains("<li>A1 (1) - Parkett</li>"));
         assertTrue(sentMail.getHtml().contains("<img src=\"cid:qrcode-image\""));
