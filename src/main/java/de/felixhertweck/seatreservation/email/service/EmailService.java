@@ -282,8 +282,6 @@ public class EmailService {
                     event.deletedReservations(),
                     event.activeReservations(),
                     null,
-                    null,
-                    null,
                     event.noticeMessage());
         } else {
             sendUpdateReservationConfirmation(
@@ -422,8 +420,6 @@ public class EmailService {
      * @param deletedReservations The list of deleted reservations.
      * @param activeReservations The list of active reservations.
      * @param additionalMailAddress An optional email address to override the user's email.
-     * @param customSubject Optional custom email subject.
-     * @param customHeader Optional custom header banner text.
      * @param noticeMessage Optional message/reason explaining why the update happened.
      */
     public void sendUpdateReservationConfirmation(
@@ -431,16 +427,12 @@ public class EmailService {
             List<Reservation> deletedReservations,
             List<Reservation> activeReservations,
             String additionalMailAddress,
-            String customSubject,
-            String customHeader,
             String noticeMessage) {
         reservationEmailContent.sendUpdateReservationConfirmation(
                 user,
                 deletedReservations,
                 activeReservations,
                 additionalMailAddress,
-                customSubject,
-                customHeader,
                 noticeMessage);
     }
 
