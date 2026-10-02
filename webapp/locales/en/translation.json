@@ -1749,7 +1749,7 @@
       "blockError": "Failed to block seats.",
       "deleteSuccess": "Reservation(s) deleted.",
       "deleteError": "Failed to delete reservation(s).",
-      "reserveDescription": "Select seats on the map, then choose a user.",
+      "reserveDescription": "Choose a user and select seats on the map.",
       "blockDescription": "Select seats on the map to block them.",
       "selectSeatsHint": "Click seats on the map to select them.",
       "selectedSeatsTitle": "Selected seats",
@@ -1776,7 +1776,12 @@
       "resendSending": "Sending...",
       "resendSuccess": "Reservation confirmation resent via email.",
       "resendError": "Failed to resend reservation confirmation.",
-      "loadError": "Failed to load confirmation email."
+      "loadError": "Failed to load confirmation email.",
+      "removeSeatAriaLabel": "Remove seat",
+      "userReservedCountLabel": "Already reserved:",
+      "seatMapTitle": "Seat map",
+      "showSeatMap": "Show seat map",
+      "hideSeatMap": "Hide seat map"
     },
     "memberTags": {
       "title": "Member tags",

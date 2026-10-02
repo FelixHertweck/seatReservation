@@ -1749,7 +1749,7 @@
       "blockError": "Sitze konnten nicht blockiert werden.",
       "deleteSuccess": "Reservierung(en) gelöscht.",
       "deleteError": "Reservierung(en) konnten nicht gelöscht werden.",
-      "reserveDescription": "Wähle Sitze auf der Karte aus und dann einen Benutzer.",
+      "reserveDescription": "Wähle einen Benutzer und die Sitze auf der Karte aus.",
       "blockDescription": "Wähle Sitze auf der Karte aus, um sie zu blockieren.",
       "selectSeatsHint": "Klicke auf Sitze in der Karte, um sie auszuwählen.",
       "selectedSeatsTitle": "Ausgewählte Plätze",
@@ -1776,7 +1776,12 @@
       "resendSending": "Wird gesendet...",
       "resendSuccess": "Reservierungsbestätigung wurde erneut per E-Mail gesendet.",
       "resendError": "Fehler beim erneuten Senden der Reservierungsbestätigung.",
-      "loadError": "Bestätigungs-E-Mail konnte nicht geladen werden."
+      "loadError": "Bestätigungs-E-Mail konnte nicht geladen werden.",
+      "removeSeatAriaLabel": "Platz entfernen",
+      "userReservedCountLabel": "Bereits reserviert:",
+      "seatMapTitle": "Saalplan",
+      "showSeatMap": "Saalplan anzeigen",
+      "hideSeatMap": "Saalplan ausblenden"
     },
     "memberTags": {
       "title": "Mitglieds-Tags",
