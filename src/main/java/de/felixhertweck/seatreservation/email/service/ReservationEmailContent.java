@@ -681,13 +681,7 @@ public class ReservationEmailContent {
             List<Reservation> activeReservations,
             String additionalMailAddress) {
         sendUpdateReservationConfirmation(
-                user,
-                deletedReservations,
-                activeReservations,
-                additionalMailAddress,
-                reservationUpdateSubject,
-                null,
-                null);
+                user, deletedReservations, activeReservations, additionalMailAddress, null);
     }
 
     public void sendUpdateReservationConfirmation(
@@ -695,8 +689,6 @@ public class ReservationEmailContent {
             List<Reservation> deletedReservations,
             List<Reservation> activeReservations,
             String additionalMailAddress,
-            String customSubject,
-            String customHeader,
             String noticeMessage) {
         if ((deletedReservations == null || deletedReservations.isEmpty())
                 && (activeReservations == null || activeReservations.isEmpty())) {
@@ -744,16 +736,10 @@ public class ReservationEmailContent {
                         : null;
         String appleWalletLink = generateAppleWalletLink(seatmapToken);
 
-        String subject = customSubject != null ? customSubject : reservationUpdateSubject;
-        String header =
-                customHeader != null ? customHeader : "Your reservation update confirmation";
-
         String htmlContent =
                 reservationUpdateTemplate
                         .data(KEY_USER_NAME, user.getUsername())
                         .data(KEY_FULL_NAME, fullName(user))
-                        .data("emailTitle", subject)
-                        .data("emailHeader", header)
                         .data("noticeMessage", noticeMessage)
                         .data(KEY_EVENT_NAME, eventName != null ? eventName : "")
                         .data(
@@ -784,7 +770,12 @@ public class ReservationEmailContent {
 
         emailSender.send(
                 new ReservationUpdateNotification(
-                        user, additionalMailAddress, subject, htmlContent, pngImage, qrCodeImage));
+                        user,
+                        additionalMailAddress,
+                        reservationUpdateSubject,
+                        htmlContent,
+                        pngImage,
+                        qrCodeImage));
     }
 
     // ---------------------------------------------------------------------

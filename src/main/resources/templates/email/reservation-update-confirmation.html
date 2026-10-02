@@ -3,7 +3,7 @@
   <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>{#if emailTitle??}{emailTitle}{#else}Reservation Update Confirmation{/if}</title>
+      <title>Reservation Update Confirmation</title>
       <style>
 {#include email/fragments/simple-card-styles /}
 {#include email/fragments/action-styles /}
@@ -18,7 +18,7 @@
   </head>
   <body>
       <div class="container">
-          <div class="header">{#if emailHeader??}{emailHeader}{#else}Your reservation update confirmation{/if}</div>
+          <div class="header">Your reservation update confirmation</div>
           <p>Hello {fullName},</p>
           {#if noticeMessage??}
           <div class="notice-box">
