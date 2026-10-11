@@ -11,6 +11,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { VariantProps } from "class-variance-authority";
 
 export type OverflowAction = {
@@ -21,6 +27,11 @@ export type OverflowAction = {
   variant?: VariantProps<typeof buttonVariants>["variant"];
   isLoading?: boolean;
   disabled?: boolean;
+  /** Desktop: render only the icon, with `tooltip` shown on hover. */
+  iconOnly?: boolean;
+  tooltip?: string;
+  /** Desktop icon-only: shown next to the icon (e.g. a count). */
+  badge?: ReactNode;
 };
 
 // Secondary page actions (e.g. export, block, delete-selected) rendered
@@ -34,18 +45,39 @@ export function OverflowActionBar({ actions }: { actions: OverflowAction[] }) {
   return (
     <>
       <div className="hidden items-center gap-2 sm:flex">
-        {actions.map((action) => (
-          <Button
-            key={action.key}
-            variant={action.variant ?? "outline"}
-            onClick={action.onClick}
-            isLoading={action.isLoading}
-            disabled={action.disabled}
-          >
-            {action.icon}
-            {action.label}
-          </Button>
-        ))}
+        {actions.map((action) =>
+          action.iconOnly ? (
+            <TooltipProvider key={action.key}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={action.variant ?? "outline"}
+                    size={action.badge === undefined ? "icon" : "default"}
+                    onClick={action.onClick}
+                    isLoading={action.isLoading}
+                    disabled={action.disabled}
+                    aria-label={action.tooltip}
+                  >
+                    {action.icon}
+                    {action.badge}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{action.tooltip}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <Button
+              key={action.key}
+              variant={action.variant ?? "outline"}
+              onClick={action.onClick}
+              isLoading={action.isLoading}
+              disabled={action.disabled}
+            >
+              {action.icon}
+              {action.label}
+            </Button>
+          ),
+        )}
       </div>
 
       <DropdownMenu>

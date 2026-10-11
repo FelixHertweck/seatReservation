@@ -57,7 +57,6 @@ import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.service.CheckInTokenService;
-import de.felixhertweck.seatreservation.supervisor.service.BoxOfficeService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.ReservationExporter;
 import de.felixhertweck.seatreservation.utils.SeatComparators;
@@ -730,7 +729,7 @@ public class ReservationService {
                                         new UserNotFoundException(
                                                 "User with id " + userId + " not found"));
 
-        if (BoxOfficeService.BOXOFFICE_USERNAME.equalsIgnoreCase(user.getUsername())) {
+        if (user.isBoxOfficeUser()) {
             throw new ValidationException(
                     "Box office guest reservations share a single account and do not support"
                             + " per-guest confirmation emails.");
@@ -774,14 +773,16 @@ public class ReservationService {
      * @param eventId The ID of the event
      * @param userId The ID of the user
      * @param currentUser The user requesting the resend
+     * @param noticeMessage Optional message shown at the top of the email (e.g. the reason)
      * @throws IOException If sending the email fails
      */
-    public void resendConfirmationEmail(UUID eventId, UUID userId, User currentUser)
-            throws IOException {
+    public void resendConfirmationEmail(
+            UUID eventId, UUID userId, User currentUser, String noticeMessage) throws IOException {
         ConfirmationTarget target = resolveConfirmationTarget(eventId, userId, currentUser);
 
         boolean sent =
-                emailService.sendReservationConfirmation(target.user(), target.reservations());
+                emailService.resendReservationConfirmation(
+                        target.user(), target.reservations(), noticeMessage);
         if (!sent) {
             throw new ValidationException(
                     "User "

@@ -435,6 +435,40 @@ public class ReservationResourceTest {
 
     @Test
     @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testResendConfirmationMessageTooLong() {
+        given().contentType("application/json")
+                .body(Map.of("message", "x".repeat(1001)))
+                .when()
+                .post(
+                        "/api/manager/reservations/resend-confirmation/"
+                                + testEvent.id
+                                + "/"
+                                + testUser.id)
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "testUser",
+            roles = {"USER"})
+    void testResendConfirmationForbidden() {
+        given().contentType("application/json")
+                .body(Map.of("message", "hi"))
+                .when()
+                .post(
+                        "/api/manager/reservations/resend-confirmation/"
+                                + testEvent.id
+                                + "/"
+                                + testUser.id)
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    @TestSecurity(
             user = "testUser",
             roles = {"USER"})
     void testExportReservationsToPdfForbidden() {

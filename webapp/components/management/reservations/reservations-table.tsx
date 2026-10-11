@@ -206,25 +206,28 @@ export function ReservationsTable({
                 </TableCell>
                 <TableCell className="py-2.5 pl-2 pr-4 text-right">
                   <div className="flex items-center justify-end gap-1.5">
-                    {!isBlockedGroup && groupUser?.id && onViewConfirmation && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        title={t("management.reservations.viewConfirmation")}
-                        aria-label={t(
-                          "management.reservations.viewConfirmation",
-                        )}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onViewConfirmation(
-                            groupUser.id!.toString(),
-                            groupKey,
-                          );
-                        }}
-                      >
-                        <Mail className="h-4 w-4" />
-                      </Button>
-                    )}
+                    {!isBlockedGroup &&
+                      !groupReservations.some((r) => r.boxOffice) &&
+                      groupUser?.id &&
+                      onViewConfirmation && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          title={t("management.reservations.viewConfirmation")}
+                          aria-label={t(
+                            "management.reservations.viewConfirmation",
+                          )}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onViewConfirmation(
+                              groupUser.id!.toString(),
+                              groupKey,
+                            );
+                          }}
+                        >
+                          <Mail className="h-4 w-4" />
+                        </Button>
+                      )}
                     <Button
                       variant="destructive"
                       size="sm"

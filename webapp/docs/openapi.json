@@ -1307,6 +1307,17 @@
           }
         }
       },
+      "ResendConfirmationRequestDTO" : {
+        "description" : "Optional parameters for re-sending a reservation confirmation email.",
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "maxLength" : 1000,
+            "description" : "Optional message shown at the top of the email, e.g. the reason for re-sending"
+          }
+        }
+      },
       "ReservationConfirmationEmailDTO" : {
         "description" : "DTO representing the confirmation email content for a reservation.",
         "type" : "object",
@@ -1373,6 +1384,9 @@
           },
           "liveStatus" : {
             "$ref" : "#/components/schemas/ReservationLiveStatus"
+          },
+          "boxOffice" : {
+            "type" : "boolean"
           }
         }
       },
@@ -4854,6 +4868,16 @@
             "$ref" : "#/components/schemas/UUID"
           }
         } ],
+        "requestBody" : {
+          "required" : false,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ResendConfirmationRequestDTO"
+              }
+            }
+          }
+        },
         "responses" : {
           "200" : {
             "description" : "Confirmation email resent successfully",
@@ -4871,6 +4895,9 @@
           },
           "404" : {
             "description" : "Not Found: Event, user or reservations not found"
+          },
+          "400" : {
+            "description" : "Bad Request"
           }
         },
         "summary" : "Resend Confirmation Email",

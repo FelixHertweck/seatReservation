@@ -56,7 +56,6 @@ import de.felixhertweck.seatreservation.security.exceptions.EmailCooldownExcepti
 import de.felixhertweck.seatreservation.security.exceptions.InvalidTwoFactorCodeException;
 import de.felixhertweck.seatreservation.security.service.EmailCooldownService;
 import de.felixhertweck.seatreservation.security.service.TwoFactorService;
-import de.felixhertweck.seatreservation.supervisor.service.BoxOfficeService;
 import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserCreationDto;
 import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserTagUpdateRequestDTO;
 import de.felixhertweck.seatreservation.usermanagement.dto.AdminUserTagUpdateResultDTO;
@@ -728,7 +727,7 @@ public class UserService {
         // The boxoffice system account is not a real person and must not be tagged.
         Map<String, User> found = new HashMap<>();
         for (User user : userRepository.findByUsernamesWithTags(usernames)) {
-            if (!BoxOfficeService.BOXOFFICE_USERNAME.equalsIgnoreCase(user.getUsername())) {
+            if (!user.isBoxOfficeUser()) {
                 found.put(user.getUsername(), user);
             }
         }
@@ -777,7 +776,7 @@ public class UserService {
         // The boxoffice system account is not a real person and must not be modified.
         Map<UUID, User> found = new HashMap<>();
         for (User user : userRepository.findByIdsWithTags(ids)) {
-            if (!BoxOfficeService.BOXOFFICE_USERNAME.equalsIgnoreCase(user.getUsername())) {
+            if (!user.isBoxOfficeUser()) {
                 found.put(user.getId(), user);
             }
         }

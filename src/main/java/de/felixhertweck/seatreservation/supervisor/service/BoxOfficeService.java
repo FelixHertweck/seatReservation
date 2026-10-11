@@ -104,17 +104,13 @@ public class BoxOfficeService {
         this.eventAuthorizationService = eventAuthorizationService;
     }
 
-    // Shared, passwordless system user reservations are booked under when there is no real
-    // account (see db/migration/V8__add_boxoffice_user.sql and import.sql/import-test.sql).
-    public static final String BOXOFFICE_USERNAME = "boxoffice";
-
     /**
      * Returns all users a box office reservation can be created for, excluding the shared {@code
      * boxoffice} system account itself.
      */
     public List<LimitedUserInfoDTO> getUsersForBoxOffice() {
         return userService.getAllUsers().stream()
-                .filter(u -> !BOXOFFICE_USERNAME.equalsIgnoreCase(u.username()))
+                .filter(u -> !User.BOXOFFICE_USERNAME.equalsIgnoreCase(u.username()))
                 .toList();
     }
 
@@ -184,7 +180,7 @@ public class BoxOfficeService {
         eventAuthorizationService.assertAuthorizedForEvent(currentUser, dto.getEventId());
         assertBookingDeadlinePassed(event);
 
-        User boxofficeUser = userRepository.findByUsername(BOXOFFICE_USERNAME);
+        User boxofficeUser = userRepository.findByUsername(User.BOXOFFICE_USERNAME);
         if (boxofficeUser == null) {
             LOG.error(
                     "Box office system user not found -- seed data (import.sql / Flyway"

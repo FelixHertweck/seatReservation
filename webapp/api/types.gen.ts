@@ -579,6 +579,16 @@ export type RegistrationStatusDto = {
 };
 
 /**
+ * Optional parameters for re-sending a reservation confirmation email.
+ */
+export type ResendConfirmationRequestDto = {
+    /**
+     * Optional message shown at the top of the email, e.g. the reason for re-sending
+     */
+    message?: string;
+};
+
+/**
  * DTO representing the confirmation email content for a reservation.
  */
 export type ReservationConfirmationEmailDto = {
@@ -615,6 +625,7 @@ export type ReservationResponseDto = {
     reservationDateTime?: Instant;
     status?: ReservationStatus;
     liveStatus?: ReservationLiveStatus;
+    boxOffice?: boolean;
 };
 
 export const ReservationStatus = {
@@ -3169,7 +3180,7 @@ export type GetApiManagerReservationsExportByEventIdPdfResponses = {
 export type GetApiManagerReservationsExportByEventIdPdfResponse = GetApiManagerReservationsExportByEventIdPdfResponses[keyof GetApiManagerReservationsExportByEventIdPdfResponses];
 
 export type PostApiManagerReservationsResendConfirmationByEventIdByUserIdData = {
-    body?: never;
+    body?: ResendConfirmationRequestDto;
     path: {
         eventId: Uuid;
         userId: Uuid;
@@ -3179,6 +3190,10 @@ export type PostApiManagerReservationsResendConfirmationByEventIdByUserIdData = 
 };
 
 export type PostApiManagerReservationsResendConfirmationByEventIdByUserIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
     /**
      * Unauthorized
      */

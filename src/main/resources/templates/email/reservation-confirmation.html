@@ -7,11 +7,23 @@
       <style>
 {#include email/fragments/simple-card-styles /}
 {#include email/fragments/action-styles /}
+          .notice-box {
+              background-color: #f8f9fa;
+              border-left: 4px solid #3b82f6;
+              padding: 12px 16px;
+              margin: 15px 0;
+              border-radius: 0 4px 4px 0;
+          }
       </style>
   </head>
   <body>
       <div class="container">
           <div class="header">Your reservation confirmation</div>
+          {#if noticeMessage??}
+          <div class="notice-box">
+              <p style="margin: 0; white-space: pre-line;">{noticeMessage}</p>
+          </div>
+          {/if}
           <p>Hello {fullName},</p>
           <p>Thank you for your reservation for the event "{eventName}".</p>
           <p><strong>Location:</strong> {eventLocation}</p>

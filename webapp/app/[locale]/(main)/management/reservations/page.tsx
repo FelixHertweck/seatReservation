@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import {
   ArrowUp,
   Plus,
@@ -9,6 +10,7 @@ import {
   ChevronDown,
   ChevronUp,
   Download,
+  Mail,
   Map as MapIcon,
   Trash2,
   X,
@@ -34,6 +36,7 @@ import { SeatMapSkeleton } from "@/components/common/seat-map-skeleton";
 import { Skeleton } from "@/components/custom-ui/skeleton";
 import SeatmapLegend from "@/components/common/seatmap-legend";
 import { ReservationActionPanel } from "@/components/management/reservations/reservation-action-panel";
+import { BulkResendDialog } from "@/components/management/reservations/bulk-resend-dialog";
 import { ReservationConfirmationModal } from "@/components/management/reservations/reservation-confirmation-modal";
 import { ReservationsTable } from "@/components/management/reservations/reservations-table";
 import { ReservationsTableSkeleton } from "@/components/management/reservations/reservations-table-skeleton";
@@ -185,10 +188,16 @@ export default function ManagementReservationsPage() {
     enabled: !!eventId && !!confirmationUser?.userId,
   });
 
-  const handleResendConfirmation = async () => {
+  const handleResendConfirmation = async (message?: string) => {
     if (!eventId || !confirmationUser?.userId) return;
-    await resendConfirmationEmail(eventId, confirmationUser.userId);
+    await resendConfirmationEmail(eventId, confirmationUser.userId, message);
   };
+
+  const [isBulkResendOpen, setIsBulkResendOpen] = useState(false);
+  // Users whose bulk resend failed; a retry only targets these so nobody gets a duplicate.
+  const [bulkResendRetryIds, setBulkResendRetryIds] = useState<string[] | null>(
+    null,
+  );
 
   const { ref: seatMapColumnRef, height: seatMapColumnHeight } =
     useFillHeight<HTMLDivElement>();
@@ -322,6 +331,59 @@ export default function ManagementReservationsPage() {
       resetAction();
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Distinct users behind the selected RESERVED reservations (the backend only resends those).
+  const selectedUserIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const r of reservations) {
+      if (
+        r.id &&
+        selectedIds.has(r.id) &&
+        r.status === "RESERVED" &&
+        !r.boxOffice &&
+        r.user?.id
+      ) {
+        ids.add(r.user.id.toString());
+      }
+    }
+    return [...ids];
+  }, [reservations, selectedIds]);
+
+  const handleBulkResendOpenChange = (open: boolean) => {
+    setIsBulkResendOpen(open);
+    if (!open) setBulkResendRetryIds(null);
+  };
+
+  const handleBulkResend = async (message: string) => {
+    if (!eventId) return;
+    // Sequential on purpose: each email renders a seat map and wallet links.
+    const targetIds = bulkResendRetryIds ?? selectedUserIds;
+    const failedIds: string[] = [];
+    for (const userId of targetIds) {
+      try {
+        await resendConfirmationEmail(eventId, userId, message);
+      } catch {
+        failedIds.push(userId);
+      }
+    }
+    const failed = failedIds.length;
+    const sent = targetIds.length - failed;
+    if (sent > 0) {
+      toast.success(
+        t("management.reservations.bulkResendSuccess", { count: sent }),
+      );
+    }
+    if (failed > 0) {
+      toast.error(
+        t("management.reservations.bulkResendError", { count: failed }),
+      );
+    }
+    if (failed === 0) {
+      handleBulkResendOpenChange(false);
+    } else {
+      setBulkResendRetryIds(failedIds);
     }
   };
 
@@ -625,6 +687,19 @@ export default function ManagementReservationsPage() {
             <>
               <OverflowActionBar
                 actions={[
+                  ...(selectedUserIds.length > 0 && mode === "view"
+                    ? [
+                        {
+                          key: "resend",
+                          label: t("management.reservations.resendSelected"),
+                          iconOnly: true,
+                          badge: selectedUserIds.length,
+                          tooltip: t("management.reservations.resendSelected"),
+                          icon: <Mail className="h-4 w-4" />,
+                          onClick: () => setIsBulkResendOpen(true),
+                        },
+                      ]
+                    : []),
                   ...(selectedIds.size > 0 && mode === "view"
                     ? [
                         {
@@ -797,6 +872,12 @@ export default function ManagementReservationsPage() {
         </>
       )}
 
+      <BulkResendDialog
+        open={isBulkResendOpen}
+        onOpenChange={handleBulkResendOpenChange}
+        userCount={(bulkResendRetryIds ?? selectedUserIds).length}
+        onSend={handleBulkResend}
+      />
       <ReservationConfirmationModal
         open={!!confirmationUser}
         onOpenChange={(open) => !open && setConfirmationUser(null)}
