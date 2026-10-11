@@ -312,30 +312,27 @@ public class EmailService {
      */
     public boolean sendReservationConfirmation(
             User user, List<Reservation> reservations, String additionalMailAddress) {
-        return sendReservationConfirmation(user, reservations, additionalMailAddress, true);
+        return reservationEmailContent.sendReservationConfirmation(
+                user, reservations, additionalMailAddress, true, null);
     }
 
     /**
-     * Sends a reservation confirmation email to the user.
+     * Re-sends a reservation confirmation email, optionally with a message from the sender shown at
+     * the top of the email.
      *
      * @param user The user to whom the email will be sent.
      * @param reservations The list of reservations to include in the email.
-     * @param additionalMailAddress An optional email address to override the user's email.
-     * @param includeExistingReservations when {@code false}, the "already reserved" seat list is
-     *     not computed from {@code user}'s other reservations for the event. Needed for the box
-     *     office's shared guest account, where every walk-in reservation is stored under the same
-     *     {@code User} row -- without this, one guest's confirmation would list every other guest's
-     *     box-office seats for the same event as "already reserved".
+     * @param noticeMessage optional message (e.g. the reason for re-sending); ignored when {@code
+     *     null} or blank
      * @return {@code true} if the email was enqueued, {@code false} if it was skipped (e.g. no
      *     valid email address or no reservations to include).
      */
-    public boolean sendReservationConfirmation(
-            User user,
-            List<Reservation> reservations,
-            String additionalMailAddress,
-            boolean includeExistingReservations) {
+    public boolean resendReservationConfirmation(
+            User user, List<Reservation> reservations, String noticeMessage) {
+        String notice =
+                noticeMessage == null || noticeMessage.isBlank() ? null : noticeMessage.strip();
         return reservationEmailContent.sendReservationConfirmation(
-                user, reservations, additionalMailAddress, includeExistingReservations);
+                user, reservations, null, true, notice);
     }
 
     /**

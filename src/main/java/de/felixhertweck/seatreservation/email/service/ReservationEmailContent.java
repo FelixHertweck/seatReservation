@@ -394,7 +394,10 @@ public class ReservationEmailContent {
     }
 
     private ReservationConfirmationContent renderReservationConfirmation(
-            User user, List<Reservation> reservations, boolean includeExistingReservations) {
+            User user,
+            List<Reservation> reservations,
+            boolean includeExistingReservations,
+            String noticeMessage) {
         Event event = reservations.getFirst().getEvent();
         String eventName = event.getName();
 
@@ -454,6 +457,7 @@ public class ReservationEmailContent {
                         .data("newSeats", newSeats)
                         .data("hasExistingSeats", !existingSeats.isEmpty())
                         .data("existingSeats", existingSeats)
+                        .data("noticeMessage", noticeMessage)
                         .data(KEY_ENTRANCE_INFO, entranceInfo)
                         .data(KEY_EVENT_LINK, generateEventLink(event.id))
                         .data(KEY_SEATMAP_LINK, seatmapLink)
@@ -470,15 +474,34 @@ public class ReservationEmailContent {
         return new ReservationConfirmationContent(htmlContent, pngImage, qrCodeImage);
     }
 
+    /**
+     * Returns the configured subject line of the reservation confirmation email.
+     *
+     * @return the subject of the reservation confirmation email
+     */
     public String getReservationConfirmationSubject() {
         return reservationConfirmationSubject;
     }
 
+    /**
+     * Renders and enqueues the reservation confirmation email for the given reservations.
+     *
+     * @param user the user to whom the email is sent
+     * @param reservations the reservations to include in the email; must not be empty
+     * @param additionalMailAddress an optional email address to use in addition to (or instead of)
+     *     {@code user}'s own address
+     * @param includeExistingReservations when {@code false}, the "already reserved" seat list is
+     *     not computed from {@code user}'s other reservations for the event
+     * @param noticeMessage optional message shown at the top of the email, or {@code null} for none
+     * @return {@code true} if the email was enqueued, {@code false} if it was skipped (e.g. no
+     *     reservations or no valid recipient address)
+     */
     public boolean sendReservationConfirmation(
             User user,
             List<Reservation> reservations,
             String additionalMailAddress,
-            boolean includeExistingReservations) {
+            boolean includeExistingReservations,
+            String noticeMessage) {
         if (reservations == null || reservations.isEmpty()) {
             LOG.warnf(
                     "No reservations provided for confirmation email to user %s.",
@@ -487,7 +510,8 @@ public class ReservationEmailContent {
         }
 
         ReservationConfirmationContent content =
-                renderReservationConfirmation(user, reservations, includeExistingReservations);
+                renderReservationConfirmation(
+                        user, reservations, includeExistingReservations, noticeMessage);
 
         return emailSender.send(
                 new ReservationConfirmationNotification(
@@ -499,13 +523,21 @@ public class ReservationEmailContent {
                         content.qrCodeImage()));
     }
 
+    /**
+     * Renders the reservation confirmation for on-screen display, with the seat map and QR code
+     * embedded as {@code data:} URIs instead of inline attachments.
+     *
+     * @param user the user the confirmation is rendered for
+     * @param reservations the reservations to include; an empty list yields an empty string
+     * @return the rendered HTML, or an empty string if there are no reservations
+     */
     public String renderReservationConfirmationDisplay(User user, List<Reservation> reservations) {
         if (reservations == null || reservations.isEmpty()) {
             return "";
         }
 
         ReservationConfirmationContent content =
-                renderReservationConfirmation(user, reservations, true);
+                renderReservationConfirmation(user, reservations, true, null);
 
         String htmlContent =
                 embedImageAsDataUri(

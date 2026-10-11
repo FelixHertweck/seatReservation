@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Button } from "@/components/custom-ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +23,7 @@ interface ReservationConfirmationModalProps {
   emailData?: { subject?: string; htmlContent?: string } | null;
   isLoading: boolean;
   isError: boolean;
-  onResend: () => Promise<void>;
+  onResend: (message?: string) => Promise<void>;
 }
 
 export function ReservationConfirmationModal({
@@ -37,7 +38,12 @@ export function ReservationConfirmationModal({
   const t = useT();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isSending, setIsSending] = useState(false);
+  const [message, setMessage] = useState("");
   const [isIframeLoaded, setIsIframeLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!open) setMessage("");
+  }, [open]);
 
   useEffect(() => {
     setIsIframeLoaded(false);
@@ -53,7 +59,7 @@ export function ReservationConfirmationModal({
   const handleResend = async () => {
     setIsSending(true);
     try {
-      await onResend();
+      await onResend(message);
       toast.success(t("management.reservations.resendSuccess"));
     } catch {
       toast.error(t("management.reservations.resendError"));
@@ -98,6 +104,20 @@ export function ReservationConfirmationModal({
               className="absolute inset-0 h-full w-full border-0 bg-white"
             />
           )}
+        </div>
+
+        <div className="mt-3 flex flex-col gap-4">
+          <label htmlFor="resend-message" className="text-sm font-medium">
+            {t("management.reservations.resendMessageLabel")}
+          </label>
+          <Textarea
+            id="resend-message"
+            value={message}
+            maxLength={1000}
+            rows={2}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder={t("management.reservations.resendMessagePlaceholder")}
+          />
         </div>
 
         <DialogFooter className="flex-col gap-2 sm:flex-row">

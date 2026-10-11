@@ -39,6 +39,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import de.felixhertweck.seatreservation.management.dto.BlockSeatsRequestDTO;
+import de.felixhertweck.seatreservation.management.dto.ResendConfirmationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationConfirmationEmailDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
@@ -49,6 +50,7 @@ import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
 
@@ -291,6 +293,16 @@ public class ReservationResource {
         return reservationService.getConfirmationEmail(eventId, userId, currentUser);
     }
 
+    /**
+     * Re-sends the reservation confirmation email for a user and event.
+     *
+     * @param eventId the ID of the event
+     * @param userId the ID of the user whose confirmation is re-sent
+     * @param request optional parameters, e.g. a message shown at the top of the email; may be
+     *     {@code null}
+     * @return an empty 200 response if the email was enqueued
+     * @throws IOException if sending the email fails
+     */
     @POST
     @Path("/resend-confirmation/{eventId}/{userId}")
     @RolesAllowed({Roles.MANAGER, Roles.ADMIN})
@@ -303,13 +315,16 @@ public class ReservationResource {
             responseCode = "404",
             description = "Not Found: Event, user or reservations not found")
     public Response resendConfirmationEmail(
-            @PathParam("eventId") UUID eventId, @PathParam("userId") UUID userId)
+            @PathParam("eventId") UUID eventId,
+            @PathParam("userId") UUID userId,
+            @RequestBody(required = false) @Valid ResendConfirmationRequestDTO request)
             throws IOException {
         LOG.debugf(
                 "Received POST request to /api/manager/reservations/resend-confirmation/%s/%s",
                 eventId, userId);
         User currentUser = userSecurityContext.getCurrentUser();
-        reservationService.resendConfirmationEmail(eventId, userId, currentUser);
+        reservationService.resendConfirmationEmail(
+                eventId, userId, currentUser, request != null ? request.getMessage() : null);
         return Response.ok().build();
     }
 }

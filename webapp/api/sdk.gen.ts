@@ -730,7 +730,11 @@ export const getApiManagerReservationsExportByEventIdPdf = <ThrowOnError extends
 export const postApiManagerReservationsResendConfirmationByEventIdByUserId = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerReservationsResendConfirmationByEventIdByUserIdData, ThrowOnError>): RequestResult<PostApiManagerReservationsResendConfirmationByEventIdByUserIdResponses, PostApiManagerReservationsResendConfirmationByEventIdByUserIdErrors, ThrowOnError> => (options.client ?? client).post<PostApiManagerReservationsResendConfirmationByEventIdByUserIdResponses, PostApiManagerReservationsResendConfirmationByEventIdByUserIdErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/reservations/resend-confirmation/{eventId}/{userId}',
-    ...options
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**

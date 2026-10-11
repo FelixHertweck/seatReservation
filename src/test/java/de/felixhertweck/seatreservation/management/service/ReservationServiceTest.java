@@ -785,4 +785,74 @@ class ReservationServiceTest {
                 de.felixhertweck.seatreservation.common.exception.EventNotFoundException.class,
                 () -> reservationService.exportReservationsToPdf(id(99), adminUser));
     }
+
+    @Test
+    void resendConfirmationEmail_PassesNoticeMessage() throws Exception {
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
+        when(reservationRepository.findByUserAndEvent(
+                        regularUser, event, ReservationStatus.RESERVED))
+                .thenReturn(List.of(reservation));
+        when(emailService.resendReservationConfirmation(any(), anyList(), any())).thenReturn(true);
+
+        reservationService.resendConfirmationEmail(
+                event.id, regularUser.id, managerUser, "Seats were moved");
+
+        verify(emailService)
+                .resendReservationConfirmation(
+                        regularUser, List.of(reservation), "Seats were moved");
+    }
+
+    @Test
+    void resendConfirmationEmail_BoxOfficeUserRejected() {
+        User boxOffice =
+                new User(
+                        User.BOXOFFICE_USERNAME,
+                        "boxoffice@example.com",
+                        true,
+                        false,
+                        "hash",
+                        "salt",
+                        "Box",
+                        "Office",
+                        Set.of(Roles.USER),
+                        Set.of());
+        boxOffice.id = id(50);
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(userRepository.findByIdOptional(boxOffice.id)).thenReturn(Optional.of(boxOffice));
+
+        assertThrows(
+                ValidationException.class,
+                () ->
+                        reservationService.resendConfirmationEmail(
+                                event.id, boxOffice.id, managerUser, "msg"));
+
+        verify(emailService, never()).resendReservationConfirmation(any(), anyList(), any());
+    }
+
+    @Test
+    void resendConfirmationEmail_NoReservations() {
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
+        when(reservationRepository.findByUserAndEvent(
+                        regularUser, event, ReservationStatus.RESERVED))
+                .thenReturn(List.of());
+
+        assertThrows(
+                ReservationNotFoundException.class,
+                () ->
+                        reservationService.resendConfirmationEmail(
+                                event.id, regularUser.id, managerUser, null));
+    }
+
+    @Test
+    void resendConfirmationEmail_NotEventManager() {
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+
+        assertThrows(
+                AccessDeniedException.class,
+                () ->
+                        reservationService.resendConfirmationEmail(
+                                event.id, regularUser.id, regularUser, "msg"));
+    }
 }

@@ -38,6 +38,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
  * @param reservationDateTime timestamp when the reservation was created
  * @param status static status of the reservation
  * @param liveStatus live status of the reservation
+ * @param boxOffice whether the reservation belongs to the shared box office guest account
  */
 @RegisterForReflection
 public record ReservationResponseDTO(
@@ -47,7 +48,8 @@ public record ReservationResponseDTO(
         UUID seatId,
         Instant reservationDateTime,
         ReservationStatus status,
-        ReservationLiveStatus liveStatus) {
+        ReservationLiveStatus liveStatus,
+        boolean boxOffice) {
 
     /**
      * Constructs a {@link ReservationResponseDTO} from a {@link Reservation} entity.
@@ -62,6 +64,7 @@ public record ReservationResponseDTO(
                 reservation.getSeat() != null ? reservation.getSeat().getId() : null,
                 reservation.getReservationDate(),
                 reservation.getStatus(),
-                reservation.getLiveStatus());
+                reservation.getLiveStatus(),
+                reservation.getUser().isBoxOfficeUser());
     }
 }

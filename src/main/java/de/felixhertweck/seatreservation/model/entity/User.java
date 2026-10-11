@@ -155,8 +155,23 @@ public class User extends AbstractEntity {
         }
     }
 
+    /**
+     * Username of the shared, passwordless system user that reservations are booked under when
+     * there is no real account (see db/migration/V8__add_boxoffice_user.sql).
+     */
+    public static final String BOXOFFICE_USERNAME = "boxoffice";
+
     public String getUsername() {
         return username;
+    }
+
+    /**
+     * Returns whether this is the shared box office system account (case-insensitive match).
+     *
+     * @return {@code true} if this user is the box office system account
+     */
+    public boolean isBoxOfficeUser() {
+        return BOXOFFICE_USERNAME.equalsIgnoreCase(username);
     }
 
     public void setUsername(String username) {

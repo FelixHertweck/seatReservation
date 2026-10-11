@@ -254,9 +254,14 @@ export function useManagementReservations(eventId: string | null) {
     ...postApiManagerReservationsResendConfirmationByEventIdByUserIdMutation(),
   });
 
-  const resendConfirmationEmail = async (evtId: string, usrId: string) => {
+  const resendConfirmationEmail = async (
+    evtId: string,
+    usrId: string,
+    message?: string,
+  ) => {
     return resendConfirmationMutation.mutateAsync({
       path: { eventId: evtId, userId: usrId },
+      body: { message: message?.trim() || undefined },
     });
   };
 

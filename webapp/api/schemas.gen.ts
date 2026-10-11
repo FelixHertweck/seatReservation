@@ -1508,6 +1508,18 @@ export const RegistrationStatusDTOSchema = {
     }
 } as const;
 
+export const ResendConfirmationRequestDTOSchema = {
+    description: 'Optional parameters for re-sending a reservation confirmation email.',
+    type: 'object',
+    properties: {
+        message: {
+            type: 'string',
+            maxLength: 1000,
+            description: 'Optional message shown at the top of the email, e.g. the reason for re-sending'
+        }
+    }
+} as const;
+
 export const ReservationConfirmationEmailDTOSchema = {
     description: 'DTO representing the confirmation email content for a reservation.',
     type: 'object',
@@ -1587,6 +1599,9 @@ export const ReservationResponseDTOSchema = {
         },
         liveStatus: {
             $ref: '#/components/schemas/ReservationLiveStatus'
+        },
+        boxOffice: {
+            type: 'boolean'
         }
     }
 } as const;
