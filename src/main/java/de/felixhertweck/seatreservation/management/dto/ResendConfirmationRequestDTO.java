@@ -21,13 +21,17 @@ package de.felixhertweck.seatreservation.management.dto;
 
 import jakarta.validation.constraints.Size;
 
+import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /** Request body for re-sending a reservation confirmation email. All fields are optional. */
 @Schema(description = "Optional parameters for re-sending a reservation confirmation email.")
 public class ResendConfirmationRequestDTO {
 
+    // Not sanitized on input: the email template HTML-escapes the value on output, so sanitizing
+    // here would double-encode characters such as quotes (&#34;).
     @Size(max = 1000)
+    @NoHtmlSanitize
     @Schema(
             description =
                     "Optional message shown at the top of the email, e.g. the reason for"

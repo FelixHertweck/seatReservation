@@ -28,6 +28,7 @@ import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.management.dto.AreaResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EntranceResponseDTO;
+import de.felixhertweck.seatreservation.management.dto.ResendConfirmationRequestDTO;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
@@ -111,5 +112,18 @@ class CachedGeometryDtoNoHtmlSanitizeTest {
         EventLocationMakerDTO dto = objectMapper.readValue(json, EventLocationMakerDTO.class);
 
         assertEquals(RAW, dto.label());
+    }
+
+    @Test
+    void resendConfirmationRequestDTO_Message_KeepsQuotesUnencoded() throws Exception {
+        // The email template HTML-escapes on output; input sanitizing would double-encode (&#34;).
+        String message = "Please \"check\" your seat & <bring> your ticket";
+
+        ResendConfirmationRequestDTO dto =
+                objectMapper.readValue(
+                        objectMapper.writeValueAsString(java.util.Map.of("message", message)),
+                        ResendConfirmationRequestDTO.class);
+
+        assertEquals(message, dto.getMessage());
     }
 }
