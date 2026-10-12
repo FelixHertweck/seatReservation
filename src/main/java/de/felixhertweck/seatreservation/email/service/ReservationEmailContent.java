@@ -79,6 +79,16 @@ public class ReservationEmailContent {
     private final EmailSender emailSender;
     private final WalletPassService walletPassService;
 
+    /**
+     * Creates the content builder with the collaborators needed to render and send reservation
+     * related emails.
+     *
+     * @param seatRepository repository used to load seats with their area and entrance
+     * @param reservationRepository repository used to look up a user's other reservations
+     * @param emailSeatMapService service providing the seat map image and link
+     * @param emailSender sender that enqueues the rendered notifications
+     * @param walletPassService service providing wallet pass links
+     */
     @Inject
     public ReservationEmailContent(
             SeatRepository seatRepository,
@@ -179,6 +189,14 @@ public class ReservationEmailContent {
     // Shared helpers
     // ---------------------------------------------------------------------
 
+    /**
+     * Loads the seats referenced by the given reservations, including their area and entrance.
+     *
+     * @param reservations the reservations whose seats are needed; may be {@code null}
+     * @param additionalReservations further reservations whose seats are needed; may be {@code
+     *     null}
+     * @return the seats keyed by seat ID
+     */
     public Map<UUID, Seat> loadSeatsForReservations(
             List<Reservation> reservations, List<Reservation> additionalReservations) {
         Set<UUID> seatIds = new HashSet<>();
@@ -199,6 +217,13 @@ public class ReservationEmailContent {
         return seats.stream().collect(Collectors.toMap(Seat::getId, s -> s));
     }
 
+    /**
+     * Converts reservations to sorted seat views for display in an email.
+     *
+     * @param reservations the reservations to convert; may be {@code null}
+     * @param seatById the preloaded seats keyed by seat ID
+     * @return the sorted seat views, or an empty list if there are no reservations
+     */
     public List<SeatView> toSeatViews(List<Reservation> reservations, Map<UUID, Seat> seatById) {
         if (reservations == null) {
             return List.of();
@@ -216,6 +241,13 @@ public class ReservationEmailContent {
                 .toList();
     }
 
+    /**
+     * Generates the entrance information text for the seats of the given reservations.
+     *
+     * @param reservations the reservations to describe; may be {@code null}
+     * @param seatById the preloaded seats keyed by seat ID
+     * @return the entrance information, or an empty string if there are no reservations
+     */
     public String generateEntranceInfo(List<Reservation> reservations, Map<UUID, Seat> seatById) {
         if (reservations == null || reservations.isEmpty()) {
             return "";
@@ -267,6 +299,12 @@ public class ReservationEmailContent {
         return user.id.toString() + ";" + event.id.toString() + ";" + token.getToken();
     }
 
+    /**
+     * Renders the given content as a QR code PNG.
+     *
+     * @param content the content to encode
+     * @return the PNG bytes, or an empty array if the QR code could not be generated
+     */
     public byte[] generateQrCodeImage(String content) {
         try {
             return QRCodeImage.generateQrCodeImage(content, 400, 400);
@@ -276,6 +314,13 @@ public class ReservationEmailContent {
         }
     }
 
+    /**
+     * Builds the inline image attachments referenced by {@code cid:} in the email templates.
+     *
+     * @param seatmapPng the seat map PNG; skipped if {@code null} or empty
+     * @param qrCode the QR code PNG; skipped if {@code null} or empty
+     * @return the inline attachments for the non-empty images
+     */
     public List<EmailAttachment> buildInlineAttachments(byte[] seatmapPng, byte[] qrCode) {
         List<EmailAttachment> attachments = new ArrayList<>();
         if (seatmapPng != null && seatmapPng.length > 0) {
@@ -290,6 +335,12 @@ public class ReservationEmailContent {
         return attachments;
     }
 
+    /**
+     * Returns the display name of a user.
+     *
+     * @param user the user; may be {@code null}
+     * @return first and last name if both are set, otherwise the username, or an empty string
+     */
     public static String fullName(User user) {
         if (user == null) {
             return "";
@@ -300,6 +351,12 @@ public class ReservationEmailContent {
         return user.getUsername() != null ? user.getUsername() : "";
     }
 
+    /**
+     * Formats an instant as {@code dd.MM.yyyy HH:mm} in the system time zone.
+     *
+     * @param instant the instant to format; may be {@code null}
+     * @return the formatted date and time, or an empty string if {@code instant} is {@code null}
+     */
     public static String formatDateTime(Instant instant) {
         if (instant == null) {
             return "";
@@ -309,6 +366,11 @@ public class ReservationEmailContent {
         return formatter.format(instant);
     }
 
+    /**
+     * Returns the current year in the system time zone, e.g. for email footers.
+     *
+     * @return the current year as a string
+     */
     public static String currentYear() {
         return String.valueOf(Year.now(ZoneId.systemDefault()).getValue());
     }
@@ -677,6 +739,18 @@ public class ReservationEmailContent {
         return new BoxOfficeConfirmationContent(emailHtml, displayHtml, qrCodeImage);
     }
 
+    /**
+     * Renders and enqueues the box office confirmation email.
+     *
+     * @param user the reservation owner
+     * @param reservations the box office reservations to include; must not be empty
+     * @param recipientName the name to greet in the email
+     * @param additionalMailAddress an optional email address to use in addition to (or instead of)
+     *     {@code user}'s own address
+     * @param includeQrCode whether to generate and embed a check-in QR code
+     * @return the rendered content, even if no email could be sent; empty content if there are no
+     *     reservations
+     */
     public BoxOfficeConfirmationContent sendBoxOfficeConfirmation(
             User user,
             List<Reservation> reservations,
@@ -707,6 +781,15 @@ public class ReservationEmailContent {
     // Update confirmation
     // ---------------------------------------------------------------------
 
+    /**
+     * Sends the update confirmation email without a notice message.
+     *
+     * @param user the user to whom the email is sent
+     * @param deletedReservations the reservations that were removed
+     * @param activeReservations the reservations that remain
+     * @param additionalMailAddress an optional additional recipient address
+     * @see #sendUpdateReservationConfirmation(User, List, List, String, String)
+     */
     public void sendUpdateReservationConfirmation(
             User user,
             List<Reservation> deletedReservations,
@@ -716,6 +799,16 @@ public class ReservationEmailContent {
                 user, deletedReservations, activeReservations, additionalMailAddress, null);
     }
 
+    /**
+     * Sends an email informing the user about removed and remaining reservations. Does nothing if
+     * both lists are empty.
+     *
+     * @param user the user to whom the email is sent
+     * @param deletedReservations the reservations that were removed; may be {@code null}
+     * @param activeReservations the reservations that remain; may be {@code null}
+     * @param additionalMailAddress an optional additional recipient address
+     * @param noticeMessage an optional message from the sender, or {@code null} for none
+     */
     public void sendUpdateReservationConfirmation(
             User user,
             List<Reservation> deletedReservations,
@@ -814,6 +907,19 @@ public class ReservationEmailContent {
     // Event rescheduled
     // ---------------------------------------------------------------------
 
+    /**
+     * Sends an email informing the user that an event was rescheduled. Does nothing if there are no
+     * reservations.
+     *
+     * @param user the user to whom the email is sent
+     * @param event the event with its new data
+     * @param reservations the user's reservations for the event
+     * @param oldStartTime the previous start time
+     * @param oldEndTime the previous end time
+     * @param oldLocationName the previous location name
+     * @param oldBookingDeadline the previous booking deadline
+     * @param additionalMailAddress an optional additional recipient address
+     */
     public void sendEventRescheduledNotification(
             User user,
             Event event,
@@ -903,6 +1009,13 @@ public class ReservationEmailContent {
     // Event cancelled
     // ---------------------------------------------------------------------
 
+    /**
+     * Sends an email informing the user that an event was cancelled. Does nothing if the user has
+     * no valid email address.
+     *
+     * @param user the user to notify
+     * @param event the cancellation event carrying the event details
+     */
     public void sendEventCancelledNotification(
             User user, de.felixhertweck.seatreservation.common.events.EventCancelledEvent event) {
         if (user == null || !EmailSender.isValidAddress(user.getEmail())) {
@@ -938,6 +1051,13 @@ public class ReservationEmailContent {
     // Event reminder
     // ---------------------------------------------------------------------
 
+    /**
+     * Sends a reminder email for an upcoming event, including a seat map of the user's seats.
+     *
+     * @param user the user to remind
+     * @param event the upcoming event
+     * @param reservations the user's reservations for the event
+     */
     public void sendEventReminder(User user, Event event, List<Reservation> reservations) {
         String seatmapToken =
                 emailSeatMapService.createEmailSeatMapToken(user, event, reservations);
@@ -998,6 +1118,13 @@ public class ReservationEmailContent {
     // Manager CSV export
     // ---------------------------------------------------------------------
 
+    /**
+     * Sends the reservations of an event as a CSV attachment to a manager.
+     *
+     * @param manager the manager receiving the export
+     * @param event the exported event
+     * @param csvData the CSV file content
+     */
     public void sendEventReservationsCsvToManager(User manager, Event event, byte[] csvData) {
         String htmlContent =
                 managerExportTemplate
