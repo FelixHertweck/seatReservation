@@ -66,6 +66,7 @@ import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.service.CheckInTokenService;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeGuestReservationRequestDTO;
+import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReleaseResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.exception.BookingDeadlineNotPassedException;
@@ -180,6 +181,47 @@ class BoxOfficeServiceTest {
         dto.setGuestEmail(email);
         dto.setCheckedIn(checkedIn);
         return dto;
+    }
+
+    // -- release path --
+
+    @Test
+    void releaseUncheckedReservations_marksCancelledAndBroadcasts() {
+        Reservation waiting = new Reservation();
+        waiting.id = id(42);
+        waiting.setSeat(seat);
+        waiting.setStatus(ReservationStatus.RESERVED);
+        when(reservationRepository.findAwaitingCheckInByEventId(EVENT_ID))
+                .thenReturn(List.of(waiting));
+
+        BoxOfficeReleaseResponseDTO result =
+                boxOfficeService.releaseUncheckedReservations(EVENT_ID, supervisorAuth());
+
+        assertEquals(1, result.releasedCount());
+        assertEquals(ReservationLiveStatus.CANCELLED, waiting.getLiveStatus());
+        verify(reservationRepository).persistAll(List.of(waiting));
+        verify(liveViewService).broadcastUpdate(EVENT_ID, waiting);
+    }
+
+    @Test
+    void releaseUncheckedReservations_beforeDeadline_throwsBookingDeadlineNotPassedException() {
+        pastDeadlineEvent.setBookingDeadline(Instant.now().plusSeconds(3600));
+
+        assertThrows(
+                BookingDeadlineNotPassedException.class,
+                () -> boxOfficeService.releaseUncheckedReservations(EVENT_ID, supervisorAuth()));
+        verify(reservationRepository, never()).persistAll(anyList());
+    }
+
+    @Test
+    void releaseUncheckedReservations_notAuthorizedForEvent_throwsAccessDeniedException() {
+        AuthenticatedUser unrelated = new AuthenticatedUser(id(99), Set.of(Roles.SUPERVISOR));
+        when(eventRepository.isUserSupervisor(EVENT_ID, id(99))).thenReturn(false);
+
+        assertThrows(
+                AccessDeniedException.class,
+                () -> boxOfficeService.releaseUncheckedReservations(EVENT_ID, unrelated));
+        verify(reservationRepository, never()).persistAll(anyList());
     }
 
     // -- known user path --

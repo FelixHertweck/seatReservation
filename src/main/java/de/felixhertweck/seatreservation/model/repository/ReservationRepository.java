@@ -30,6 +30,7 @@ import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.User;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
@@ -283,6 +284,21 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
                         "select r from Reservation r left join fetch r.user left join fetch r.seat"
                                 + " where r.event.id = ?1",
                         eventId)
+                .list();
+    }
+
+    /**
+     * Finds all reservations of an event that are neither checked in nor cancelled.
+     *
+     * @param eventId the event ID to search for
+     * @return a list of not yet checked-in reservations for the specified event
+     */
+    public List<Reservation> findAwaitingCheckInByEventId(UUID eventId) {
+        return find(
+                        "event.id = ?1 and status = ?2 and (liveStatus is null or liveStatus = ?3)",
+                        eventId,
+                        ReservationStatus.RESERVED,
+                        ReservationLiveStatus.NO_SHOW)
                 .list();
     }
 

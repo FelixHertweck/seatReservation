@@ -43,6 +43,8 @@ import de.felixhertweck.seatreservation.email.service.ReservationEmailContent.Bo
 import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -303,5 +305,34 @@ class BoxOfficeResourceTest {
     @JwtSecurity(claims = @Claim(key = "uid", value = SUPERVISOR_UID, type = ClaimType.STRING))
     void getUsers_allowedForManagerRole() {
         given().when().get("/api/supervisor/boxoffice/users").then().statusCode(200);
+    }
+
+    @Test
+    @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = SUPERVISOR_UID, type = ClaimType.STRING))
+    void releaseUncheckedReservations_success() {
+        Reservation waiting = new Reservation();
+        waiting.id = id(42);
+        waiting.setStatus(ReservationStatus.RESERVED);
+        when(reservationRepository.findAwaitingCheckInByEventId(id(10)))
+                .thenReturn(List.of(waiting));
+
+        given().contentType(ContentType.JSON)
+                .when()
+                .post("/api/supervisor/boxoffice/events/" + id(10) + "/release")
+                .then()
+                .statusCode(200)
+                .body("releasedCount", org.hamcrest.Matchers.is(1));
+    }
+
+    @Test
+    @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = SUPERVISOR_UID, type = ClaimType.STRING))
+    void releaseUncheckedReservations_beforeDeadline_badRequest() {
+        given().contentType(ContentType.JSON)
+                .when()
+                .post("/api/supervisor/boxoffice/events/" + id(11) + "/release")
+                .then()
+                .statusCode(400);
     }
 }

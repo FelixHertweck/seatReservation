@@ -304,6 +304,16 @@ export const BoxOfficeGuestReservationRequestDTOSchema = {
     }
 } as const;
 
+export const BoxOfficeReleaseResponseDTOSchema = {
+    type: 'object',
+    properties: {
+        releasedCount: {
+            type: 'integer',
+            format: 'int32'
+        }
+    }
+} as const;
+
 export const BoxOfficeReservationRequestDTOSchema = {
     type: 'object',
     required: [

@@ -1881,6 +1881,14 @@
       "emailedToUser": "Bestätigung an die hinterlegte Adresse von {{username}} gesendet",
       "printButton": "Bestätigung drucken",
       "createAnotherButton": "Erledigt"
+    },
+    "cancelUnchecked": {
+      "button": "Nicht eingecheckte stornieren",
+      "confirmTitle": "Nicht eingecheckte Plätze stornieren?",
+      "confirmDescription": "{{seats}} Plätze von {{guests}} Personen werden storniert und können an der Abendkasse neu vergeben werden. Wer noch kommt, kann eingecheckt werden, solange der Platz nicht neu vergeben wurde.",
+      "confirmButton": "Stornieren",
+      "success": "{{count}} Plätze storniert.",
+      "error": "Plätze konnten nicht storniert werden."
     }
   }
 }
