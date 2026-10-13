@@ -60,6 +60,7 @@ import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationRespo
 import de.felixhertweck.seatreservation.supervisor.exception.BookingDeadlineNotPassedException;
 import de.felixhertweck.seatreservation.usermanagement.service.UserService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -232,28 +233,29 @@ public class BoxOfficeService {
      * Cancels every not yet checked-in reservation of the event, freeing its seat for the box
      * office. A late guest can still be checked in until the seat is reassigned.
      */
-    @Transactional
     public BoxOfficeReleaseResponseDTO releaseUncheckedReservations(
             UUID eventId, AuthenticatedUser currentUser) {
-        Event event = loadEvent(eventId);
-        eventAuthorizationService.assertAuthorizedForEvent(currentUser, eventId);
-        assertBookingDeadlinePassed(event);
+        int releasedCount =
+                QuarkusTransaction.requiringNew()
+                        .call(() -> cancelAwaitingCheckIn(eventId, currentUser));
 
-        List<Reservation> released = reservationRepository.findAwaitingCheckInByEventId(eventId);
-        for (Reservation reservation : released) {
-            reservation.setLiveStatus(ReservationLiveStatus.CANCELLED);
-        }
-        reservationRepository.persistAll(released);
-
-        for (Reservation reservation : released) {
-            liveViewService.broadcastUpdate(eventId, reservation);
+        // Broadcast only after the commit.
+        if (releasedCount > 0) {
+            liveViewService.broadcastInitial(eventId);
         }
 
         LOG.infof(
                 "Cancelled %d not checked-in reservation(s) for event %s by supervisor %s.",
-                released.size(), eventId, currentUser.id());
+                releasedCount, eventId, currentUser.id());
 
-        return new BoxOfficeReleaseResponseDTO(released.size());
+        return new BoxOfficeReleaseResponseDTO(releasedCount);
+    }
+
+    private int cancelAwaitingCheckIn(UUID eventId, AuthenticatedUser currentUser) {
+        Event event = loadEvent(eventId);
+        eventAuthorizationService.assertAuthorizedForEvent(currentUser, eventId);
+        assertBookingDeadlinePassed(event);
+        return reservationRepository.cancelAwaitingCheckInByEventId(eventId);
     }
 
     private List<Reservation> createReservationsForSeats(

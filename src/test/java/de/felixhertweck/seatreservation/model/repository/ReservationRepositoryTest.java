@@ -34,9 +34,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -158,6 +160,32 @@ class ReservationRepositoryTest {
 
         assertEquals(1L, countsB.get(eventB.id + ":" + regularUser.id));
         assertFalse(countsB.containsKey(eventA.id + ":" + regularUser.id));
+    }
+
+    @Test
+    void cancelAwaitingCheckInByEventId_SkipsCheckedIn() {
+        QuarkusTransaction.requiringNew()
+                .run(
+                        () -> {
+                            Reservation checkedIn =
+                                    reservationRepository.findById(reservationIds.get(1));
+                            checkedIn.setLiveStatus(ReservationLiveStatus.CHECKED_IN);
+                        });
+
+        int cancelled =
+                QuarkusTransaction.requiringNew()
+                        .call(
+                                () ->
+                                        reservationRepository.cancelAwaitingCheckInByEventId(
+                                                eventA.id));
+
+        assertEquals(1, cancelled);
+        assertEquals(
+                ReservationLiveStatus.CANCELLED,
+                reservationRepository.findById(reservationIds.get(0)).getLiveStatus());
+        assertEquals(
+                ReservationLiveStatus.CHECKED_IN,
+                reservationRepository.findById(reservationIds.get(1)).getLiveStatus());
     }
 
     private static Event newTestEvent(String name, Set<User> managers) {

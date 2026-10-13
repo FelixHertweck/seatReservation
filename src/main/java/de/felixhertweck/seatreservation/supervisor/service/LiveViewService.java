@@ -20,12 +20,14 @@
 package de.felixhertweck.seatreservation.supervisor.service;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -56,6 +58,8 @@ import org.jboss.logging.Logger;
 public class LiveViewService {
 
     private static final Logger LOG = Logger.getLogger(LiveViewService.class);
+
+    private static final Duration SEND_TIMEOUT = Duration.ofSeconds(5);
 
     @Inject ReservationRepository reservationRepository;
 
@@ -170,7 +174,9 @@ public class LiveViewService {
     public void registerConnection(UUID eventId, WebSocketConnection connection) {
         LOG.debugf("Registering WebSocket connection for event %s", eventId);
 
-        eventSubscriptions.computeIfAbsent(eventId, k -> new ArrayList<>()).add(connection);
+        eventSubscriptions
+                .computeIfAbsent(eventId, k -> new CopyOnWriteArrayList<>())
+                .add(connection);
         LOG.debugf(
                 "Connection registered for event %s. Total connections: %d",
                 eventId, eventSubscriptions.get(eventId).size());
@@ -224,42 +230,86 @@ public class LiveViewService {
     private void sendInitialReservations(UUID eventId, WebSocketConnection connection) {
         LOG.debugf("Sending initial reservations for event %s", eventId);
 
-        try {
-            Event event = eventRepository.findById(eventId);
-            EventLocation location = event.getEventLocation();
-            List<Reservation> reservations =
-                    reservationRepository.findByEventIdWithUserAndSeat(eventId);
-
-            Map<UUID, String> guestNamesByReservationId =
-                    boxOfficeGuestInfoRepository
-                            .findByReservationIdIn(reservations.stream().map(r -> r.id).toList())
-                            .stream()
-                            .collect(
-                                    Collectors.toMap(
-                                            info -> info.getReservation().id,
-                                            BoxOfficeGuestInfo::getGuestName));
-
-            List<SupervisorReservationResponseDTO> reservationDtos =
-                    reservations.stream()
-                            .map(
-                                    r ->
-                                            new SupervisorReservationResponseDTO(
-                                                    r, guestNamesByReservationId.get(r.id)))
-                            .toList();
-
-            WebsocketInitialDTO initialMessage =
-                    WebsocketInitialDTO.initial(location, event, reservationDtos);
-            connection
-                    .sendText(objectMapper.writeValueAsString(initialMessage))
-                    .await()
-                    .indefinitely();
-
-            LOG.debugf(
-                    "Sent %d initial reservations to connection for event %s",
-                    reservations.size(), eventId);
-        } catch (IOException e) {
-            LOG.errorf(e, "Error sending initial reservations for event %s to connection", eventId);
+        if (send(connection, buildInitialMessage(eventId), eventId)) {
+            LOG.debugf("Sent initial reservations to connection for event %s", eventId);
+        } else {
+            closeQuietly(connection, eventId);
         }
+    }
+
+    /**
+     * Sends a message to a connection, giving up after {@link #SEND_TIMEOUT} so a stalled client
+     * cannot block the caller.
+     *
+     * @return {@code false} if the message could not be sent
+     */
+    private boolean send(WebSocketConnection connection, Object message, UUID eventId) {
+        try {
+            connection
+                    .sendText(objectMapper.writeValueAsString(message))
+                    .await()
+                    .atMost(SEND_TIMEOUT);
+            return true;
+        } catch (IOException | RuntimeException e) {
+            LOG.error("Error sending message to connection for event " + eventId, e);
+            return false;
+        }
+    }
+
+    /** Closes a broken connection so the client notices and reconnects. */
+    private void closeQuietly(WebSocketConnection connection, UUID eventId) {
+        try {
+            connection
+                    .close()
+                    .subscribe()
+                    .with(
+                            ignored -> {},
+                            e -> LOG.debugf(e, "Error closing connection for event %s", eventId));
+        } catch (RuntimeException e) {
+            LOG.debugf(e, "Error closing connection for event %s", eventId);
+        }
+    }
+
+    private WebsocketInitialDTO buildInitialMessage(UUID eventId) {
+        Event event = eventRepository.findById(eventId);
+        EventLocation location = event.getEventLocation();
+        List<Reservation> reservations =
+                reservationRepository.findByEventIdWithUserAndSeat(eventId);
+
+        Map<UUID, String> guestNamesByReservationId =
+                boxOfficeGuestInfoRepository
+                        .findByReservationIdIn(reservations.stream().map(r -> r.id).toList())
+                        .stream()
+                        .collect(
+                                Collectors.toMap(
+                                        info -> info.getReservation().id,
+                                        BoxOfficeGuestInfo::getGuestName));
+
+        List<SupervisorReservationResponseDTO> reservationDtos =
+                reservations.stream()
+                        .map(
+                                r ->
+                                        new SupervisorReservationResponseDTO(
+                                                r, guestNamesByReservationId.get(r.id)))
+                        .toList();
+
+        return WebsocketInitialDTO.initial(location, event, reservationDtos);
+    }
+
+    /**
+     * Re-sends the full reservation list to all subscribed clients for an event, for changes that
+     * affect many reservations at once.
+     *
+     * @param eventId the event ID
+     */
+    public void broadcastInitial(UUID eventId) {
+        List<WebSocketConnection> connections = eventSubscriptions.get(eventId);
+        if (connections == null || connections.isEmpty()) {
+            LOG.debugf("No active connections for event %s", eventId);
+            return;
+        }
+
+        broadcastToConnections(connections, buildInitialMessage(eventId), eventId);
     }
 
     /**
@@ -319,14 +369,9 @@ public class LiveViewService {
         List<WebSocketConnection> failedConnections = new ArrayList<>();
 
         for (WebSocketConnection connection : connections) {
-            try {
-                connection
-                        .sendText(objectMapper.writeValueAsString(message))
-                        .await()
-                        .indefinitely();
+            if (send(connection, message, eventId)) {
                 LOG.debugf("Message sent to connection for event %s", eventId);
-            } catch (IOException e) {
-                LOG.error("Error sending message to connection for event " + eventId, e);
+            } else {
                 failedConnections.add(connection);
             }
         }
@@ -337,6 +382,7 @@ public class LiveViewService {
                     "Removing %d failed connections for event %s",
                     failedConnections.size(), eventId);
             connections.removeAll(failedConnections);
+            failedConnections.forEach(connection -> closeQuietly(connection, eventId));
         }
     }
 

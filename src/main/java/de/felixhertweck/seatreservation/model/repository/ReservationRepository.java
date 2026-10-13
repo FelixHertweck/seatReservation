@@ -288,18 +288,19 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
     }
 
     /**
-     * Finds all reservations of an event that are neither checked in nor cancelled.
+     * Cancels all reservations of an event that are neither checked in nor cancelled.
      *
-     * @param eventId the event ID to search for
-     * @return a list of not yet checked-in reservations for the specified event
+     * @param eventId the event ID to cancel reservations for
+     * @return the number of cancelled reservations
      */
-    public List<Reservation> findAwaitingCheckInByEventId(UUID eventId) {
-        return find(
-                        "event.id = ?1 and status = ?2 and (liveStatus is null or liveStatus = ?3)",
-                        eventId,
-                        ReservationStatus.RESERVED,
-                        ReservationLiveStatus.NO_SHOW)
-                .list();
+    public int cancelAwaitingCheckInByEventId(UUID eventId) {
+        return update(
+                "liveStatus = ?1 where event.id = ?2 and status = ?3"
+                        + " and (liveStatus is null or liveStatus = ?4)",
+                ReservationLiveStatus.CANCELLED,
+                eventId,
+                ReservationStatus.RESERVED,
+                ReservationLiveStatus.NO_SHOW);
     }
 
     /**

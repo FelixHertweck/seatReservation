@@ -1,17 +1,11 @@
 "use client";
 
-import {
-  Suspense,
-  useEffect,
-  useMemo,
-  useState,
-  useRef,
-  useCallback,
-} from "react";
+import { Suspense, useState, useRef, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
 import { formatDateTime } from "@/lib/utils";
 import { useCheckin } from "@/hooks/use-checkin";
+import { useSupervisorLiveView } from "@/hooks/use-supervisor-liveview";
 import { useSupervisorEvent } from "@/hooks/use-supervisor-event";
 import type { CheckInInfoRequestDto, CheckInInfoResponseDto } from "@/api";
 import {
@@ -65,7 +59,6 @@ function CheckInPageContent() {
     isLoadingPerformCheckIn,
     performCheckIn,
 
-    events,
     isLoadingEvents,
 
     getUsernamesByEventId,
@@ -73,33 +66,8 @@ function CheckInPageContent() {
     fetchCheckInInfoByUsername,
   } = useCheckin();
 
-  // Read via an effect rather than at render time (Date.now() is impure) -- refreshed
-  // periodically so an event crossing its booking deadline while this page stays open
-  // becomes available without a manual reload.
-  const [now, setNow] = useState<number | null>(null);
-  useEffect(() => {
-    // Ticking clock synced from an external source (the system clock), so the
-    // initial read + periodic refresh both belong here rather than in render.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setNow(Date.now());
-    const interval = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const availableEvents = useMemo(() => {
-    if (now === null) return [];
-    return (events ?? []).filter(
-      (e) => !!e.bookingDeadline && new Date(e.bookingDeadline).getTime() < now,
-    );
-  }, [events, now]);
-  const selectedEvent = useMemo(
-    () => (events ?? []).find((e) => e.id === selectedEventId),
-    [events, selectedEventId],
-  );
-  const isDeadlinePassed = useMemo(() => {
-    if (now === null || !selectedEvent?.bookingDeadline) return false;
-    return new Date(selectedEvent.bookingDeadline).getTime() < now;
-  }, [selectedEvent, now]);
+  const { availableEvents, isDeadlinePassed, selectedEvent } =
+    useSupervisorLiveView();
 
   const handleScan = useCallback(
     (data: ScannedData) => {

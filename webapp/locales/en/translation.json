@@ -754,6 +754,7 @@
       "connected": "Live",
       "connecting": "Connecting...",
       "disconnected": "Disconnected",
+      "reconnect": "Reconnect",
       "loading": "Loading data..."
     },
     "event": {
@@ -1838,12 +1839,23 @@
     "overview": {
       "title": "Supervisor Dashboard",
       "description": "Check in attendees, monitor the live seat map, and sell walk-in tickets.",
+      "selectEventPrompt": "Select an event in the header above to see its figures.",
+      "deadlineNotPassed": "The figures are only available once this event's booking deadline has passed.",
+      "deadlineNotPassedAvailableFrom": "Available from {{date}} {{time}}.",
+      "disconnected": "The figures could not be loaded because there is no live connection.",
       "stats": {
-        "reservations": "Reservations",
+        "admissionTitle": "Admission",
+        "admissionValueLabel": "of {{total}} reservations checked in",
         "checkedIn": "Checked in",
-        "checkedInSub": "of {{total}} reservations",
-        "boxOfficeGuests": "Box office guests",
-        "boxOfficeGuestsSub": "Walk-in guest sales, excludes known-user sales"
+        "awaiting": "Not here yet",
+        "cancelled": "Cancelled",
+        "seatsTitle": "Seats",
+        "seatsValueLabel": "of {{total}} seats free and available at the box office",
+        "free": "Free",
+        "reserved": "Reserved",
+        "blocked": "Blocked",
+        "cancelledNote": "\"Free\" includes {{count}} cancelled seats.",
+        "boxOfficeGuestsNote": "{{count}} reserved seats went to walk-in box office guests."
       }
     }
   },
@@ -1885,7 +1897,7 @@
     "cancelUnchecked": {
       "button": "Cancel not checked in",
       "confirmTitle": "Cancel seats not checked in?",
-      "confirmDescription": "{{seats}} seats held by {{guests}} people will be cancelled and can be reassigned at the box office. Anyone who still arrives can be checked in as long as their seat has not been reassigned.",
+      "confirmDescription": "{{seats}} seats will be cancelled and can be reassigned at the box office. Seats sold at the box office are kept. Anyone who still arrives can be checked in as long as their seat has not been reassigned.",
       "confirmButton": "Cancel seats",
       "success": "{{count}} seats cancelled.",
       "error": "Failed to cancel seats."

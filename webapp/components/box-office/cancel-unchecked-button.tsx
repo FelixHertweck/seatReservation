@@ -17,14 +17,12 @@ import { useT } from "@/lib/i18n/hooks";
 
 interface CancelUncheckedButtonProps {
   seatCount: number;
-  guestCount: number;
   isCancelling: boolean;
   onCancel: () => void;
 }
 
 export function CancelUncheckedButton({
   seatCount,
-  guestCount,
   isCancelling,
   onCancel,
 }: CancelUncheckedButtonProps) {
@@ -36,7 +34,7 @@ export function CancelUncheckedButton({
     <>
       <Button
         variant="outline"
-        disabled={isCancelling}
+        disabled={isCancelling || seatCount === 0}
         title={label}
         aria-label={`${label} (${seatCount})`}
         onClick={() => setIsConfirmOpen(true)}
@@ -55,7 +53,6 @@ export function CancelUncheckedButton({
             <AlertDialogDescription>
               {t("boxOffice.cancelUnchecked.confirmDescription", {
                 seats: seatCount,
-                guests: guestCount,
               })}
             </AlertDialogDescription>
           </AlertDialogHeader>
