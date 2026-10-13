@@ -37,6 +37,16 @@ export const SupervisorEventProvider = ({
   );
 };
 
+export function useSelectedSupervisorEventId() {
+  const context = useContext(SupervisorEventContext);
+  if (!context) {
+    throw new Error(
+      "useSelectedSupervisorEventId must be used within a SupervisorEventProvider",
+    );
+  }
+  return context.selectedEventId;
+}
+
 // Keeps the shared selection and the current page's "eventId" URL param in
 // sync in both directions: a deep link with ?eventId=... adopts it into the
 // shared selection, and landing here without one falls back to (and restores

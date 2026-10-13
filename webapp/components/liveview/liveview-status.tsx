@@ -1,6 +1,7 @@
 "use client";
 
 import { Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n/hooks";
 import { formatDateTime } from "@/lib/utils";
 import type { SupervisorEventResponseDto } from "@/api";
@@ -24,35 +25,52 @@ export function LiveviewConnectionBadge({
   event,
 }: LiveviewConnectionBadgeProps) {
   const t = useT();
+  const statusLabel = isConnected
+    ? t("liveview.status.connected")
+    : isConnecting
+      ? t("liveview.status.connecting")
+      : t("liveview.status.disconnected");
+
+  const statusDot = (
+    <span className="relative flex h-2 w-2 shrink-0">
+      {isConnected && (
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+      )}
+      <span
+        className={`relative inline-flex h-2 w-2 rounded-full ${
+          isConnected
+            ? "bg-green-500"
+            : isConnecting
+              ? "bg-yellow-500"
+              : "bg-red-500"
+        }`}
+      />
+    </span>
+  );
 
   return (
     <div className="flex items-center gap-2 text-sm">
-      <div className="flex items-center gap-1.5 rounded-full border bg-card px-2.5 py-1">
-        <div
-          className={`h-2 w-2 rounded-full ${
-            isConnected
-              ? "bg-green-500"
-              : isConnecting
-                ? "bg-yellow-500"
-                : "bg-red-500"
-          }`}
-        />
-        <span className="hidden font-medium whitespace-nowrap sm:inline">
-          {isConnected
-            ? t("liveview.status.connected")
-            : isConnecting
-              ? t("liveview.status.connecting")
-              : t("liveview.status.disconnected")}
-        </span>
-        {event && (
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className="ml-0.5 -mr-1 rounded-full p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-              aria-label={t("liveview.event.title")}
-            >
-              <Info className="h-3.5 w-3.5" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-72 space-y-2 p-3">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            className="h-10 min-w-10 shrink-0 px-0 sm:px-3"
+            aria-label={statusLabel}
+          >
+            {statusDot}
+            <span className="hidden sm:inline">{statusLabel}</span>
+            {event && (
+              <Info className="hidden text-muted-foreground sm:block" />
+            )}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="max-w-72 space-y-2 p-3">
+          <p className="flex items-center gap-2 text-sm font-semibold">
+            {statusDot}
+            {statusLabel}
+          </p>
+          {event && (
+            <>
               <h4 className="text-sm font-semibold">
                 {t("liveview.event.title")}
               </h4>
@@ -90,10 +108,10 @@ export function LiveviewConnectionBadge({
                     ) : null;
                   })()}
               </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
       {error && (
         <span
           className="text-xs text-destructive whitespace-nowrap"

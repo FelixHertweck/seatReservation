@@ -751,7 +751,7 @@
       "selectFirst": "Select an event at the top of the page"
     },
     "status": {
-      "connected": "Connected",
+      "connected": "Live",
       "connecting": "Connecting...",
       "disconnected": "Disconnected",
       "loading": "Loading data..."
