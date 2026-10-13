@@ -24,7 +24,9 @@ import {
   type BoxOfficeReserveMode,
 } from "@/components/box-office/box-office-action-panel";
 import { BoxOfficeConfirmation } from "@/components/box-office/box-office-confirmation";
-import { useLiveView } from "@/hooks/use-liveview";
+import { CancelUncheckedButton } from "@/components/box-office/cancel-unchecked-button";
+import { LiveviewConnectionBadge } from "@/components/liveview/liveview-status";
+import { useSupervisorLiveView } from "@/hooks/use-supervisor-liveview";
 import { useCheckin } from "@/hooks/use-checkin";
 import { useBoxOffice } from "@/hooks/use-box-office";
 import { useFillHeight } from "@/hooks/use-fill-height";
@@ -77,6 +79,8 @@ function BoxOfficePageContent() {
     createForKnownUser,
     createForGuest,
     isSubmitting,
+    cancelUnchecked,
+    isCancellingUnchecked,
   } = useBoxOffice();
 
   // Read via an effect rather than at render time (Date.now() is impure) -- refreshed
@@ -102,27 +106,35 @@ function BoxOfficePageContent() {
     () => (events ?? []).find((e) => e.id === selectedEventId),
     [events, selectedEventId],
   );
-  // Derived from the plain REST event list rather than the live-view websocket's own
-  // `event` field: that connection is itself gated behind the booking deadline on the
-  // backend now, so relying on it here would be circular -- it would never populate
-  // (and the reconnect budget would run out) before we already know the deadline passed.
   const isDeadlinePassed = useMemo(() => {
     if (now === null || !selectedEvent?.bookingDeadline) return false;
     return new Date(selectedEvent.bookingDeadline).getTime() < now;
   }, [selectedEvent, now]);
 
-  // Only open the live-view websocket once the deadline has passed -- the backend
-  // rejects the connection until then, so connecting earlier would just burn through
-  // useWebSocket's limited reconnect attempts for nothing.
-  const { isInitialLoading, location, reservations } = useLiveView(
-    selectedEventId,
-    !!selectedEventId && isDeadlinePassed,
-  );
+  const {
+    isInitialLoading,
+    isConnected,
+    isConnecting,
+    error,
+    location,
+    reservations,
+  } = useSupervisorLiveView();
 
   const seatStatuses = useMemo(
     () => convertReservationsToStatuses(reservations),
     [reservations],
   );
+
+  const awaitingCheckIn = useMemo(() => {
+    const awaiting = reservations.filter(
+      (r) =>
+        r.status === "RESERVED" &&
+        (!r.liveStatus || r.liveStatus === "NO_SHOW"),
+    );
+    // Walk-in guests share one system user, so tell them apart by name.
+    const guests = new Set(awaiting.map((r) => r.guestName ?? r.userId));
+    return { seatCount: awaiting.length, guestCount: guests.size };
+  }, [reservations]);
 
   const resetForm = () => {
     setSelectedSeats([]);
@@ -204,6 +216,25 @@ function BoxOfficePageContent() {
       <PageHeader
         title={t("boxOffice.title")}
         description={t("boxOffice.pageDescription")}
+        actions={
+          selectedEventId && isDeadlinePassed ? (
+            <>
+              {awaitingCheckIn.seatCount > 0 && (
+                <CancelUncheckedButton
+                  seatCount={awaitingCheckIn.seatCount}
+                  guestCount={awaitingCheckIn.guestCount}
+                  isCancelling={isCancellingUnchecked}
+                  onCancel={() => cancelUnchecked(selectedEventId)}
+                />
+              )}
+              <LiveviewConnectionBadge
+                isConnected={isConnected}
+                isConnecting={isConnecting}
+                error={error}
+              />
+            </>
+          ) : undefined
+        }
         search={
           <EventSelector
             events={availableEvents}

@@ -10,6 +10,7 @@ import type {
 } from "@/api";
 import {
   getApiSupervisorBoxofficeUsersOptions,
+  postApiSupervisorBoxofficeEventsByEventIdReleaseMutation,
   postApiSupervisorBoxofficeReservationsMutation,
   postApiSupervisorBoxofficeReservationsGuestMutation,
 } from "@/api/@tanstack/react-query.gen";
@@ -27,6 +28,10 @@ export function useBoxOffice() {
   });
   const guestMutation = useMutation({
     ...postApiSupervisorBoxofficeReservationsGuestMutation(),
+  });
+
+  const cancelUncheckedMutation = useMutation({
+    ...postApiSupervisorBoxofficeEventsByEventIdReleaseMutation(),
   });
 
   const createForKnownUser = async (data: BoxOfficeReservationRequestDto) => {
@@ -55,11 +60,28 @@ export function useBoxOffice() {
     return request;
   };
 
+  const cancelUnchecked = (eventId: string) => {
+    const request = cancelUncheckedMutation.mutateAsync({ path: { eventId } });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: (result) =>
+        t("boxOffice.cancelUnchecked.success", {
+          count: result.releasedCount ?? 0,
+        }),
+      error: (error: ErrorWithResponse) => ({
+        message: t("boxOffice.cancelUnchecked.error"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+  };
+
   return {
     users: users ?? [],
     isLoadingUsers,
     createForKnownUser,
     createForGuest,
     isSubmitting: knownUserMutation.isPending || guestMutation.isPending,
+    cancelUnchecked,
+    isCancellingUnchecked: cancelUncheckedMutation.isPending,
   };
 }

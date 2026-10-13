@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.supervisor.resource;
 
 import java.util.List;
+import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -27,12 +28,14 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeGuestReservationRequestDTO;
+import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReleaseResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.service.BoxOfficeService;
@@ -146,6 +149,30 @@ public class BoxOfficeResource {
                 "Box office guest reservation created via POST"
                         + " /api/supervisor/boxoffice/reservations/guest for event %s.",
                 dto.getEventId());
+        return result;
+    }
+
+    @POST
+    @Path("/events/{eventId}/release")
+    @APIResponse(
+            responseCode = "200",
+            description = "OK - Not checked-in reservations of the event cancelled",
+            content =
+                    @Content(schema = @Schema(implementation = BoxOfficeReleaseResponseDTO.class)))
+    @APIResponse(responseCode = "400", description = "Bad Request: Deadline not passed")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(responseCode = "403", description = "Forbidden: Not authorized for this event")
+    @APIResponse(responseCode = "404", description = "Not Found: Event not found")
+    public BoxOfficeReleaseResponseDTO releaseUncheckedReservations(
+            @PathParam("eventId") UUID eventId) {
+        LOG.debugf(
+                "Received POST request to /api/supervisor/boxoffice/events/%s/release.", eventId);
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
+        BoxOfficeReleaseResponseDTO result =
+                boxOfficeService.releaseUncheckedReservations(eventId, currentUser);
+        LOG.infof(
+                "Released %d reservation(s) via POST /api/supervisor/boxoffice/events/%s/release.",
+                result.releasedCount(), eventId);
         return result;
     }
 }

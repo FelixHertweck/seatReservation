@@ -54,6 +54,7 @@ import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.service.CheckInTokenService;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeGuestReservationRequestDTO;
+import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReleaseResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.exception.BookingDeadlineNotPassedException;
@@ -225,6 +226,34 @@ public class BoxOfficeService {
 
         return new BoxOfficeReservationResponseDTO(
                 boxofficeUser.id, newReservations, confirmation.displayHtml());
+    }
+
+    /**
+     * Cancels every not yet checked-in reservation of the event, freeing its seat for the box
+     * office. A late guest can still be checked in until the seat is reassigned.
+     */
+    @Transactional
+    public BoxOfficeReleaseResponseDTO releaseUncheckedReservations(
+            UUID eventId, AuthenticatedUser currentUser) {
+        Event event = loadEvent(eventId);
+        eventAuthorizationService.assertAuthorizedForEvent(currentUser, eventId);
+        assertBookingDeadlinePassed(event);
+
+        List<Reservation> released = reservationRepository.findAwaitingCheckInByEventId(eventId);
+        for (Reservation reservation : released) {
+            reservation.setLiveStatus(ReservationLiveStatus.CANCELLED);
+        }
+        reservationRepository.persistAll(released);
+
+        for (Reservation reservation : released) {
+            liveViewService.broadcastUpdate(eventId, reservation);
+        }
+
+        LOG.infof(
+                "Cancelled %d not checked-in reservation(s) for event %s by supervisor %s.",
+                released.size(), eventId, currentUser.id());
+
+        return new BoxOfficeReleaseResponseDTO(released.size());
     }
 
     private List<Reservation> createReservationsForSeats(

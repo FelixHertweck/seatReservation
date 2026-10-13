@@ -81,6 +81,10 @@ export type BoxOfficeGuestReservationRequestDto = {
     checkedIn?: boolean;
 };
 
+export type BoxOfficeReleaseResponseDto = {
+    releasedCount?: number;
+};
+
 export type BoxOfficeReservationRequestDto = {
     eventId: Uuid;
     userId: Uuid;
@@ -3667,6 +3671,43 @@ export type GetApiPushSubscriptionsVapidPublicKeyResponses = {
      */
     200: unknown;
 };
+
+export type PostApiSupervisorBoxofficeEventsByEventIdReleaseData = {
+    body?: never;
+    path: {
+        eventId: Uuid;
+    };
+    query?: never;
+    url: '/api/supervisor/boxoffice/events/{eventId}/release';
+};
+
+export type PostApiSupervisorBoxofficeEventsByEventIdReleaseErrors = {
+    /**
+     * Bad Request: Deadline not passed
+     */
+    400: unknown;
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Not authorized for this event
+     */
+    403: unknown;
+    /**
+     * Not Found: Event not found
+     */
+    404: unknown;
+};
+
+export type PostApiSupervisorBoxofficeEventsByEventIdReleaseResponses = {
+    /**
+     * OK - Not checked-in reservations of the event cancelled
+     */
+    200: BoxOfficeReleaseResponseDto;
+};
+
+export type PostApiSupervisorBoxofficeEventsByEventIdReleaseResponse = PostApiSupervisorBoxofficeEventsByEventIdReleaseResponses[keyof PostApiSupervisorBoxofficeEventsByEventIdReleaseResponses];
 
 export type PostApiSupervisorBoxofficeReservationsData = {
     body: BoxOfficeReservationRequestDto;

@@ -1881,6 +1881,14 @@
       "emailedToUser": "Confirmation emailed to {{username}}'s registered address",
       "printButton": "Print confirmation",
       "createAnotherButton": "Done"
+    },
+    "cancelUnchecked": {
+      "button": "Cancel not checked in",
+      "confirmTitle": "Cancel seats not checked in?",
+      "confirmDescription": "{{seats}} seats held by {{guests}} people will be cancelled and can be reassigned at the box office. Anyone who still arrives can be checked in as long as their seat has not been reassigned.",
+      "confirmButton": "Cancel seats",
+      "success": "{{count}} seats cancelled.",
+      "error": "Failed to cancel seats."
     }
   }
 }
