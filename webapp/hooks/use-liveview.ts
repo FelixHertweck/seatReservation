@@ -107,7 +107,13 @@ export const useLiveView = (
           if (prevReservations.some((res) => res.id === newReservation.id)) {
             return prevReservations;
           }
-          return [...prevReservations, newReservation];
+          // A new reservation replaces a cancelled one on the same seat.
+          return [
+            ...prevReservations.filter(
+              (res) => res.seat?.id !== newReservation.seat?.id,
+            ),
+            newReservation,
+          ];
         });
 
         setIsInitialLoading(false);
