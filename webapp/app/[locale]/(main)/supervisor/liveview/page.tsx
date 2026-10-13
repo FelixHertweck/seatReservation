@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { ArrowUp, ChevronUp, Clock, Loader2 } from "lucide-react";
-import { useLiveView } from "@/hooks/use-liveview";
+import { useSupervisorLiveView } from "@/hooks/use-supervisor-liveview";
 import { useCheckin } from "@/hooks/use-checkin";
 import { useSupervisorEvent } from "@/hooks/use-supervisor-event";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -84,7 +84,7 @@ function LiveViewPageContent() {
     location,
     reservations,
     error,
-  } = useLiveView(selectedEventId, !!selectedEventId && isDeadlinePassed);
+  } = useSupervisorLiveView();
 
   return (
     <div className="container mx-auto p-4 sm:p-6">

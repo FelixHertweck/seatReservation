@@ -1293,7 +1293,7 @@
       "selectFirst": "Wähle oben im Header ein Event aus"
     },
     "status": {
-      "connected": "Verbunden",
+      "connected": "Live verbunden",
       "connecting": "Verbindung wird hergestellt...",
       "disconnected": "Nicht verbunden",
       "loading": "Daten werden geladen..."
