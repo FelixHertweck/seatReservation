@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useState } from "react";
 import { ArrowUp, ChevronUp, Clock, Loader2 } from "lucide-react";
 import { useSupervisorLiveView } from "@/hooks/use-supervisor-liveview";
 import { useCheckin } from "@/hooks/use-checkin";
@@ -50,31 +50,7 @@ function LiveViewPageContent() {
   const { ref: seatMapColumnRef, height: seatMapColumnHeight } =
     useFillHeight<HTMLDivElement>();
 
-  const { events, isLoadingEvents } = useCheckin();
-
-  const [now, setNow] = useState<number | null>(null);
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setNow(Date.now());
-    const interval = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const availableEvents = useMemo(() => {
-    if (now === null) return [];
-    return (events ?? []).filter(
-      (e) => !!e.bookingDeadline && new Date(e.bookingDeadline).getTime() < now,
-    );
-  }, [events, now]);
-
-  const selectedEvent = useMemo(() => {
-    return (events ?? []).find((e) => e.id === selectedEventId);
-  }, [events, selectedEventId]);
-
-  const isDeadlinePassed = useMemo(() => {
-    if (now === null || !selectedEvent?.bookingDeadline) return false;
-    return new Date(selectedEvent.bookingDeadline).getTime() < now;
-  }, [selectedEvent, now]);
+  const { isLoadingEvents } = useCheckin();
 
   const {
     isConnected,
@@ -84,6 +60,10 @@ function LiveViewPageContent() {
     location,
     reservations,
     error,
+    availableEvents,
+    isDeadlinePassed,
+    selectedEvent,
+    reconnect,
   } = useSupervisorLiveView();
 
   return (
@@ -98,6 +78,7 @@ function LiveViewPageContent() {
               isConnecting={isConnecting}
               error={error}
               event={event}
+              onReconnect={reconnect}
             />
           ) : undefined
         }

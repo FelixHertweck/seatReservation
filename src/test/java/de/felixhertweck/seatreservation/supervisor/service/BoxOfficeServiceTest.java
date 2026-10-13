@@ -186,21 +186,23 @@ class BoxOfficeServiceTest {
     // -- release path --
 
     @Test
-    void releaseUncheckedReservations_marksCancelledAndBroadcasts() {
-        Reservation waiting = new Reservation();
-        waiting.id = id(42);
-        waiting.setSeat(seat);
-        waiting.setStatus(ReservationStatus.RESERVED);
-        when(reservationRepository.findAwaitingCheckInByEventId(EVENT_ID))
-                .thenReturn(List.of(waiting));
+    void releaseUncheckedReservations_cancelsAndBroadcasts() {
+        when(reservationRepository.cancelAwaitingCheckInByEventId(EVENT_ID)).thenReturn(2);
 
         BoxOfficeReleaseResponseDTO result =
                 boxOfficeService.releaseUncheckedReservations(EVENT_ID, supervisorAuth());
 
-        assertEquals(1, result.releasedCount());
-        assertEquals(ReservationLiveStatus.CANCELLED, waiting.getLiveStatus());
-        verify(reservationRepository).persistAll(List.of(waiting));
-        verify(liveViewService).broadcastUpdate(EVENT_ID, waiting);
+        assertEquals(2, result.releasedCount());
+        verify(liveViewService).broadcastInitial(EVENT_ID);
+    }
+
+    @Test
+    void releaseUncheckedReservations_nothingToCancel_doesNotBroadcast() {
+        BoxOfficeReleaseResponseDTO result =
+                boxOfficeService.releaseUncheckedReservations(EVENT_ID, supervisorAuth());
+
+        assertEquals(0, result.releasedCount());
+        verify(liveViewService, never()).broadcastInitial(EVENT_ID);
     }
 
     @Test
@@ -210,7 +212,7 @@ class BoxOfficeServiceTest {
         assertThrows(
                 BookingDeadlineNotPassedException.class,
                 () -> boxOfficeService.releaseUncheckedReservations(EVENT_ID, supervisorAuth()));
-        verify(reservationRepository, never()).persistAll(anyList());
+        verify(reservationRepository, never()).cancelAwaitingCheckInByEventId(any());
     }
 
     @Test
@@ -221,7 +223,7 @@ class BoxOfficeServiceTest {
         assertThrows(
                 AccessDeniedException.class,
                 () -> boxOfficeService.releaseUncheckedReservations(EVENT_ID, unrelated));
-        verify(reservationRepository, never()).persistAll(anyList());
+        verify(reservationRepository, never()).cancelAwaitingCheckInByEventId(any());
     }
 
     // -- known user path --

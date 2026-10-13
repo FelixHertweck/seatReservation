@@ -1,6 +1,6 @@
 "use client";
 
-import { Info } from "lucide-react";
+import { Info, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n/hooks";
 import { formatDateTime } from "@/lib/utils";
@@ -16,6 +16,7 @@ interface LiveviewConnectionBadgeProps {
   isConnecting: boolean;
   error?: string | null;
   event?: SupervisorEventResponseDto | null;
+  onReconnect?: () => void;
 }
 
 export function LiveviewConnectionBadge({
@@ -23,6 +24,7 @@ export function LiveviewConnectionBadge({
   isConnecting,
   error,
   event,
+  onReconnect,
 }: LiveviewConnectionBadgeProps) {
   const t = useT();
   const statusLabel = isConnected
@@ -69,6 +71,17 @@ export function LiveviewConnectionBadge({
             {statusDot}
             {statusLabel}
           </p>
+          {onReconnect && !isConnected && !isConnecting && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={onReconnect}
+            >
+              <RefreshCw />
+              {t("liveview.status.reconnect")}
+            </Button>
+          )}
           {event && (
             <>
               <h4 className="text-sm font-semibold">

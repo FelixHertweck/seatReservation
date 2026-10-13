@@ -98,6 +98,13 @@ export const useWebSocket = (
           console.error(
             `[WebSocket] Max reconnection attempts (${maxReconnectAttempts}) reached`,
           );
+          if (onConnectingRef.current) {
+            try {
+              onConnectingRef.current(false);
+            } catch (err) {
+              console.error(`[WebSocket] Error calling onConnecting:`, err);
+            }
+          }
         }
       };
 
@@ -114,6 +121,7 @@ export const useWebSocket = (
 
     if (wsRef.current) {
       wsRef.current.onclose = null;
+      wsRef.current.onmessage = null;
       wsRef.current.close();
       wsRef.current = null;
     }
@@ -129,6 +137,28 @@ export const useWebSocket = (
       }
     }
   }, []);
+
+  // Starts over with a fresh attempt budget; no-op while a socket exists.
+  const reconnect = useCallback(() => {
+    if (wsRef.current) return;
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+    }
+    reconnectAttemptsRef.current = 0;
+    if (connectRef.current) connectRef.current();
+  }, []);
+
+  useEffect(() => {
+    const handleWake = () => {
+      if (document.visibilityState === "visible") reconnect();
+    };
+    document.addEventListener("visibilitychange", handleWake);
+    window.addEventListener("online", handleWake);
+    return () => {
+      document.removeEventListener("visibilitychange", handleWake);
+      window.removeEventListener("online", handleWake);
+    };
+  }, [reconnect]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const send = useCallback((data: any) => {
@@ -149,6 +179,8 @@ export const useWebSocket = (
   useEffect(() => {
     // store the current connect fn so that setTimeout callbacks can call it
     connectRef.current = connect;
+    // A changed URL gets a fresh attempt budget.
+    reconnectAttemptsRef.current = 0;
     connect();
 
     return () => {
@@ -160,5 +192,6 @@ export const useWebSocket = (
     isConnected,
     send,
     disconnect,
+    reconnect,
   };
 };

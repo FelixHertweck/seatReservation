@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { ArrowUp, ChevronUp, Clock, Loader2 } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
@@ -72,7 +72,7 @@ function BoxOfficePageContent() {
   const { ref: seatMapColumnRef, height: seatMapColumnHeight } =
     useFillHeight<HTMLDivElement>();
 
-  const { events, isLoadingEvents } = useCheckin();
+  const { isLoadingEvents } = useCheckin();
   const {
     users,
     isLoadingUsers,
@@ -83,34 +83,6 @@ function BoxOfficePageContent() {
     isCancellingUnchecked,
   } = useBoxOffice();
 
-  // Read via an effect rather than at render time (Date.now() is impure) -- refreshed
-  // periodically so an event crossing its booking deadline while this page stays open
-  // becomes available without a manual reload.
-  const [now, setNow] = useState<number | null>(null);
-  useEffect(() => {
-    // Ticking clock synced from an external source (the system clock), so the
-    // initial read + periodic refresh both belong here rather than in render.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setNow(Date.now());
-    const interval = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const availableEvents = useMemo(() => {
-    if (now === null) return [];
-    return (events ?? []).filter(
-      (e) => !!e.bookingDeadline && new Date(e.bookingDeadline).getTime() < now,
-    );
-  }, [events, now]);
-  const selectedEvent = useMemo(
-    () => (events ?? []).find((e) => e.id === selectedEventId),
-    [events, selectedEventId],
-  );
-  const isDeadlinePassed = useMemo(() => {
-    if (now === null || !selectedEvent?.bookingDeadline) return false;
-    return new Date(selectedEvent.bookingDeadline).getTime() < now;
-  }, [selectedEvent, now]);
-
   const {
     isInitialLoading,
     isConnected,
@@ -118,6 +90,11 @@ function BoxOfficePageContent() {
     error,
     location,
     reservations,
+    availableEvents,
+    isDeadlinePassed,
+    selectedEvent,
+    event,
+    reconnect,
   } = useSupervisorLiveView();
 
   const seatStatuses = useMemo(
@@ -125,16 +102,15 @@ function BoxOfficePageContent() {
     [reservations],
   );
 
-  const awaitingCheckIn = useMemo(() => {
-    const awaiting = reservations.filter(
-      (r) =>
-        r.status === "RESERVED" &&
-        (!r.liveStatus || r.liveStatus === "NO_SHOW"),
-    );
-    // Walk-in guests share one system user, so tell them apart by name.
-    const guests = new Set(awaiting.map((r) => r.guestName ?? r.userId));
-    return { seatCount: awaiting.length, guestCount: guests.size };
-  }, [reservations]);
+  const awaitingCheckInCount = useMemo(
+    () =>
+      reservations.filter(
+        (r) =>
+          r.status === "RESERVED" &&
+          (!r.liveStatus || r.liveStatus === "NO_SHOW"),
+      ).length,
+    [reservations],
+  );
 
   const resetForm = () => {
     setSelectedSeats([]);
@@ -219,18 +195,17 @@ function BoxOfficePageContent() {
         actions={
           selectedEventId && isDeadlinePassed ? (
             <>
-              {awaitingCheckIn.seatCount > 0 && (
-                <CancelUncheckedButton
-                  seatCount={awaitingCheckIn.seatCount}
-                  guestCount={awaitingCheckIn.guestCount}
-                  isCancelling={isCancellingUnchecked}
-                  onCancel={() => cancelUnchecked(selectedEventId)}
-                />
-              )}
+              <CancelUncheckedButton
+                seatCount={awaitingCheckInCount}
+                isCancelling={isCancellingUnchecked}
+                onCancel={() => cancelUnchecked(selectedEventId)}
+              />
               <LiveviewConnectionBadge
                 isConnected={isConnected}
                 isConnecting={isConnecting}
                 error={error}
+                event={event}
+                onReconnect={reconnect}
               />
             </>
           ) : undefined

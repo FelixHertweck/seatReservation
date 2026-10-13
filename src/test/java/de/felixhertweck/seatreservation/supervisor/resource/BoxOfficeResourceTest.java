@@ -43,8 +43,6 @@ import de.felixhertweck.seatreservation.email.service.ReservationEmailContent.Bo
 import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
-import de.felixhertweck.seatreservation.model.entity.Reservation;
-import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -311,11 +309,7 @@ class BoxOfficeResourceTest {
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
     @JwtSecurity(claims = @Claim(key = "uid", value = SUPERVISOR_UID, type = ClaimType.STRING))
     void releaseUncheckedReservations_success() {
-        Reservation waiting = new Reservation();
-        waiting.id = id(42);
-        waiting.setStatus(ReservationStatus.RESERVED);
-        when(reservationRepository.findAwaitingCheckInByEventId(id(10)))
-                .thenReturn(List.of(waiting));
+        when(reservationRepository.cancelAwaitingCheckInByEventId(eq(id(10)))).thenReturn(1);
 
         given().contentType(ContentType.JSON)
                 .when()

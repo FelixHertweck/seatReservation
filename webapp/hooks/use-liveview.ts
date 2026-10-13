@@ -8,24 +8,18 @@ import {
   WebsocketNewReservationMessage,
   WebsocketUpdateMessage,
 } from "@/lib/websocket-types";
+import { ReservationLiveStatus } from "@/api";
 import type {
   SupervisorEventLocationDto,
   SupervisorEventResponseDto,
   SupervisorReservationResponseDto,
 } from "@/api";
-import { getApiSupervisorCheckinEventsOptions } from "@/api/@tanstack/react-query.gen";
-import { useQuery } from "@tanstack/react-query";
 
 /**
  * Public interface for the LiveView hook
  * Provides connection status, event data, location data, and reservation statuses
  */
 export interface LiveViewState {
-  //events data
-  events: SupervisorEventResponseDto[] | undefined;
-  isLoadingEvents: boolean;
-  isErrorEvents: boolean;
-
   // Connection status
   isConnected: boolean;
   isConnecting: boolean;
@@ -39,6 +33,8 @@ export interface LiveViewState {
 
   // Error information
   error: string | null;
+
+  reconnect: () => void;
 }
 
 /**
@@ -63,13 +59,26 @@ export const useLiveView = (
   >([]);
   const [error, setError] = useState<string | null>(null);
 
-  const {
-    data: events,
-    isLoading: isLoadingEvents,
-    isError: isErrorEvents,
-  } = useQuery({
-    ...getApiSupervisorCheckinEventsOptions(),
-  });
+  // Drop the previous event's data when another one is selected.
+  const [prevEventId, setPrevEventId] = useState(eventId);
+  if (prevEventId !== eventId) {
+    setPrevEventId(eventId);
+    setEvent(null);
+    setLocation(null);
+    setReservations([]);
+    setError(null);
+  }
+
+  // Count as connecting from the render that enables the connection.
+  const isActive = enabled && !!eventId;
+  const [prevIsActive, setPrevIsActive] = useState(false);
+  if (prevIsActive !== isActive) {
+    setPrevIsActive(isActive);
+    if (isActive) {
+      setIsConnecting(true);
+      setIsInitialLoading(true);
+    }
+  }
 
   const handleMessage = useCallback((data: unknown) => {
     const dataWithType = data as
@@ -110,7 +119,10 @@ export const useLiveView = (
           // A new reservation replaces a cancelled one on the same seat.
           return [
             ...prevReservations.filter(
-              (res) => res.seat?.id !== newReservation.seat?.id,
+              (res) =>
+                !newReservation.seat?.id ||
+                res.seat?.id !== newReservation.seat.id ||
+                res.liveStatus !== ReservationLiveStatus.CANCELLED,
             ),
             newReservation,
           ];
@@ -128,7 +140,7 @@ export const useLiveView = (
     }
   }, []);
 
-  const { isConnected, disconnect } = useWebSocket(
+  const { isConnected, disconnect, reconnect } = useWebSocket(
     eventId
       ? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${
           window.location.host
@@ -162,9 +174,6 @@ export const useLiveView = (
   }, [enabled, eventId, disconnect]);
 
   return {
-    events,
-    isLoadingEvents,
-    isErrorEvents,
     isConnected,
     isConnecting,
     isInitialLoading,
@@ -172,5 +181,6 @@ export const useLiveView = (
     location,
     reservations,
     error,
+    reconnect,
   };
 };

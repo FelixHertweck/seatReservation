@@ -1296,6 +1296,7 @@
       "connected": "Live verbunden",
       "connecting": "Verbindung wird hergestellt...",
       "disconnected": "Nicht verbunden",
+      "reconnect": "Neu verbinden",
       "loading": "Daten werden geladen..."
     },
     "event": {
@@ -1838,12 +1839,23 @@
     "overview": {
       "title": "Aufsicht Dashboard",
       "description": "Gäste einchecken, den Sitzplan live verfolgen und Tickets vor Ort verkaufen.",
+      "selectEventPrompt": "Wähle oben im Header eine Veranstaltung aus, um ihre Kennzahlen zu sehen.",
+      "deadlineNotPassed": "Die Kennzahlen sind erst verfügbar, sobald die Buchungsfrist dieser Veranstaltung abgelaufen ist.",
+      "deadlineNotPassedAvailableFrom": "Verfügbar ab {{date}} {{time}} Uhr.",
+      "disconnected": "Die Kennzahlen konnten nicht geladen werden, weil keine Live-Verbindung besteht.",
       "stats": {
-        "reservations": "Reservierungen",
+        "admissionTitle": "Einlass",
+        "admissionValueLabel": "von {{total}} Reservierungen eingecheckt",
         "checkedIn": "Eingecheckt",
-        "checkedInSub": "von {{total}} Reservierungen",
-        "boxOfficeGuests": "Abendkasse Gäste",
-        "boxOfficeGuestsSub": "Walk-in-Gastverkäufe, ohne Verkäufe an bekannte Nutzer"
+        "awaiting": "Noch nicht da",
+        "cancelled": "Storniert",
+        "seatsTitle": "Plätze",
+        "seatsValueLabel": "von {{total}} Plätzen frei und an der Abendkasse vergebbar",
+        "free": "Frei",
+        "reserved": "Reserviert",
+        "blocked": "Blockiert",
+        "cancelledNote": "„Frei“ enthält {{count}} stornierte Plätze.",
+        "boxOfficeGuestsNote": "{{count}} reservierte Plätze gingen an Laufkunden der Abendkasse."
       }
     }
   },
@@ -1885,7 +1897,7 @@
     "cancelUnchecked": {
       "button": "Nicht eingecheckte stornieren",
       "confirmTitle": "Nicht eingecheckte Plätze stornieren?",
-      "confirmDescription": "{{seats}} Plätze von {{guests}} Personen werden storniert und können an der Abendkasse neu vergeben werden. Wer noch kommt, kann eingecheckt werden, solange der Platz nicht neu vergeben wurde.",
+      "confirmDescription": "{{seats}} Plätze werden storniert und können an der Abendkasse neu vergeben werden. An der Abendkasse verkaufte Plätze bleiben bestehen. Wer noch kommt, kann eingecheckt werden, solange der Platz nicht neu vergeben wurde.",
       "confirmButton": "Stornieren",
       "success": "{{count}} Plätze storniert.",
       "error": "Plätze konnten nicht storniert werden."
