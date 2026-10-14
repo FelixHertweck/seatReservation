@@ -43,7 +43,7 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
      */
     public User findByUsername(String username) {
         LOG.debug("Finding user by username.");
-        User user = find("username", username).firstResult();
+        User user = find("lower(username)", username.toLowerCase(Locale.ROOT)).firstResult();
         if (user != null) {
             LOG.debugf("User %s found.", username);
         } else {
@@ -60,7 +60,8 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
      */
     public Optional<User> findByUsernameOptional(String username) {
         LOG.debug("Finding user by username.");
-        Optional<User> user = find("username", username).firstResultOptional();
+        Optional<User> user =
+                find("lower(username)", username.toLowerCase(Locale.ROOT)).firstResultOptional();
         if (user.isPresent()) {
             LOG.debugf("User %s found (optional).", username);
         } else {
@@ -191,9 +192,9 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
             return List.of();
         }
         return find(
-                        "select distinct u from User u left join fetch u.tags where u.username in"
-                                + " ?1",
-                        usernames)
+                        "select distinct u from User u left join fetch u.tags where"
+                                + " lower(u.username) in ?1",
+                        usernames.stream().map(u -> u.toLowerCase(Locale.ROOT)).toList())
                 .list();
     }
 
