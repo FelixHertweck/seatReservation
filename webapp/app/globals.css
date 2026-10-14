@@ -133,6 +133,10 @@
   animation: seatPopIn 0.4s ease-out both;
 }
 
+@utility animate-seat-peek {
+  animation: seatPeek 1s ease-in-out infinite;
+}
+
 :root {
   --background: hsl(0 0% 100%);
   --foreground: hsl(240 20% 3%);
@@ -332,6 +336,17 @@
     }
     100% {
       transform: translateX(100%);
+    }
+  }
+
+  @keyframes seatPeek {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg) scale(1);
+    }
+    35%,
+    65% {
+      transform: translateY(-3px) rotate(-10deg) scale(1.12);
     }
   }
 
