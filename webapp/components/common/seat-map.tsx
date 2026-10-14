@@ -37,7 +37,6 @@ interface SeatMapProps {
   highlightedSeatId?: string | null;
   onSeatSelect: (seat: SeatDto) => void;
   readonly?: boolean;
-  /** In readonly mode, still let occupied seats be clicked (e.g. to look up who holds them). */
   inspectable?: boolean;
   isLoading?: boolean;
   allowCancelledSelection?: boolean;
