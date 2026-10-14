@@ -1739,7 +1739,7 @@
       "exportPdf": "PDF exportieren",
       "empty": "Noch keine Reservierungen für diese Veranstaltung.",
       "tableUser": "Benutzer",
-      "tableSeat": "Sitz",
+      "latest": "zuletzt",
       "tableStatus": "Status",
       "tableDate": "Datum",
       "deleteConfirm": "{{count}} Reservierung(en) löschen?",
