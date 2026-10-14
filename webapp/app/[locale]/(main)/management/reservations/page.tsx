@@ -269,6 +269,13 @@ export default function ManagementReservationsPage() {
     }
   };
 
+  // In view mode a click on an occupied seat shows its reservation in the list.
+  const handleSeatInspect = (seat: SeatDto) => {
+    setHighlightedSeatId((prev) =>
+      prev === seat.id ? null : (seat.id ?? null),
+    );
+  };
+
   const handleSeatChipClick = (seatId: string) => {
     setHighlightedSeatId((prev) => (prev === seatId ? null : seatId));
     if (isCompact) setIsDrawerOpen(false);
@@ -533,6 +540,7 @@ export default function ManagementReservationsPage() {
         <div className="min-h-0 flex-1">
           <SeatMap
             readonly={!isInteractive}
+            inspectable
             seats={eventSeats}
             seatStatuses={seatStatuses}
             markers={markers}
@@ -540,7 +548,7 @@ export default function ManagementReservationsPage() {
             selectedSeats={isInteractive ? selectedSeats : []}
             userReservedSeats={userReservedSeats}
             highlightedSeatId={highlightedSeatId}
-            onSeatSelect={isInteractive ? handleSeatToggle : () => {}}
+            onSeatSelect={isInteractive ? handleSeatToggle : handleSeatInspect}
             isLoading={isSeatsLoading}
           />
         </div>

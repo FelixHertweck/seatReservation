@@ -37,6 +37,8 @@ interface SeatMapProps {
   highlightedSeatId?: string | null;
   onSeatSelect: (seat: SeatDto) => void;
   readonly?: boolean;
+  /** In readonly mode, still let occupied seats be clicked (e.g. to look up who holds them). */
+  inspectable?: boolean;
   isLoading?: boolean;
   allowCancelledSelection?: boolean;
 }
@@ -350,6 +352,7 @@ export function SeatMap({
   highlightedSeatId = null,
   onSeatSelect,
   readonly = false,
+  inspectable = false,
   isLoading = false,
   allowCancelledSelection = false,
 }: Readonly<SeatMapProps>): ReactElement {
@@ -554,7 +557,15 @@ export function SeatMap({
 
   const canSelectSeat = useCallback(
     (seat: SeatDto | undefined) => {
-      if (!seat || readonly) return false;
+      if (!seat) return false;
+      if (readonly) {
+        return (
+          inspectable &&
+          seatStatuses.some(
+            (s) => (s as { seatId?: string }).seatId === seat.id,
+          )
+        );
+      }
 
       if (selectedSeatIds.has(seat.id)) return true;
 
@@ -578,7 +589,13 @@ export function SeatMap({
         return !seatStatus;
       }
     },
-    [readonly, selectedSeatIds, seatStatuses, allowCancelledSelection],
+    [
+      readonly,
+      inspectable,
+      selectedSeatIds,
+      seatStatuses,
+      allowCancelledSelection,
+    ],
   );
 
   const gridStructure = useMemo(() => {

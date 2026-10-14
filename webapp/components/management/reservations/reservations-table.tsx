@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -132,6 +132,35 @@ export function ReservationsTable({
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
   const seatById = useMemo(() => new Map(seats.map((s) => [s.id, s])), [seats]);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // Picking a seat on the map opens the holder's block (adjusted during render, not in an effect).
+  const [lastHighlightedSeatId, setLastHighlightedSeatId] = useState<
+    string | null
+  >(null);
+  if (highlightedSeatId !== lastHighlightedSeatId) {
+    setLastHighlightedSeatId(highlightedSeatId);
+    const match = highlightedSeatId
+      ? reservations.find((r) => r.seatId === highlightedSeatId)
+      : undefined;
+    if (match) {
+      const groupKey =
+        match.status === "BLOCKED"
+          ? t("seatStatus.blocked")
+          : (match.user?.username ?? UNKNOWN_USER_KEY);
+      setExpandedGroups((prev) => new Set(prev).add(groupKey));
+    }
+  }
+
+  useEffect(() => {
+    if (!highlightedSeatId) return;
+    const frame = requestAnimationFrame(() =>
+      rootRef.current
+        ?.querySelector(`[data-seat-id="${CSS.escape(highlightedSeatId)}"]`)
+        ?.scrollIntoView({ behavior: "smooth", block: "nearest" }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [highlightedSeatId]);
 
   if (isLoading) {
     return <ReservationsTableSkeleton rowCount={6} />;
@@ -244,7 +273,7 @@ export function ReservationsTable({
     });
 
   return (
-    <div className="@container">
+    <div ref={rootRef} className="@container">
       <div
         className={cn(
           ROW_GRID,
@@ -356,7 +385,10 @@ export function ReservationsTable({
                     ) : (
                       <User className="h-4 w-4 shrink-0 text-primary" />
                     )}
-                    <span className="truncate text-sm font-semibold">
+                    <span
+                      className="truncate text-sm font-semibold"
+                      title={groupKey}
+                    >
                       {groupKey}
                     </span>
                     <Badge
@@ -425,6 +457,7 @@ export function ReservationsTable({
                   return (
                     <div
                       key={id}
+                      data-seat-id={seatId}
                       onClick={() => seatId && onSeatClick?.(seatId)}
                       className={cn(
                         ROW_GRID,
@@ -445,7 +478,10 @@ export function ReservationsTable({
                             {seat?.seatNumber ?? "—"}
                           </span>
                           {seat?.seatRow && (
-                            <span className="whitespace-nowrap text-xs text-muted-foreground">
+                            <span
+                              className="whitespace-nowrap text-xs text-muted-foreground"
+                              title={seat.seatRow}
+                            >
                               ({seat.seatRow})
                             </span>
                           )}
