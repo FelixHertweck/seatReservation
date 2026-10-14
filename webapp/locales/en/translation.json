@@ -1739,7 +1739,7 @@
       "exportPdf": "Export PDF",
       "empty": "No reservations for this event yet.",
       "tableUser": "User",
-      "tableSeat": "Seat",
+      "latest": "latest",
       "tableStatus": "Status",
       "tableDate": "Date",
       "deleteConfirm": "Delete {{count}} reservation(s)?",
