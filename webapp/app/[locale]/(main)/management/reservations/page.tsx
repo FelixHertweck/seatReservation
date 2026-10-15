@@ -23,6 +23,16 @@ import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/custom-ui/button";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/custom-ui/alert-dialog";
+import {
   Drawer,
   DrawerContent,
   DrawerHeader,
@@ -166,6 +176,10 @@ export default function ManagementReservationsPage() {
   const [highlightedSeatId, setHighlightedSeatId] = useState<string | null>(
     null,
   );
+  const [pendingDelete, setPendingDelete] = useState<{
+    ids: string[];
+    bulk: boolean;
+  } | null>(null);
   const [exportingFormat, setExportingFormat] = useState<"csv" | "pdf" | null>(
     null,
   );
@@ -267,6 +281,13 @@ export default function ManagementReservationsPage() {
         }),
       );
     }
+  };
+
+  // In view mode a click on an occupied seat shows its reservation in the list.
+  const handleSeatInspect = (seat: SeatDto) => {
+    setHighlightedSeatId((prev) =>
+      prev === seat.id ? null : (seat.id ?? null),
+    );
   };
 
   const handleSeatChipClick = (seatId: string) => {
@@ -387,32 +408,28 @@ export default function ManagementReservationsPage() {
     }
   };
 
-  const handleDeleteSelected = async () => {
+  const handleDeleteSelected = () => {
     if (selectedIds.size === 0) return;
-    if (
-      confirm(
-        t("management.reservations.deleteConfirm", {
-          count: selectedIds.size,
-        }),
-      )
-    ) {
+    setPendingDelete({ ids: [...selectedIds], bulk: true });
+  };
+
+  const handleDeleteIds = (ids: string[]) => {
+    if (ids.length === 0) return;
+    setPendingDelete({ ids, bulk: false });
+  };
+
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    const { ids, bulk } = pendingDelete;
+    setPendingDelete(null);
+    if (bulk) {
       setIsDeletingSelected(true);
       try {
-        await deleteReservations([...selectedIds]);
+        await deleteReservations(ids);
         setSelectedIds(new Set());
       } finally {
         setIsDeletingSelected(false);
       }
-    }
-  };
-
-  const handleDeleteIds = async (ids: string[]) => {
-    if (ids.length === 0) return;
-    if (
-      !confirm(
-        t("management.reservations.deleteConfirm", { count: ids.length }),
-      )
-    ) {
       return;
     }
     setDeletingIds((prev) => new Set([...prev, ...ids]));
@@ -533,6 +550,7 @@ export default function ManagementReservationsPage() {
         <div className="min-h-0 flex-1">
           <SeatMap
             readonly={!isInteractive}
+            inspectable
             seats={eventSeats}
             seatStatuses={seatStatuses}
             markers={markers}
@@ -540,7 +558,7 @@ export default function ManagementReservationsPage() {
             selectedSeats={isInteractive ? selectedSeats : []}
             userReservedSeats={userReservedSeats}
             highlightedSeatId={highlightedSeatId}
-            onSeatSelect={isInteractive ? handleSeatToggle : () => {}}
+            onSeatSelect={isInteractive ? handleSeatToggle : handleSeatInspect}
             isLoading={isSeatsLoading}
           />
         </div>
@@ -878,6 +896,35 @@ export default function ManagementReservationsPage() {
         userCount={(bulkResendRetryIds ?? selectedUserIds).length}
         onSend={handleBulkResend}
       />
+      <AlertDialog
+        open={!!pendingDelete}
+        onOpenChange={(open) => {
+          if (!open) setPendingDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("management.reservations.deleteConfirmTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("management.reservations.deleteConfirmDescription", {
+                count: pendingDelete?.ids.length ?? 0,
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t("common.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <ReservationConfirmationModal
         open={!!confirmationUser}
         onOpenChange={(open) => !open && setConfirmationUser(null)}

@@ -971,7 +971,6 @@
     "selectEventPlaceholder": "Select an event",
     "seatsToBlockTitle": "Seats to Block:",
     "cancelButton": "Cancel",
-    "blockingButton": "Blocking...",
     "blockSeatsButton": "Block {{count}} Seat(s)",
     "blockSeatButton": "Block Seat"
   },
@@ -1132,7 +1131,6 @@
     "deductAllowanceLabel": "Deduct from user allowance",
     "validationError": "Please select an event, user, and at least one seat",
     "cancelButton": "Cancel",
-    "creatingButton": "Creating...",
     "createButton": "Create"
   },
   "reservationManagement": {
@@ -1430,7 +1428,6 @@
     "overview": {
       "title": "Management Dashboard",
       "description": "Overview of your locations, events, reservations and allowances.",
-      "comingSoon": "Coming soon.",
       "stats": {
         "occupancy": "Occupancy",
         "occupancySub": "{{reserved}} of {{capacity}} seats (upcoming events)",
@@ -1738,10 +1735,12 @@
       "exportPdf": "Export PDF",
       "empty": "No reservations for this event yet.",
       "tableUser": "User",
-      "tableSeat": "Seat",
+      "tableUser": "User",
+      "latest": "latest",
       "tableStatus": "Status",
       "tableDate": "Date",
-      "deleteConfirm": "Delete {{count}} reservation(s)?",
+      "deleteConfirmTitle": "Delete reservations",
+      "deleteConfirmDescription": "Do you really want to delete {{count}} reservation(s)? This action cannot be undone.",
       "deleteOne": "Delete reservation",
       "deleteUserGroup": "Delete all reservations for this user",
       "createSuccess": "Reservation created.",

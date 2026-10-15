@@ -806,7 +806,6 @@
     "selectEventPlaceholder": "Event auswählen",
     "seatsToBlockTitle": "Zu blockierende Plätze:",
     "cancelButton": "Abbrechen",
-    "blockingButton": "Blockiere...",
     "blockSeatsButton": "Blockiere {{count}} Plätze",
     "blockSeatButton": "Blockiere diesen Platz"
   },
@@ -967,7 +966,6 @@
     "deductAllowanceLabel": "Vom Benutzerkontingent abziehen",
     "validationError": "Bitte wählen Sie eine Veranstaltung, einen Benutzer und mindestens einen Platz aus",
     "cancelButton": "Abbrechen",
-    "creatingButton": "Erstelle...",
     "createButton": "Erstellen"
   },
   "reservationManagement": {
@@ -1430,7 +1428,6 @@
     "overview": {
       "title": "Management-Dashboard",
       "description": "Übersicht über Locations, Veranstaltungen, Reservierungen und Kontingente.",
-      "comingSoon": "Demnächst verfügbar.",
       "stats": {
         "occupancy": "Auslastung",
         "occupancySub": "{{reserved}} von {{capacity}} Plätzen (kommende Events)",
@@ -1738,10 +1735,12 @@
       "exportPdf": "PDF exportieren",
       "empty": "Noch keine Reservierungen für diese Veranstaltung.",
       "tableUser": "Benutzer",
-      "tableSeat": "Sitz",
+      "tableUser": "Nutzer",
+      "latest": "zuletzt",
       "tableStatus": "Status",
       "tableDate": "Datum",
-      "deleteConfirm": "{{count}} Reservierung(en) löschen?",
+      "deleteConfirmTitle": "Reservierungen löschen",
+      "deleteConfirmDescription": "Möchtest du {{count}} Reservierung(en) wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
       "deleteOne": "Reservierung löschen",
       "deleteUserGroup": "Alle Reservierungen dieses Nutzers löschen",
       "createSuccess": "Reservierung erstellt.",
