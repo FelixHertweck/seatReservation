@@ -35,6 +35,7 @@ interface SeatMapProps {
   selectedSeats: SeatDto[];
   userReservedSeats?: SeatDto[];
   highlightedSeatId?: string | null;
+  pendingSeatIds?: ReadonlySet<string>;
   onSeatSelect: (seat: SeatDto) => void;
   readonly?: boolean;
   isLoading?: boolean;
@@ -48,6 +49,7 @@ const SeatComponent = React.memo(
     clickable,
     highlighted,
     selected,
+    pending,
     showSeatNumber,
     popDelayMs,
     onSeatSelect,
@@ -57,6 +59,7 @@ const SeatComponent = React.memo(
     clickable: boolean;
     highlighted: boolean;
     selected: boolean;
+    pending: boolean;
     showSeatNumber: boolean;
     popDelayMs: number;
     onSeatSelect: (seat: SeatDto) => void;
@@ -101,6 +104,7 @@ const SeatComponent = React.memo(
           className={cn(
             "w-full h-full rounded-full flex items-center justify-center text-white text-xs font-medium transition-colors duration-300 ease-out",
             seatColor,
+            pending && "animate-seat-peek",
             selected &&
               "ring-2 ring-white/80 dark:ring-white/50 shadow-md shadow-black/25",
           )}
@@ -117,6 +121,7 @@ const SeatComponent = React.memo(
       prevProps.clickable === nextProps.clickable &&
       prevProps.highlighted === nextProps.highlighted &&
       prevProps.selected === nextProps.selected &&
+      prevProps.pending === nextProps.pending &&
       prevProps.showSeatNumber === nextProps.showSeatNumber &&
       prevProps.popDelayMs === nextProps.popDelayMs &&
       prevProps.onSeatSelect === nextProps.onSeatSelect
@@ -348,6 +353,7 @@ export function SeatMap({
   selectedSeats,
   userReservedSeats = [],
   highlightedSeatId = null,
+  pendingSeatIds,
   onSeatSelect,
   readonly = false,
   isLoading = false,
@@ -523,6 +529,9 @@ export function SeatMap({
     (seat: SeatDto | undefined) => {
       if (!seat) return "transparent";
 
+      // Stay green while the cart request is in flight; turns blue once confirmed.
+      if (pendingSeatIds?.has(seat.id ?? "")) return SEAT_STATUS_BG.AVAILABLE;
+
       const isSelected = selectedSeatIds.has(seat.id);
       if (isSelected) return SEAT_STATUS_BG.SELECTED;
 
@@ -549,7 +558,7 @@ export function SeatMap({
         return SEAT_STATUS_BG[getSeatVisualStatus(seatStatus)];
       }
     },
-    [selectedSeatIds, userReservedSeatIds, seatStatuses],
+    [selectedSeatIds, userReservedSeatIds, seatStatuses, pendingSeatIds],
   );
 
   const canSelectSeat = useCallback(
@@ -589,6 +598,7 @@ export function SeatMap({
         const clickable = canSelectSeat(seat);
         const highlighted = !!seat && seat.id === highlightedSeatId;
         const selected = !!seat && selectedSeatIds.has(seat.id);
+        const pending = !!seat && !!pendingSeatIds?.has(seat.id ?? "");
 
         return {
           key: `${x}-${y}`,
@@ -597,6 +607,7 @@ export function SeatMap({
           clickable,
           highlighted,
           selected,
+          pending,
           popDelayMs: Math.min(x * 18 + y * 26, 480),
         };
       }),
@@ -609,6 +620,7 @@ export function SeatMap({
     canSelectSeat,
     highlightedSeatId,
     selectedSeatIds,
+    pendingSeatIds,
   ]);
 
   const displayFlags = useMemo(
@@ -627,6 +639,7 @@ export function SeatMap({
         clickable,
         highlighted,
         selected,
+        pending,
         popDelayMs,
       }) => (
         <SeatComponent
@@ -636,6 +649,7 @@ export function SeatMap({
           clickable={clickable}
           highlighted={highlighted}
           selected={selected}
+          pending={pending}
           popDelayMs={popDelayMs}
           showSeatNumber={displayFlags.showSeatNumber}
           onSeatSelect={onSeatSelect}

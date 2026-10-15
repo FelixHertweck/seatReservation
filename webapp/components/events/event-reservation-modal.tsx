@@ -76,6 +76,9 @@ export function EventReservationModal({
   const [highlightedSeatId, setHighlightedSeatId] = useState<string | null>(
     null,
   );
+  const [pendingSeatIds, setPendingSeatIds] = useState<ReadonlySet<string>>(
+    new Set(),
+  );
   const [isSeatDrawerOpen, setIsSeatDrawerOpen] = useState(false);
   const [showEmailRequiredDialog, setShowEmailRequiredDialog] = useState(false);
 
@@ -176,11 +179,18 @@ export function EventReservationModal({
     if (selectedSeats.length >= availableSeats) return;
 
     setSelectedSeats((prev) => [...prev, seat]);
+    setPendingSeatIds((prev) => new Set(prev).add(seat.id!));
     try {
       const entry = await addSeatToCart(event.id, seat.id);
       scheduleExpiry(seat.id, entry.expiresAt);
     } catch {
       setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
+    } finally {
+      setPendingSeatIds((prev) => {
+        const next = new Set(prev);
+        next.delete(seat.id!);
+        return next;
+      });
     }
   };
 
@@ -274,6 +284,7 @@ export function EventReservationModal({
                 selectedSeats={selectedSeats}
                 userReservedSeats={userReservedSeats}
                 highlightedSeatId={highlightedSeatId}
+                pendingSeatIds={pendingSeatIds}
                 onSeatSelect={handleSeatSelect}
                 isLoading={
                   !location ||
