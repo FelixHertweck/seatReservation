@@ -204,7 +204,8 @@
       "description": "An error occurred while logging in. Please try again.",
       "accountLocked": "Account locked until {{time}} ({{duration}})",
       "tooManyAttemptsDescription": "Too many failed login attempts. Your account has been temporarily locked.",
-      "emailNotAllowed": "Your username is not your email address. Please enter your username."
+      "emailNotAllowed": "Your username is not your email address. Please enter your username.",
+      "invalidUsernameChars": "The username may only contain letters (no umlauts), digits and . _ -"
     },
     "forgotPassword": "Forgot Password?",
     "forgotUsername": "Forgot Username?"

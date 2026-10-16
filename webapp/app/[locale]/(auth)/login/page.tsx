@@ -121,6 +121,8 @@ export default function LoginPage() {
   };
 
   const isEmailUsername = username.includes("@");
+  const hasInvalidUsernameChars =
+    !isEmailUsername && /[^a-zA-Z0-9._-]/.test(username.trim());
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,6 +131,10 @@ export default function LoginPage() {
     }
     if (isEmailUsername) {
       setLoginError(t("login.error.emailNotAllowed"));
+      return;
+    }
+    if (hasInvalidUsernameChars) {
+      setLoginError(t("login.error.invalidUsernameChars"));
       return;
     }
     setIsLoadingForm(true);
@@ -166,6 +172,10 @@ export default function LoginPage() {
   const handlePasskeyLogin = async () => {
     if (username.trim() && isEmailUsername) {
       setLoginError(t("login.error.emailNotAllowed"));
+      return;
+    }
+    if (hasInvalidUsernameChars) {
+      setLoginError(t("login.error.invalidUsernameChars"));
       return;
     }
     setIsPasskeyLoading(true);
@@ -355,7 +365,7 @@ export default function LoginPage() {
                   setLoginError(null);
                 }}
                 className={
-                  isEmailUsername
+                  isEmailUsername || hasInvalidUsernameChars
                     ? "border-destructive focus-visible:ring-destructive"
                     : ""
                 }
@@ -366,6 +376,11 @@ export default function LoginPage() {
               {isEmailUsername && (
                 <p className="text-xs text-destructive mt-1">
                   {t("login.error.emailNotAllowed")}
+                </p>
+              )}
+              {hasInvalidUsernameChars && (
+                <p className="text-xs text-destructive mt-1">
+                  {t("login.error.invalidUsernameChars")}
                 </p>
               )}
             </div>
@@ -403,6 +418,7 @@ export default function LoginPage() {
                 isRetryAfterActive ||
                 !!loginError ||
                 isEmailUsername ||
+                hasInvalidUsernameChars ||
                 !altchaPayload
               }
             >
