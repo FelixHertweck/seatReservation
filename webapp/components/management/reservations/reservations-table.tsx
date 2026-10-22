@@ -1,7 +1,10 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   Ban,
   ChevronDown,
   ChevronRight,
@@ -15,14 +18,6 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/custom-ui/button";
 import { ReservationsTableSkeleton } from "@/components/management/reservations/reservations-table-skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   ReservationStatus,
   type ReservationResponseDto,
@@ -52,6 +47,71 @@ interface ReservationsTableProps {
 
 const UNKNOWN_USER_KEY = "—";
 
+// Shared column layout so user headers and reservation rows line up.
+const ROW_GRID =
+  "grid grid-cols-[2.5rem_minmax(0,1fr)_auto] @xl:grid-cols-[2.5rem_minmax(0,1fr)_7rem_11rem_6rem] items-center gap-x-2";
+
+type SortKey = "user" | "status" | "date";
+type SortDirection = "asc" | "desc";
+
+const timeOf = (r: ReservationResponseDto) =>
+  r.reservationDateTime ? new Date(r.reservationDateTime).getTime() : 0;
+
+function ReservationStatusBadge({
+  reservation,
+}: Readonly<{ reservation: ReservationResponseDto }>) {
+  const t = useT();
+  const visualStatus = getSeatVisualStatus(
+    reservation.status,
+    reservation.liveStatus,
+  );
+  return (
+    <Badge
+      className={cn(
+        "whitespace-nowrap px-2 py-0.5 text-xs font-medium",
+        SEAT_STATUS_BG[visualStatus],
+        SEAT_STATUS_TEXT[visualStatus],
+      )}
+    >
+      {t(SEAT_STATUS_LABEL_KEY[visualStatus])}
+    </Badge>
+  );
+}
+
+function SortableHead({
+  label,
+  sortKey,
+  active,
+  direction,
+  onSort,
+  className,
+}: Readonly<{
+  label: string;
+  sortKey: SortKey;
+  active: SortKey;
+  direction: SortDirection;
+  onSort: (key: SortKey) => void;
+  className?: string;
+}>) {
+  const isActive = active === sortKey;
+  let Icon = ArrowUpDown;
+  if (isActive) Icon = direction === "asc" ? ArrowUp : ArrowDown;
+  return (
+    <div className={className}>
+      <button
+        type="button"
+        onClick={() => onSort(sortKey)}
+        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+      >
+        {label}
+        <Icon
+          className={cn("h-3.5 w-3.5", !isActive && "text-muted-foreground/50")}
+        />
+      </button>
+    </div>
+  );
+}
+
 export function ReservationsTable({
   reservations,
   seats = [],
@@ -68,8 +128,39 @@ export function ReservationsTable({
 }: Readonly<ReservationsTableProps>) {
   const t = useT();
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [sortKey, setSortKey] = useState<SortKey>("user");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
   const seatById = useMemo(() => new Map(seats.map((s) => [s.id, s])), [seats]);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // Picking a seat on the map opens the holder's block (adjusted during render, not in an effect).
+  const [lastHighlightedSeatId, setLastHighlightedSeatId] = useState<
+    string | null
+  >(null);
+  if (highlightedSeatId !== lastHighlightedSeatId) {
+    setLastHighlightedSeatId(highlightedSeatId);
+    const match = highlightedSeatId
+      ? reservations.find((r) => r.seatId === highlightedSeatId)
+      : undefined;
+    if (match) {
+      const groupKey =
+        match.status === "BLOCKED"
+          ? t("seatStatus.blocked")
+          : (match.user?.username ?? UNKNOWN_USER_KEY);
+      setExpandedGroups((prev) => new Set(prev).add(groupKey));
+    }
+  }
+
+  useEffect(() => {
+    if (!highlightedSeatId) return;
+    const frame = requestAnimationFrame(() =>
+      rootRef.current
+        ?.querySelector(`[data-seat-id="${CSS.escape(highlightedSeatId)}"]`)
+        ?.scrollIntoView({ behavior: "smooth", block: "nearest" }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [highlightedSeatId]);
 
   if (isLoading) {
     return <ReservationsTableSkeleton rowCount={6} />;
@@ -82,6 +173,28 @@ export function ReservationsTable({
       </p>
     );
   }
+
+  const handleSort = (key: SortKey) => {
+    if (key === sortKey) {
+      setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDirection("asc");
+    }
+  };
+
+  const statusLabelOf = (r: ReservationResponseDto) =>
+    t(SEAT_STATUS_LABEL_KEY[getSeatVisualStatus(r.status, r.liveStatus)]);
+
+  const seatLabelOf = (r: ReservationResponseDto) => {
+    const seat = r.seatId ? seatById.get(r.seatId) : undefined;
+    return `${seat?.seatRow ?? ""} ${seat?.seatNumber ?? ""}`.trim();
+  };
+
+  const compareText = (a: string, b: string) =>
+    a.localeCompare(b, undefined, { sensitivity: "base", numeric: true });
+
+  const direction = sortDirection === "asc" ? 1 : -1;
 
   const toggleOne = (id: string) => {
     const next = new Set(selectedIds);
@@ -120,34 +233,104 @@ export function ReservationsTable({
       groups.set(key, [reservation]);
     }
   }
-  const sortedGroupKeys = [...groups.keys()].sort((a, b) =>
-    a.localeCompare(b, undefined, { sensitivity: "base" }),
-  );
+
+  // A group is represented by its most recent reservation (status + date columns).
+  const latestOf = new Map<string, ReservationResponseDto>();
+  for (const [key, list] of groups) {
+    latestOf.set(
+      key,
+      list.reduce((latest, r) => (timeOf(r) > timeOf(latest) ? r : latest)),
+    );
+  }
+
+  const compareSeats = (a: ReservationResponseDto, b: ReservationResponseDto) =>
+    compareText(seatLabelOf(a), seatLabelOf(b));
+
+  const sortedGroupKeys = [...groups.keys()].sort((a, b) => {
+    let result = 0;
+    if (sortKey === "status") {
+      result = compareText(
+        statusLabelOf(latestOf.get(a)!),
+        statusLabelOf(latestOf.get(b)!),
+      );
+    } else if (sortKey === "date") {
+      result = timeOf(latestOf.get(a)!) - timeOf(latestOf.get(b)!);
+    }
+    if (result === 0) result = compareText(a, b);
+    return result * direction;
+  });
+
+  const sortRows = (list: ReservationResponseDto[]) =>
+    [...list].sort((a, b) => {
+      let result = 0;
+      if (sortKey === "status") {
+        result = compareText(statusLabelOf(a), statusLabelOf(b));
+      } else if (sortKey === "date") {
+        result = timeOf(a) - timeOf(b);
+      }
+      if (result === 0) result = compareSeats(a, b);
+      return result * direction;
+    });
 
   return (
-    <Table className="min-w-[500px]">
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-10 pl-3 pr-1">
-            <Checkbox
-              checked={
-                reservations.length > 0 &&
-                selectedIds.size === reservations.length
-              }
-              onCheckedChange={onToggleAll}
-            />
-          </TableHead>
-          <TableHead>{t("management.reservations.tableSeat")}</TableHead>
-          <TableHead className="w-28">
-            {t("management.reservations.tableStatus")}
-          </TableHead>
-          <TableHead className="w-36">
-            {t("management.reservations.tableDate")}
-          </TableHead>
-          <TableHead className="w-20 py-2 pl-2 pr-4 text-right" />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+    <div ref={rootRef} className="@container">
+      <div
+        className={cn(
+          ROW_GRID,
+          "sticky top-0 z-10 border-b bg-card py-2 text-xs font-medium text-muted-foreground",
+        )}
+      >
+        <Checkbox
+          className="ml-3"
+          checked={
+            reservations.length > 0 && selectedIds.size === reservations.length
+          }
+          onCheckedChange={onToggleAll}
+        />
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <SortableHead
+            label={t("management.reservations.tableUser")}
+            sortKey="user"
+            active={sortKey}
+            direction={sortDirection}
+            onSort={handleSort}
+          />
+          <SortableHead
+            label={t("management.reservations.tableStatus")}
+            sortKey="status"
+            active={sortKey}
+            direction={sortDirection}
+            onSort={handleSort}
+            className="@xl:hidden"
+          />
+          <SortableHead
+            label={t("management.reservations.tableDate")}
+            sortKey="date"
+            active={sortKey}
+            direction={sortDirection}
+            onSort={handleSort}
+            className="@xl:hidden"
+          />
+        </div>
+        <SortableHead
+          label={t("management.reservations.tableStatus")}
+          sortKey="status"
+          active={sortKey}
+          direction={sortDirection}
+          onSort={handleSort}
+          className="hidden @xl:block"
+        />
+        <SortableHead
+          label={t("management.reservations.tableDate")}
+          sortKey="date"
+          active={sortKey}
+          direction={sortDirection}
+          onSort={handleSort}
+          className="hidden @xl:block"
+        />
+        <span />
+      </div>
+      <div className="space-y-3 p-3">
         {sortedGroupKeys.map((groupKey) => {
           const groupReservations = groups.get(groupKey)!;
           const groupIds = groupReservations.map((r) => r.id ?? "");
@@ -157,6 +340,11 @@ export function ReservationsTable({
           const isCollapsed = !expandedGroups.has(groupKey);
           const isBlockedGroup =
             groupReservations[0]?.status === ReservationStatus.BLOCKED;
+          const latest = latestOf.get(groupKey)!;
+          const latestDate = formatDateTime(latest.reservationDateTime);
+          const latestText = latestDate
+            ? `${t("management.reservations.latest")} ${latestDate.date} ${latestDate.time}`
+            : "—";
           const groupUser = groupReservations.find((r) => r.user?.id)?.user;
           let groupChecked: boolean | "indeterminate" = false;
           if (allSelected) {
@@ -166,15 +354,25 @@ export function ReservationsTable({
           }
 
           return (
-            <Fragment key={groupKey}>
-              <TableRow className="bg-muted/40 hover:bg-muted/50 transition-colors border-b">
-                <TableCell colSpan={4} className="py-2.5 pl-3 pr-2">
-                  <div className="flex items-center gap-2">
+            <div
+              key={groupKey}
+              className="overflow-hidden rounded-lg border bg-card shadow-xs"
+            >
+              <div className={cn(ROW_GRID, "bg-muted/60 py-2.5")}>
+                <Checkbox
+                  className="ml-3"
+                  checked={groupChecked}
+                  onCheckedChange={() =>
+                    toggleGroupSelected(groupIds, allSelected)
+                  }
+                />
+                <div className="min-w-0">
+                  <div className="flex min-w-0 items-center gap-2">
                     <button
                       type="button"
                       onClick={() => toggleGroupCollapsed(groupKey)}
                       aria-label={groupKey}
-                      className="shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                      className="shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                     >
                       {isCollapsed ? (
                         <ChevronRight className="h-4 w-4" />
@@ -182,20 +380,17 @@ export function ReservationsTable({
                         <ChevronDown className="h-4 w-4" />
                       )}
                     </button>
-                    <Checkbox
-                      checked={groupChecked}
-                      onCheckedChange={() =>
-                        toggleGroupSelected(groupIds, allSelected)
-                      }
-                    />
-                    <div className="flex items-center gap-1.5 font-medium text-sm">
-                      {isBlockedGroup ? (
-                        <Ban className="h-3.5 w-3.5 text-muted-foreground" />
-                      ) : (
-                        <User className="h-3.5 w-3.5 text-muted-foreground" />
-                      )}
-                      <span>{groupKey}</span>
-                    </div>
+                    {isBlockedGroup ? (
+                      <Ban className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    ) : (
+                      <User className="h-4 w-4 shrink-0 text-primary" />
+                    )}
+                    <span
+                      className="truncate text-sm font-semibold"
+                      title={groupKey}
+                    >
+                      {groupKey}
+                    </span>
                     <Badge
                       variant="secondary"
                       className="px-1.5 py-0 text-xs font-normal"
@@ -203,102 +398,108 @@ export function ReservationsTable({
                       {groupReservations.length}
                     </Badge>
                   </div>
-                </TableCell>
-                <TableCell className="py-2.5 pl-2 pr-4 text-right">
-                  <div className="flex items-center justify-end gap-1.5">
-                    {!isBlockedGroup &&
-                      !groupReservations.some((r) => r.boxOffice) &&
-                      groupUser?.id &&
-                      onViewConfirmation && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          title={t("management.reservations.viewConfirmation")}
-                          aria-label={t(
-                            "management.reservations.viewConfirmation",
-                          )}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onViewConfirmation(
-                              groupUser.id!.toString(),
-                              groupKey,
-                            );
-                          }}
-                        >
-                          <Mail className="h-4 w-4" />
-                        </Button>
-                      )}
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      aria-label={t("management.reservations.deleteUserGroup")}
-                      isLoading={groupIds.some((id) => deletingIds.has(id))}
-                      onClick={() => onDeleteGroup(groupIds)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 pl-8 @xl:hidden">
+                    <ReservationStatusBadge reservation={latest} />
+                    <span className="text-xs text-muted-foreground tabular-nums">
+                      {latestText}
+                    </span>
                   </div>
-                </TableCell>
-              </TableRow>
+                </div>
+                <div className="hidden @xl:block">
+                  <ReservationStatusBadge reservation={latest} />
+                </div>
+                <div className="hidden text-xs text-muted-foreground whitespace-nowrap tabular-nums @xl:block">
+                  {latestText}
+                </div>
+                <div className="flex items-center justify-end gap-1.5 pr-2 @xl:pr-4">
+                  {!isBlockedGroup &&
+                    !groupReservations.some((r) => r.boxOffice) &&
+                    groupUser?.id &&
+                    onViewConfirmation && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        title={t("management.reservations.viewConfirmation")}
+                        aria-label={t(
+                          "management.reservations.viewConfirmation",
+                        )}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onViewConfirmation(
+                            groupUser.id!.toString(),
+                            groupKey,
+                          );
+                        }}
+                      >
+                        <Mail className="h-4 w-4" />
+                      </Button>
+                    )}
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    aria-label={t("management.reservations.deleteUserGroup")}
+                    isLoading={groupIds.some((id) => deletingIds.has(id))}
+                    onClick={() => onDeleteGroup(groupIds)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
               {!isCollapsed &&
-                groupReservations.map((reservation) => {
+                sortRows(groupReservations).map((reservation) => {
                   const date = formatDateTime(reservation.reservationDateTime);
+                  const dateText = date ? `${date.date} ${date.time}` : "—";
                   const id = reservation.id ?? "";
                   const seatId = reservation.seatId;
                   const seat = seatId ? seatById.get(seatId) : undefined;
                   const isHighlighted =
                     !!seatId && seatId === highlightedSeatId;
                   return (
-                    <TableRow
+                    <div
                       key={id}
+                      data-seat-id={seatId}
                       onClick={() => seatId && onSeatClick?.(seatId)}
                       className={cn(
+                        ROW_GRID,
+                        "border-t py-2 hover:bg-muted/30 transition-colors",
                         seatId && "cursor-pointer",
                         isHighlighted && "bg-primary/10 hover:bg-primary/15",
-                        "hover:bg-muted/30 transition-colors",
                       )}
                     >
-                      <TableCell className="py-2 pl-9 pr-1">
-                        <Checkbox
-                          checked={selectedIds.has(id)}
-                          onCheckedChange={() => toggleOne(id)}
-                        />
-                      </TableCell>
-                      <TableCell className="py-2 px-3">
+                      <Checkbox
+                        className="ml-3"
+                        checked={selectedIds.has(id)}
+                        onClick={(e) => e.stopPropagation()}
+                        onCheckedChange={() => toggleOne(id)}
+                      />
+                      <div className="min-w-0 @xl:pl-9">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-medium text-sm">
+                          <span className="text-sm font-medium">
                             {seat?.seatNumber ?? "—"}
                           </span>
                           {seat?.seatRow && (
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            <span
+                              className="whitespace-nowrap text-xs text-muted-foreground"
+                              title={seat.seatRow}
+                            >
                               ({seat.seatRow})
                             </span>
                           )}
                         </div>
-                      </TableCell>
-                      <TableCell className="py-2 px-3">
-                        {(() => {
-                          const visualStatus = getSeatVisualStatus(
-                            reservation.status,
-                            reservation.liveStatus,
-                          );
-                          return (
-                            <Badge
-                              className={cn(
-                                "whitespace-nowrap px-2 py-0.5 text-xs font-medium",
-                                SEAT_STATUS_BG[visualStatus],
-                                SEAT_STATUS_TEXT[visualStatus],
-                              )}
-                            >
-                              {t(SEAT_STATUS_LABEL_KEY[visualStatus])}
-                            </Badge>
-                          );
-                        })()}
-                      </TableCell>
-                      <TableCell className="py-2 px-3 text-xs text-muted-foreground whitespace-nowrap tabular-nums">
-                        {date ? `${date.date} ${date.time}` : "—"}
-                      </TableCell>
-                      <TableCell className="py-2 pl-2 pr-4 text-right">
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 @xl:hidden">
+                          <ReservationStatusBadge reservation={reservation} />
+                          <span className="text-xs text-muted-foreground tabular-nums">
+                            {dateText}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="hidden @xl:block">
+                        <ReservationStatusBadge reservation={reservation} />
+                      </div>
+                      <div className="hidden text-xs text-muted-foreground whitespace-nowrap tabular-nums @xl:block">
+                        {dateText}
+                      </div>
+                      <div className="flex justify-end pr-2 @xl:pr-4">
                         <Button
                           variant="destructive"
                           size="sm"
@@ -311,14 +512,14 @@ export function ReservationsTable({
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                    </div>
                   );
                 })}
-            </Fragment>
+            </div>
           );
         })}
-      </TableBody>
-    </Table>
+      </div>
+    </div>
   );
 }
