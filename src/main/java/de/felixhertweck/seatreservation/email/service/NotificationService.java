@@ -330,6 +330,9 @@ public class NotificationService {
                         user.getFirstname();
                         user.getLastname();
                     }
+                    if (reservation.getCheckInToken() != null) {
+                        reservation.getCheckInToken().getToken();
+                    }
                     if (reservation.getSeat() != null) {
                         // Force load seat fields
                         reservation.getSeat().getSeatNumber();
