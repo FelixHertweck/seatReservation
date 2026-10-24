@@ -1082,18 +1082,8 @@ public class ReservationEmailContent {
                         .data(KEY_USER_NAME, user.getUsername())
                         .data(KEY_FULL_NAME, fullName(user))
                         .data(KEY_EVENT_NAME, event.getName())
-                        .data(
-                                "eventDate",
-                                event.getStartTime()
-                                        .atZone(ZoneId.systemDefault())
-                                        .toLocalDate()
-                                        .toString())
-                        .data(
-                                "eventTime",
-                                event.getStartTime()
-                                        .atZone(ZoneId.systemDefault())
-                                        .toLocalTime()
-                                        .toString())
+                        .data(KEY_EVENT_START_TIME, formatDateTime(event.getStartTime()))
+                        .data(KEY_EVENT_END_TIME, formatDateTime(event.getEndTime()))
                         .data(KEY_EVENT_LOCATION, event.getEventLocation().getName())
                         .data(KEY_SEATS, seats)
                         .data(KEY_ENTRANCE_INFO, entranceInfo)
@@ -1133,18 +1123,8 @@ public class ReservationEmailContent {
                 managerExportTemplate
                         .data(KEY_FULL_NAME, fullName(manager))
                         .data(KEY_EVENT_NAME, event.getName())
-                        .data(
-                                "eventDate",
-                                event.getStartTime()
-                                        .atZone(ZoneId.systemDefault())
-                                        .toLocalDate()
-                                        .toString())
-                        .data(
-                                "eventTime",
-                                event.getStartTime()
-                                        .atZone(ZoneId.systemDefault())
-                                        .toLocalTime()
-                                        .toString())
+                        .data(KEY_EVENT_START_TIME, formatDateTime(event.getStartTime()))
+                        .data(KEY_EVENT_END_TIME, formatDateTime(event.getEndTime()))
                         .data(KEY_EVENT_LOCATION, event.getEventLocation().getName())
                         .data(KEY_CURRENT_YEAR, currentYear())
                         .render();
