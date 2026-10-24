@@ -48,6 +48,7 @@ import de.felixhertweck.seatreservation.management.service.EventService;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import io.quarkus.scheduler.Scheduled;
@@ -275,7 +276,10 @@ public class NotificationService {
         }
 
         LOG.debugf("Processing event: %s (ID: %s)", event.getName(), event.id);
-        List<Reservation> reservations = reservationService.findByEvent(event);
+        List<Reservation> reservations =
+                reservationService.findByEvent(event).stream()
+                        .filter(r -> r.getStatus() == ReservationStatus.RESERVED)
+                        .toList();
         LOG.debugf("Found %d reservations for event ID: %s.", reservations.size(), event.id);
 
         // Return early if no reservations, but let the orchestration method handle marking as sent

@@ -81,6 +81,7 @@ class NotificationServiceReminderDataTest {
     @Inject CheckInTokenRepository checkInTokenRepository;
 
     private UUID eventId;
+    private String checkInTokenValue;
 
     @BeforeEach
     @Transactional
@@ -123,7 +124,8 @@ class NotificationServiceReminderDataTest {
         eventRepository.persist(event);
         eventId = event.id;
 
-        CheckInToken token = new CheckInToken(attendee, event, CodeGenerator.generateRandomCode());
+        checkInTokenValue = CodeGenerator.generateRandomCode();
+        CheckInToken token = new CheckInToken(attendee, event, checkInTokenValue);
         checkInTokenRepository.persist(token);
 
         Reservation reservation =
@@ -169,5 +171,47 @@ class NotificationServiceReminderDataTest {
                     assertEquals(1, location.getAreas().size());
                     assertEquals(3, location.getAreas().get(0).getBoundary().size());
                 });
+    }
+
+    /**
+     * The reminder QR code reads the reservation's check-in token after the transaction has closed.
+     * Remove the check-in token traversal from eagerLoadEntities() to see this fail with
+     * LazyInitializationException.
+     */
+    @Test
+    void loadReminderData_CheckInTokenSurvivesOutsideTheTransaction() {
+        NotificationService.ReminderData data =
+                assertDoesNotThrow(() -> notificationService.loadReminderData(eventId));
+
+        assertDoesNotThrow(
+                () ->
+                        assertEquals(
+                                checkInTokenValue,
+                                data.reservations.getFirst().getCheckInToken().getToken()));
+    }
+
+    /**
+     * Blocked seats belong to a manager and have no check-in token; they must not get reminders.
+     */
+    @Test
+    @Transactional
+    void loadReminderData_ExcludesBlockedReservations() {
+        Event event = eventRepository.findById(eventId);
+        User manager = userRepository.findByUsernameOptional("manager").orElseThrow();
+        Seat blockedSeat = new Seat("A2", event.getEventLocation(), "A", 2, 2, null, null);
+        seatRepository.persist(blockedSeat);
+        reservationRepository.persist(
+                new Reservation(
+                        manager,
+                        event,
+                        blockedSeat,
+                        Instant.now(),
+                        ReservationStatus.BLOCKED,
+                        null));
+
+        NotificationService.ReminderData data = notificationService.loadReminderData(eventId);
+
+        assertEquals(1, data.reservations.size());
+        assertEquals(ReservationStatus.RESERVED, data.reservations.getFirst().getStatus());
     }
 }
