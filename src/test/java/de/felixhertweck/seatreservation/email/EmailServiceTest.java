@@ -648,7 +648,7 @@ class EmailServiceTest {
         assertEquals(1, sentMail.getAttachments().size());
         var attachment = sentMail.getAttachments().getFirst();
         assertEquals("reservations_" + event.id + ".csv", attachment.getName());
-        assertEquals("text/csv", attachment.getContentType());
+        assertEquals("application/octet-stream", attachment.getContentType());
         assertFalse(attachment.isInlineAttachment());
     }
 

@@ -1130,7 +1130,8 @@ public class ReservationEmailContent {
                         .render();
 
         EmailAttachment csvAttachment =
-                EmailAttachment.file("reservations_" + event.id + ".csv", "text/csv", csvData);
+                EmailAttachment.file(
+                        "reservations_" + event.id + ".csv", "application/octet-stream", csvData);
 
         emailSender.send(
                 new EventReservationsCsvNotification(
