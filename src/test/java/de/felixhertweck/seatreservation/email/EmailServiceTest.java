@@ -23,7 +23,6 @@ import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -286,11 +285,7 @@ class EmailServiceTest {
         assertTrue(sentMail.getHtml().contains(event.getName()));
         assertTrue(
                 sentMail.getHtml()
-                        .contains(
-                                event.getStartTime()
-                                        .atZone(ZoneId.systemDefault())
-                                        .toLocalDate()
-                                        .toString()));
+                        .contains(ReservationEmailContent.formatDateTime(event.getStartTime())));
         assertTrue(sentMail.getHtml().contains(event.getEventLocation().getName()));
         assertTrue(sentMail.getHtml().contains("<li>A1 (1) - Parkett</li>"));
         assertTrue(
