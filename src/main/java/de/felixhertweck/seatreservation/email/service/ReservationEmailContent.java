@@ -306,6 +306,9 @@ public class ReservationEmailContent {
      * @return the PNG bytes, or an empty array if the QR code could not be generated
      */
     public byte[] generateQrCodeImage(String content) {
+        if (content == null || content.isEmpty()) {
+            return new byte[0];
+        }
         try {
             return QRCodeImage.generateQrCodeImage(content, 400, 400);
         } catch (WriterException | IOException e) {
