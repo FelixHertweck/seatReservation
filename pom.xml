@@ -260,7 +260,7 @@
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-transcoder</artifactId>
-      <version>1.19</version>
+      <version>1.20</version>
       <exclusions>
         <!-- Ships a bundled pre-JAXP-1.3 javax.xml.parsers with a hardcoded fallback to the
              external org.apache.xerces.jaxp.SAXParserFactoryImpl provider, which isn't on the
