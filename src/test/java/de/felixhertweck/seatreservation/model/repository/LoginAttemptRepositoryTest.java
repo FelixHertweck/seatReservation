@@ -167,6 +167,17 @@ public class LoginAttemptRepositoryTest {
     }
 
     @Test
+    void testFailedAttemptsAreMatchedCaseInsensitively() {
+        Instant fiveMinutesAgo = Instant.now().minus(5, ChronoUnit.MINUTES);
+
+        loginAttemptRepository.recordAttempt("felix", false);
+        loginAttemptRepository.recordAttempt("FELIX", false);
+
+        assertEquals(2L, loginAttemptRepository.countFailedAttempts("Felix", fiveMinutesAgo));
+        assertNotNull(loginAttemptRepository.getOldestFailedAttemptTime("Felix", fiveMinutesAgo));
+    }
+
+    @Test
     void testGetOldestFailedAttemptTime_NoAttempts() {
         String username = "testuser";
         Instant fiveMinutesAgo = Instant.now().minus(5, ChronoUnit.MINUTES);
