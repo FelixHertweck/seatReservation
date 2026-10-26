@@ -76,6 +76,9 @@ export function EventReservationModal({
   const [highlightedSeatId, setHighlightedSeatId] = useState<string | null>(
     null,
   );
+  const [pendingSeatIds, setPendingSeatIds] = useState<
+    ReadonlySet<string | undefined>
+  >(new Set());
   const [isSeatDrawerOpen, setIsSeatDrawerOpen] = useState(false);
   const [showEmailRequiredDialog, setShowEmailRequiredDialog] = useState(false);
 
@@ -157,30 +160,39 @@ export function EventReservationModal({
   const isCancelled = event.status === "CANCELLED";
 
   const handleSeatSelect = async (seat: SeatDto) => {
-    if (!event.id || !seat.id || isCancelled) return;
+    const seatId = seat.id;
+    if (!event.id || !seatId || isCancelled) return;
+    if (pendingSeatIds.has(seatId)) return;
 
-    const isSelected = selectedSeats.some((s) => s.id === seat.id);
+    const isSelected = selectedSeats.some((s) => s.id === seatId);
 
     if (isSelected) {
-      clearExpiryTimer(seat.id);
-      setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
-      setHighlightedSeatId((prev) => (prev === seat.id ? null : prev));
-      removeSeatFromCart(event.id, seat.id).catch(() => {});
+      clearExpiryTimer(seatId);
+      setSelectedSeats((prev) => prev.filter((s) => s.id !== seatId));
+      setHighlightedSeatId((prev) => (prev === seatId ? null : prev));
+      removeSeatFromCart(event.id, seatId).catch(() => {});
       return;
     }
 
-    const seatStatus = findSeatStatus(seat.id, event.seatStatuses);
+    const seatStatus = findSeatStatus(seatId, event.seatStatuses);
     if (seatStatus) return;
 
     const availableSeats = event.reservationsAllowed ?? 0;
     if (selectedSeats.length >= availableSeats) return;
 
     setSelectedSeats((prev) => [...prev, seat]);
+    setPendingSeatIds((prev) => new Set(prev).add(seatId));
     try {
-      const entry = await addSeatToCart(event.id, seat.id);
-      scheduleExpiry(seat.id, entry.expiresAt);
+      const entry = await addSeatToCart(event.id, seatId);
+      scheduleExpiry(seatId, entry.expiresAt);
     } catch {
-      setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
+      setSelectedSeats((prev) => prev.filter((s) => s.id !== seatId));
+    } finally {
+      setPendingSeatIds((prev) => {
+        const next = new Set(prev);
+        next.delete(seatId);
+        return next;
+      });
     }
   };
 
@@ -274,6 +286,7 @@ export function EventReservationModal({
                 selectedSeats={selectedSeats}
                 userReservedSeats={userReservedSeats}
                 highlightedSeatId={highlightedSeatId}
+                pendingSeatIds={pendingSeatIds}
                 onSeatSelect={handleSeatSelect}
                 isLoading={
                   !location ||
