@@ -21,7 +21,6 @@ package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -43,7 +42,7 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
      */
     public User findByUsername(String username) {
         LOG.debug("Finding user by username.");
-        User user = find("lower(username)", username.toLowerCase(Locale.ROOT)).firstResult();
+        User user = find("lower(username)", User.normalizeUsername(username)).firstResult();
         if (user != null) {
             LOG.debugf("User %s found.", username);
         } else {
@@ -61,7 +60,7 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
     public Optional<User> findByUsernameOptional(String username) {
         LOG.debug("Finding user by username.");
         Optional<User> user =
-                find("lower(username)", username.toLowerCase(Locale.ROOT)).firstResultOptional();
+                find("lower(username)", User.normalizeUsername(username)).firstResultOptional();
         if (user.isPresent()) {
             LOG.debugf("User %s found (optional).", username);
         } else {
@@ -77,7 +76,7 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
      * @return true if a user with this username exists, false otherwise
      */
     public boolean existsByUsername(String username) {
-        return count("lower(username)", username.toLowerCase(Locale.ROOT)) > 0;
+        return count("lower(username)", User.normalizeUsername(username)) > 0;
     }
 
     /**
@@ -194,7 +193,7 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
         return find(
                         "select distinct u from User u left join fetch u.tags where"
                                 + " lower(u.username) in ?1",
-                        usernames.stream().map(u -> u.toLowerCase(Locale.ROOT)).toList())
+                        usernames.stream().map(User::normalizeUsername).toList())
                 .list();
     }
 

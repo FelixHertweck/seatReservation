@@ -390,7 +390,8 @@ public class AuthService {
         }
 
         if (emailCooldownService
-                .checkAndRecord(EmailCooldownService.Purpose.PASSWORD_RESET, user.getUsername())
+                .checkAndRecord(
+                        EmailCooldownService.Purpose.PASSWORD_RESET, user.getNormalizedUsername())
                 .isPresent()) {
             LOG.infof(
                     "Password reset requested for username %s while on cooldown; ignoring.",

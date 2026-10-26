@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.model.entity;
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import jakarta.persistence.CascadeType;
@@ -166,12 +167,32 @@ public class User extends AbstractEntity {
     }
 
     /**
+     * Returns the lower-cased username. Usernames are unique and matched ignoring case, so use this
+     * (or {@link #normalizeUsername(String)}) for every comparison.
+     *
+     * @return the lower-cased username
+     */
+    public String getNormalizedUsername() {
+        return normalizeUsername(username);
+    }
+
+    /**
+     * Normalizes a username for case-insensitive comparison.
+     *
+     * @param username the username as entered or stored
+     * @return the trimmed, lower-cased username, or {@code null} if {@code username} is null
+     */
+    public static String normalizeUsername(String username) {
+        return username == null ? null : username.trim().toLowerCase(Locale.ROOT);
+    }
+
+    /**
      * Returns whether this is the shared box office system account (case-insensitive match).
      *
      * @return {@code true} if this user is the box office system account
      */
     public boolean isBoxOfficeUser() {
-        return BOXOFFICE_USERNAME.equalsIgnoreCase(username);
+        return BOXOFFICE_USERNAME.equals(getNormalizedUsername());
     }
 
     public void setUsername(String username) {
