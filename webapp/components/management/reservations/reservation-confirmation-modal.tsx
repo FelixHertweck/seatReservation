@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Mail, Printer, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -41,13 +41,15 @@ export function ReservationConfirmationModal({
   const [message, setMessage] = useState("");
   const [isIframeLoaded, setIsIframeLoaded] = useState(false);
 
-  useEffect(() => {
-    if (!open) setMessage("");
-  }, [open]);
+  if (!open && message) setMessage("");
 
-  useEffect(() => {
+  const [prevHtmlContent, setPrevHtmlContent] = useState(
+    emailData?.htmlContent,
+  );
+  if (emailData?.htmlContent !== prevHtmlContent) {
+    setPrevHtmlContent(emailData?.htmlContent);
     setIsIframeLoaded(false);
-  }, [emailData?.htmlContent]);
+  }
 
   const handlePrint = () => {
     if (iframeRef.current?.contentWindow && isIframeLoaded) {

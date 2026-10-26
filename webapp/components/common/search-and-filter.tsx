@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Search, Filter, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/custom-ui/button";
@@ -68,9 +68,11 @@ export function SearchAndFilter({
     useState<Record<string, unknown>>(initialFilters);
   const activeFilterCount = Object.keys(filters).length;
 
-  useEffect(() => {
+  const [prevInitialQuery, setPrevInitialQuery] = useState(initialQuery);
+  if (initialQuery !== prevInitialQuery) {
+    setPrevInitialQuery(initialQuery);
     setSearchQuery(initialQuery);
-  }, [initialQuery]);
+  }
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);

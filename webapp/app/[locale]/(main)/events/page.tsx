@@ -54,6 +54,7 @@ export default function EventsPage() {
     if (!eventId) return;
 
     if (events.some((event) => event.id === eventId)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time restore from sessionStorage
       setSelectedEventId(eventId);
       if (pending?.eventId === eventId) {
         setRestoreSeatIds(pending.seatIds);
@@ -94,11 +95,12 @@ export default function EventsPage() {
     enabled: !!selectedEvent?.locationId,
   });
 
+  const selectedLocationId = selectedEvent?.locationId;
   const selectedLocation = useMemo(() => {
-    if (!selectedEvent?.locationId) return null;
-    const base = locations.find((l) => l.id === selectedEvent.locationId);
+    if (!selectedLocationId) return null;
+    const base = locations.find((l) => l.id === selectedLocationId);
     return selectedLocationDetail ?? base ?? null;
-  }, [locations, selectedEvent?.locationId, selectedLocationDetail]);
+  }, [locations, selectedLocationId, selectedLocationDetail]);
 
   const locationOptions = useMemo(
     () =>

@@ -37,9 +37,11 @@ export function EmailVerificationPrompt() {
   }, [timerCompleted, isLoading, isLoggedIn, user, currentpath]);
 
   // Sync the dialog open state with the computed showPopup value
-  useEffect(() => {
+  const [prevShowPopup, setPrevShowPopup] = useState(showPopup);
+  if (showPopup !== prevShowPopup) {
+    setPrevShowPopup(showPopup);
     setIsOpen(showPopup);
-  }, [showPopup]);
+  }
 
   if (!showPopup) {
     return null;

@@ -46,11 +46,13 @@ export const UsernameSelector = ({
   }, [eventId, getUsernamesByEventId]);
 
   // Reset when resetTrigger changes
-  useEffect(() => {
+  const [prevResetTrigger, setPrevResetTrigger] = useState(resetTrigger);
+  if (resetTrigger !== prevResetTrigger) {
+    setPrevResetTrigger(resetTrigger);
     setSelectedUsername(null);
     setSearchValue("");
     setOpen(false);
-  }, [resetTrigger]);
+  }
 
   const filteredUsernames = usernames?.filter((username) =>
     username.toLowerCase().includes(searchValue.toLowerCase()),
