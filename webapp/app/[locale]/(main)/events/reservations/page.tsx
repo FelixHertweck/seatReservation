@@ -53,11 +53,14 @@ export default function MyReservationsPage() {
     showQrParam && eventIdFromUrl ? eventIdFromUrl : null,
   );
 
-  useEffect(() => {
-    if (showQrParam && eventIdFromUrl) {
-      setQrModalEventId(eventIdFromUrl);
-    }
-  }, [showQrParam, eventIdFromUrl]);
+  const [prevQrUrlEventId, setPrevQrUrlEventId] = useState(
+    showQrParam ? eventIdFromUrl : null,
+  );
+  const qrUrlEventId = showQrParam ? eventIdFromUrl : null;
+  if (qrUrlEventId !== prevQrUrlEventId) {
+    setPrevQrUrlEventId(qrUrlEventId);
+    if (qrUrlEventId) setQrModalEventId(qrUrlEventId);
+  }
 
   const qrEventReservations = useMemo(() => {
     if (!qrModalEventId) return [];

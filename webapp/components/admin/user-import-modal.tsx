@@ -99,13 +99,17 @@ export function UserImportModal({
     null,
   );
 
-  // Debounced live parsing of JSON input
-  useEffect(() => {
-    if (!jsonData.trim()) {
+  const handleJsonChange = (value: string) => {
+    setJsonData(value);
+    if (!value.trim()) {
       setParsedUsers([]);
       setParseError("");
-      return;
     }
+  };
+
+  // Debounced live parsing of JSON input
+  useEffect(() => {
+    if (!jsonData.trim()) return;
 
     const timer = setTimeout(() => {
       try {
@@ -320,7 +324,7 @@ export function UserImportModal({
                     id="json-input"
                     placeholder={t("userImportModal.pasteUsersJsonPlaceholder")}
                     value={jsonData}
-                    onChange={(e) => setJsonData(e.target.value)}
+                    onChange={(e) => handleJsonChange(e.target.value)}
                     rows={12}
                     className="font-mono text-sm flex-1 min-h-[250px]"
                   />

@@ -38,8 +38,10 @@ export default function EmailSeatmapPage() {
   const t = useT();
 
   const [svgContent, setSvgContent] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [isFetching, setIsFetching] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const isLoading = !!token && isFetching;
+  const error = token ? fetchError : t("emailSeatmap.error.noToken");
   const [scale, setScale] = useState(() => {
     // Check if mobile device (screen width < 768px)
     if (typeof window !== "undefined") {
@@ -58,11 +60,7 @@ export default function EmailSeatmapPage() {
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!token) {
-      setError(t("emailSeatmap.error.noToken"));
-      setIsLoading(false);
-      return;
-    }
+    if (!token) return;
 
     const fetchSeatmap = async () => {
       try {
@@ -90,12 +88,12 @@ export default function EmailSeatmapPage() {
           err instanceof Error
             ? err.message
             : t("emailSeatmap.error.failedToLoad");
-        setError(errorMessage);
+        setFetchError(errorMessage);
         toast.error(t("emailSeatmap.toast.errorTitle"), {
           description: errorMessage,
         });
       } finally {
-        setIsLoading(false);
+        setIsFetching(false);
       }
     };
 

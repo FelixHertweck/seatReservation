@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -73,7 +73,12 @@ export function AllowanceFormModal({
     allowedReservations.trim() !== "" &&
     !/^\d+$/.test(allowedReservations.trim());
 
-  useEffect(() => {
+  const [prevSource, setPrevSource] = useState({ allowance, isCreating });
+  if (
+    prevSource.allowance !== allowance ||
+    prevSource.isCreating !== isCreating
+  ) {
+    setPrevSource({ allowance, isCreating });
     if (allowance && !isCreating) {
       setSelectedUserIds([allowance.userId?.toString() || ""]);
       setSelectedEventId(allowance.eventId?.toString());
@@ -85,7 +90,7 @@ export function AllowanceFormModal({
       setSelectedEventId(allowance?.eventId?.toString());
       setAllowedReservations("");
     }
-  }, [allowance, isCreating]);
+  }
 
   const handleSubmit = async () => {
     if (!selectedEventId || !allowedReservations) {

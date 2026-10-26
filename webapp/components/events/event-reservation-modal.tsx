@@ -89,8 +89,11 @@ export function EventReservationModal({
 
   useEffect(() => {
     selectedSeatsRef.current = selectedSeats;
-    if (selectedSeats.length === 0) setIsSeatDrawerOpen(false);
   }, [selectedSeats]);
+
+  if (selectedSeats.length === 0 && isSeatDrawerOpen) {
+    setIsSeatDrawerOpen(false);
+  }
 
   const clearExpiryTimer = useCallback((seatId: string) => {
     const timer = expiryTimersRef.current.get(seatId);

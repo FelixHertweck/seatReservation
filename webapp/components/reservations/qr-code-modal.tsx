@@ -396,7 +396,7 @@ export function QRCodeModal({
       ? "/wallet/apple/DE_Add_to_Apple_Wallet_RGB_101421.svg"
       : "/wallet/apple/US-UK_Add_to_Apple_Wallet_RGB_101421.svg";
 
-  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
+  const [qr, setQr] = useState<{ code: string; url: string } | null>(null);
 
   const { data: walletConfig, isLoading: isWalletConfigLoading } = useQuery({
     ...getApiUserWalletConfigOptions(),
@@ -407,52 +407,37 @@ export function QRCodeModal({
   const firstReservation = reservations[0];
   const hasCheckInToken = !!firstReservation?.checkInToken;
 
+  // Format must match EmailService.generateQrCodeContent and the check-in scanner's parsing order.
+  const qrCode =
+    isOpen && userId && hasCheckInToken
+      ? `${userId};${firstReservation.eventId};${firstReservation.checkInToken}`
+      : null;
+  const qrCodeDataUrl = qr && qr.code === qrCode ? qr.url : "";
+
   const isGeneratingQrCode = hasCheckInToken && !qrCodeDataUrl;
   const isPendingWalletConfig = hasCheckInToken && isWalletConfigLoading;
   const isLoading = isGeneratingQrCode || isPendingWalletConfig;
 
   // Generate QR code data when modal opens
   useEffect(() => {
-    if (
-      !isOpen ||
-      !reservations ||
-      reservations.length === 0 ||
-      !userId ||
-      !hasCheckInToken
-    ) {
-      setQrCodeDataUrl("");
-      return;
-    }
+    if (!qrCode) return;
 
-    const generateQRCode = async () => {
-      const firstReservation = reservations[0];
-      const eventId = firstReservation.eventId;
-
-      // Generate the code: userId;eventId;checkInToken -- must match
-      // EmailService.generateQrCodeContent and the check-in scanner's parsing order.
-      const token = firstReservation.checkInToken;
-      const code = `${userId};${eventId};${token}`;
-
-      try {
-        const dataUrl = await QRCode.toDataURL(code, {
-          width: 300,
-          margin: 2,
-          color: {
-            dark: "#000000",
-            light: "#FFFFFF",
-          },
-        });
-        setQrCodeDataUrl(dataUrl);
-      } catch (error) {
+    QRCode.toDataURL(qrCode, {
+      width: 300,
+      margin: 2,
+      color: {
+        dark: "#000000",
+        light: "#FFFFFF",
+      },
+    })
+      .then((url) => setQr({ code: qrCode, url }))
+      .catch((error) => {
         console.error("Error generating QR code:", error);
         toast.error(t("qrCodeModal.generationError"), {
           description: t("qrCodeModal.generationErrorDescription"),
         });
-      }
-    };
-
-    generateQRCode();
-  }, [isOpen, reservations, userId, hasCheckInToken, t]);
+      });
+  }, [qrCode, t]);
 
   const [loadingProvider, setLoadingProvider] = useState<
     "GOOGLE" | "APPLE" | "GENERIC_PKPASS" | null

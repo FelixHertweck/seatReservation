@@ -27,13 +27,14 @@ interface AltchaProps {
 export function Altcha({ onVerified, onError, resetKey }: AltchaProps) {
   const widgetRef = useRef<HTMLElement>(null);
   const [challengeJson, setChallengeJson] = useState<string | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
   const isFirstResetKey = useRef(true);
 
   const onVerifiedRef = useRef(onVerified);
-  onVerifiedRef.current = onVerified;
   const onErrorRef = useRef(onError);
-  onErrorRef.current = onError;
+  useEffect(() => {
+    onVerifiedRef.current = onVerified;
+    onErrorRef.current = onError;
+  });
 
   const fetchChallenge = useCallback(() => {
     // Any previously-verified payload is no longer trustworthy once we ask for a new challenge.
@@ -55,7 +56,6 @@ export function Altcha({ onVerified, onError, resetKey }: AltchaProps) {
 
   // Fetch challenge on mount using generated API client
   useEffect(() => {
-    setIsMounted(true);
     fetchChallenge();
   }, [fetchChallenge]);
 
@@ -69,7 +69,7 @@ export function Altcha({ onVerified, onError, resetKey }: AltchaProps) {
   }, [resetKey, fetchChallenge]);
 
   useEffect(() => {
-    if (!isMounted || !challengeJson) return;
+    if (!challengeJson) return;
 
     // Dynamically import custom element on client-side
     import("altcha");
@@ -113,9 +113,9 @@ export function Altcha({ onVerified, onError, resetKey }: AltchaProps) {
       widget.removeEventListener("statechange", handleStateChange);
       widget.removeEventListener("verified", handleVerified);
     };
-  }, [isMounted, challengeJson, fetchChallenge]);
+  }, [challengeJson, fetchChallenge]);
 
-  if (!isMounted || !challengeJson) return null;
+  if (!challengeJson) return null;
 
   return (
     <div

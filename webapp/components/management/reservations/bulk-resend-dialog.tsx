@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Mail } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
@@ -32,9 +32,7 @@ export function BulkResendDialog({
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
 
-  useEffect(() => {
-    if (!open) setMessage("");
-  }, [open]);
+  if (!open && message) setMessage("");
 
   const handleSend = async () => {
     setIsSending(true);

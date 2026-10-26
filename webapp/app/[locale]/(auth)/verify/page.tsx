@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "@/components/custom-ui/button";
 import {
@@ -34,7 +34,15 @@ export default function VerifyEmailPage() {
   const t = useT();
   const searchParams = useSearchParams();
 
-  const [verificationCode, setVerificationCode] = useState("");
+  const codeFromUrl = searchParams.get("code");
+  const urlCode =
+    codeFromUrl && /^\d{6}$/.test(codeFromUrl) ? codeFromUrl : null;
+  const [verificationCode, setVerificationCode] = useState(urlCode ?? "");
+  const [prevUrlCode, setPrevUrlCode] = useState(urlCode);
+  if (urlCode !== prevUrlCode) {
+    setPrevUrlCode(urlCode);
+    if (urlCode) setVerificationCode(urlCode);
+  }
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [isContinuing, setIsContinuing] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(
@@ -69,13 +77,6 @@ export default function VerifyEmailPage() {
     },
     [t, verifyEmail, searchParams],
   );
-
-  useEffect(() => {
-    const codeFromUrl = searchParams.get("code");
-    if (codeFromUrl?.length === 6 && /^\d{6}$/.test(codeFromUrl)) {
-      setVerificationCode(codeFromUrl);
-    }
-  }, [setVerificationCode, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

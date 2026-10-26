@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/custom-ui/button";
 import {
@@ -19,6 +19,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useWebAuthn } from "@/hooks/use-webauthn";
 import { useTwoFactor } from "@/hooks/use-2fa";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useNowSeconds } from "@/hooks/use-now-seconds";
 import { useT } from "@/lib/i18n/hooks";
 import { ErrorWithResponse } from "@/components/init-query-client";
 import { redirectUser } from "@/lib/redirect-User";
@@ -49,8 +50,6 @@ export default function LoginPage() {
 
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
   const [currentlyLoggingIn, setCurrentlyLoggingIn] = useState(false);
-  const [remainingTime, setRemainingTime] = useState<number>(0);
-  const [isRetryAfterActive, setIsRetryAfterActive] = useState(false);
 
   // 2FA Challenge states
   const [twoFactorChallenge, setTwoFactorChallenge] = useState<{
@@ -62,42 +61,12 @@ export default function LoginPage() {
   const [isVerifying2Fa, setIsVerifying2Fa] = useState(false);
   const [isResendingEmailCode, setIsResendingEmailCode] = useState(false);
 
-  useEffect(() => {
-    if (!retryAfter) {
-      setIsRetryAfterActive(false);
-      setRemainingTime(0);
-      return;
-    }
-
-    const retryAfterDate = new Date(retryAfter).getTime();
-    const now = Date.now();
-
-    if (retryAfterDate > now) {
-      setIsRetryAfterActive(true);
-      const calculateRemaining = () => {
-        const current = Date.now();
-        const remaining = Math.max(
-          0,
-          Math.ceil((retryAfterDate - current) / 1000),
-        );
-        setRemainingTime(remaining);
-        return remaining > 0;
-      };
-
-      calculateRemaining();
-      const interval = setInterval(() => {
-        if (!calculateRemaining()) {
-          clearInterval(interval);
-          setIsRetryAfterActive(false);
-        }
-      }, 1000);
-
-      return () => clearInterval(interval);
-    } else {
-      setIsRetryAfterActive(false);
-      setRemainingTime(0);
-    }
-  }, [retryAfter]);
+  const retryEndSeconds = retryAfter
+    ? Math.ceil(new Date(retryAfter).getTime() / 1000)
+    : 0;
+  const nowSeconds = useNowSeconds(retryEndSeconds);
+  const remainingTime = Math.max(0, retryEndSeconds - nowSeconds);
+  const isRetryAfterActive = remainingTime > 0;
 
   const formatRetryTime = (): string => {
     const hours = Math.floor(remainingTime / 3600);
