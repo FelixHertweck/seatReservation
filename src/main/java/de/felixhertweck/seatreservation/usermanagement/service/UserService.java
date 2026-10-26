@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -129,11 +128,11 @@ public class UserService {
                 adminUserCreationDtos.stream()
                         .map(AdminUserCreationDto::getUsername)
                         .filter(name -> name != null && !name.isBlank())
-                        .map(UserService::usernameKey)
+                        .map(User::normalizeUsername)
                         .collect(Collectors.toSet());
         Set<String> knownExistingUsernames =
                 userRepository.findExistingUsernames(requestedUsernames).stream()
-                        .map(UserService::usernameKey)
+                        .map(User::normalizeUsername)
                         .collect(Collectors.toCollection(HashSet::new));
         Set<String> seenInBatch = new HashSet<>();
 
@@ -166,7 +165,7 @@ public class UserService {
                                 "Username cannot be empty."));
                 continue;
             }
-            String key = usernameKey(username);
+            String key = User.normalizeUsername(username);
             if (RESERVED_USERNAMES.contains(key)) {
                 failed.add(
                         new UserImportFailureDTO(
@@ -214,11 +213,6 @@ public class UserService {
                 "User with username " + username + " already exists.");
     }
 
-    /** Normalizes a username for duplicate checks, which ignore upper/lower case. */
-    private static String usernameKey(String username) {
-        return username.trim().toLowerCase(Locale.ROOT);
-    }
-
     /**
      * Replaces an existing user: deletes it together with everything that belongs to it and creates
      * it anew, in a single transaction. If anything fails, the existing user is kept.
@@ -240,8 +234,8 @@ public class UserService {
                                         new UserNotFoundException(
                                                 "User with id " + existingUserId + " not found."));
         if (replacement.getUsername() == null
-                || !usernameKey(existing.getUsername())
-                        .equals(usernameKey(replacement.getUsername()))) {
+                || !existing.getNormalizedUsername()
+                        .equals(User.normalizeUsername(replacement.getUsername()))) {
             throw new InvalidUserException(
                     "The replacement must have the username of the replaced user.");
         }
@@ -344,7 +338,7 @@ public class UserService {
             throw new InvalidUserException("Password cannot be empty.");
         }
 
-        if (RESERVED_USERNAMES.contains(userCreationDTO.getUsername().trim().toLowerCase())) {
+        if (RESERVED_USERNAMES.contains(User.normalizeUsername(userCreationDTO.getUsername()))) {
             LOG.warnf(
                     "Attempt to create user with reserved username: %s",
                     userCreationDTO.getUsername());
@@ -358,7 +352,7 @@ public class UserService {
         boolean isDuplicate =
                 knownExistingUsernames != null
                         ? knownExistingUsernames.contains(
-                                usernameKey(userCreationDTO.getUsername()))
+                                User.normalizeUsername(userCreationDTO.getUsername()))
                         : userRepository.existsByUsername(userCreationDTO.getUsername());
         if (isDuplicate) {
             LOG.warnf(
@@ -409,7 +403,7 @@ public class UserService {
         userRepository.persist(user);
         LOG.debugf("User %s persisted successfully with ID: %s", user.getUsername(), user.id);
         if (knownExistingUsernames != null) {
-            knownExistingUsernames.add(usernameKey(user.getUsername()));
+            knownExistingUsernames.add(user.getNormalizedUsername());
         }
 
         if (sendEmailVerification && !markEmailAsVerified) {
@@ -601,8 +595,7 @@ public class UserService {
                 LOG.warnf("User %s attempted to remove their own admin role.", currentUser.id());
                 throw new AccessDeniedException("Admins cannot remove their own admin role.");
             }
-            if ("boxoffice".equalsIgnoreCase(existingUser.getUsername())
-                    && !user.getRoles().isEmpty()) {
+            if (existingUser.isBoxOfficeUser() && !user.getRoles().isEmpty()) {
                 LOG.warnf(
                         "Attempt to grant roles to reserved system account: %s",
                         existingUser.getUsername());
@@ -670,7 +663,7 @@ public class UserService {
                 LOG.warnf("User %s attempted to delete their own account.", currentUser.id());
                 throw new AccessDeniedException("Admins cannot delete their own accounts.");
             }
-            if (RESERVED_USERNAMES.contains(user.getUsername().toLowerCase())) {
+            if (RESERVED_USERNAMES.contains(user.getNormalizedUsername())) {
                 LOG.warnf("Attempt to delete reserved system account: %s", user.getUsername());
                 throw new AccessDeniedException("The box office system account cannot be deleted.");
             }
@@ -728,7 +721,7 @@ public class UserService {
         Map<String, User> found = new HashMap<>();
         for (User user : userRepository.findByUsernamesWithTags(usernames)) {
             if (!user.isBoxOfficeUser()) {
-                found.put(user.getUsername(), user);
+                found.put(user.getNormalizedUsername(), user);
             }
         }
 
@@ -736,7 +729,7 @@ public class UserService {
         List<String> alreadyTagged = new ArrayList<>();
         List<String> notFound = new ArrayList<>();
         for (String username : usernames) {
-            User user = found.get(username);
+            User user = found.get(User.normalizeUsername(username));
             if (user == null) {
                 notFound.add(username);
             } else if (user.getTags().contains(tag)) {

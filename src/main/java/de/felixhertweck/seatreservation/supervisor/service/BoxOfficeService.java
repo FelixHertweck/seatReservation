@@ -112,7 +112,7 @@ public class BoxOfficeService {
      */
     public List<LimitedUserInfoDTO> getUsersForBoxOffice() {
         return userService.getAllUsers().stream()
-                .filter(u -> !User.BOXOFFICE_USERNAME.equalsIgnoreCase(u.username()))
+                .filter(u -> !User.BOXOFFICE_USERNAME.equals(User.normalizeUsername(u.username())))
                 .toList();
     }
 

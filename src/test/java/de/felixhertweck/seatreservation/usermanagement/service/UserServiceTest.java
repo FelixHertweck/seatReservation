@@ -1204,6 +1204,31 @@ public class UserServiceTest {
     }
 
     @Test
+    void addTagToUsers_MatchesUsernamesIgnoringCase() {
+        User alice =
+                new User(
+                        "Alice",
+                        "a@example.com",
+                        true,
+                        false,
+                        "h",
+                        "s",
+                        "A",
+                        "A",
+                        Set.of(Roles.USER),
+                        Set.of());
+        when(userRepository.findByUsernamesWithTags(any())).thenReturn(List.of(alice));
+
+        UserTagAssignmentResultDTO result =
+                userService.addTagToUsers(
+                        new UserTagAssignmentRequestDTO(List.of("ALICE"), "mitglied-2026"));
+
+        assertEquals(List.of("ALICE"), result.updated());
+        assertTrue(result.notFound().isEmpty());
+        assertEquals(Set.of("mitglied-2026"), alice.getTags());
+    }
+
+    @Test
     void updateTagsForUsers_AddsAndRemovesOnlyListedTags() {
         User alice =
                 new User(
