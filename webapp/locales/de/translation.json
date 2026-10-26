@@ -204,7 +204,8 @@
       "description": "Beim Anmelden ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
       "accountLocked": "Konto gesperrt bis {{time}} ({{duration}})",
       "tooManyAttemptsDescription": "Zu viele fehlgeschlagene Anmeldeversuche. Ihr Konto wurde vorübergehend gesperrt.",
-      "emailNotAllowed": "Der Benutzername ist nicht Ihre E-Mail-Adresse. Bitte geben Sie Ihren Benutzernamen ein."
+      "emailNotAllowed": "Der Benutzername ist nicht Ihre E-Mail-Adresse. Bitte geben Sie Ihren Benutzernamen ein.",
+      "invalidUsernameChars": "Der Benutzername darf nur Buchstaben (ohne Umlaute), Ziffern sowie . _ - enthalten."
     },
     "forgotPassword": "Passwort vergessen?",
     "forgotUsername": "Benutzername vergessen?"

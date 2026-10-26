@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.model.repository;
 
 import java.time.Instant;
+import java.util.Locale;
 import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -43,7 +44,10 @@ public class LoginAttemptRepository implements PanacheRepositoryBase<LoginAttemp
      */
     public long countFailedAttempts(String username, Instant since) {
         LOG.debugf("Counting failed login attempts since: %s", since);
-        return count("username = ?1 and successful = false and attemptTime >= ?2", username, since);
+        return count(
+                "lower(username) = ?1 and successful = false and attemptTime >= ?2",
+                username.toLowerCase(Locale.ROOT),
+                since);
     }
 
     /**
@@ -94,9 +98,9 @@ public class LoginAttemptRepository implements PanacheRepositoryBase<LoginAttemp
     public Instant getOldestFailedAttemptTime(String username, Instant since) {
         LOG.debugf("Getting oldest failed login attempt time since: %s", since);
         return find(
-                        "username = ?1 and successful = false and attemptTime >= ?2 order by"
+                        "lower(username) = ?1 and successful = false and attemptTime >= ?2 order by"
                                 + " attemptTime asc",
-                        username,
+                        username.toLowerCase(Locale.ROOT),
                         since)
                 .firstResultOptional()
                 .map(LoginAttempt::getAttemptTime)
