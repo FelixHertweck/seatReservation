@@ -34,7 +34,7 @@
     <java-otp.version>1.0.0</java-otp.version>
     <commons-codec.version>1.23.0</commons-codec.version>
     <testcontainers.version>1.21.4</testcontainers.version>
-    <bouncycastle.version>1.86</bouncycastle.version>
+    <bouncycastle.version>1.87</bouncycastle.version>
   </properties>
 
   <dependencyManagement>
