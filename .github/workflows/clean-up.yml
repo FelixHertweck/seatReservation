@@ -32,7 +32,7 @@ jobs:
     steps:
       # actions/delete-package-versions isn't multi-arch aware
       - name: Delete untagged versions
-        uses: dataaxiom/ghcr-cleanup-action@v1
+        uses: dataaxiom/ghcr-cleanup-action@ac45a8c04b1eb4b27974ca79a0a74f344c93664b # v1
         with:
           package: ${{ matrix.package-name }}
           keep-n-untagged: 5
@@ -56,7 +56,7 @@ jobs:
 
     steps:
       - name: Delete image tagged with closed PR
-        uses: dataaxiom/ghcr-cleanup-action@v1
+        uses: dataaxiom/ghcr-cleanup-action@ac45a8c04b1eb4b27974ca79a0a74f344c93664b # v1
         with:
           package: ${{ matrix.package-name }}
           delete-tags: pr-${{ github.event.pull_request.number }}

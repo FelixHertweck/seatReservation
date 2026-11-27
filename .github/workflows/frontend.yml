@@ -25,10 +25,10 @@ jobs:
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up NodeJS
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           # prefer node-version-file over manual env read
           node-version-file: webapp/.nvmrc
@@ -39,7 +39,7 @@ jobs:
           cache-dependency-path: webapp/package-lock.json
 
       - name: Set up Maven Cache
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -47,14 +47,14 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Set up Java
-        uses: actions/setup-java@v6.3.0
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: 21
 
       - name: Cache Next.js build
         id: nextjs-cache
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ${{ github.workspace }}/webapp/.next/cache
           key: ${{ runner.os }}-nextjs-${{ hashFiles('webapp/package-lock.json') }}-${{ hashFiles('webapp/**/*.js', 'webapp/**/*.jsx', 'webapp/**/*.ts', 'webapp/**/*.tsx') }}
@@ -90,7 +90,7 @@ jobs:
               npm run build:static
 
       - name: Upload build static artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: frontend-build-static
           path: webapp/out
@@ -101,7 +101,7 @@ jobs:
               npm run build
 
       - name: Upload build standalone artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: frontend-build-standalone
           include-hidden-files: true
